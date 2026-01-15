@@ -40,6 +40,7 @@ npm run build
 | ClickUp | `@imazhar101/mcp-clickup-server` | `mcp-clickup` | `CLICKUP_API_TOKEN` |
 | Elasticsearch | `@imazhar101/mcp-elasticsearch-server` | `mcp-elasticsearch` | `ELASTICSEARCH_URL`, `ELASTICSEARCH_USERNAME`, `ELASTICSEARCH_PASSWORD` |
 | Figma | `@imazhar101/mcp-figma-server` | `mcp-figma` | `FIGMA_ACCESS_TOKEN` |
+| GitHub | `@imazhar101/mcp-github-server` | `mcp-github` | `GITHUB_TOKEN`, `GITHUB_BASE_URL` |
 | Jira | `@imazhar101/mcp-jira-server` | `mcp-jira` | `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` |
 | Notion | `@imazhar101/mcp-notion-server` | `mcp-notion` | `NOTION_API_TOKEN` |
 | PostgreSQL | `@imazhar101/mcp-postgresql-server` | `mcp-postgresql` | `POSTGRESQL_CONNECTION_STRING` |
@@ -58,6 +59,10 @@ POSTGRESQL_CONNECTION_STRING=postgresql://user:password@localhost:5432/database
 JIRA_BASE_URL=https://your-company.atlassian.net
 JIRA_EMAIL=your-email@company.com
 JIRA_API_TOKEN=your-api-token
+
+# GitHub Server
+GITHUB_TOKEN=your_github_personal_access_token
+# GITHUB_BASE_URL=https://github.example.com  # Optional: for GitHub Enterprise
 
 # Canvas Server
 CANVAS_BASE_URL=https://your-school.instructure.com
@@ -113,7 +118,14 @@ mcpServers:
       JIRA_BASE_URL: "https://your-company.atlassian.net"
       JIRA_EMAIL: "your-email@company.com"
       JIRA_API_TOKEN: "your-api-token"
-  
+
+  - name: GitHub Repository Viewer
+    command: npx
+    args:
+      - "@imazhar101/mcp-github-server"
+    env:
+      GITHUB_TOKEN: "your_github_token"
+
   - name: Canvas LMS
     command: npx
     args:
@@ -162,9 +174,20 @@ mcpServers:
         }
       },
       {
+        "name": "GitHub Repository Viewer",
+        "transport": {
+          "type": "stdio",
+          "command": "npx",
+          "args": ["@imazhar101/mcp-github-server"]
+        },
+        "env": {
+          "GITHUB_TOKEN": "your_github_token"
+        }
+      },
+      {
         "name": "Canvas LMS",
         "transport": {
-          "type": "stdio", 
+          "type": "stdio",
           "command": "npx",
           "args": ["@imazhar101/mcp-canvas-server"]
         },
@@ -196,6 +219,11 @@ claude mcp add jira-integration \
   -e JIRA_EMAIL="your-email@company.com" \
   -e JIRA_API_TOKEN="your-api-token" \
   -- npx @imazhar101/mcp-jira-server
+
+# Add GitHub server using npm package
+claude mcp add github-viewer \
+  -e GITHUB_TOKEN="your_github_token" \
+  -- npx @imazhar101/mcp-github-server
 
 # Add Canvas server using npm package
 claude mcp add canvas-lms \
@@ -231,9 +259,16 @@ For team-shared configuration:
         "JIRA_API_TOKEN": "your-api-token"
       }
     },
+    "github-viewer": {
+      "command": "npx",
+      "args": ["@imazhar101/mcp-github-server"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token"
+      }
+    },
     "canvas-lms": {
       "command": "npx",
-      "args": ["@imazhar101/mcp-canvas-server"], 
+      "args": ["@imazhar101/mcp-canvas-server"],
       "env": {
         "CANVAS_BASE_URL": "https://your-school.instructure.com",
         "CANVAS_API_TOKEN": "your-canvas-token"
@@ -293,6 +328,15 @@ Cline uses JSON configuration files stored in VS Code's global storage.
       },
       "disabled": false,
       "alwaysAllow": ["search_issues", "get_issue", "create_issue"]
+    },
+    "github-viewer": {
+      "command": "npx",
+      "args": ["@imazhar101/mcp-github-server"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token"
+      },
+      "disabled": false,
+      "alwaysAllow": ["list_user_repositories", "get_repository", "list_repository_contents"]
     },
     "canvas-lms": {
       "command": "npx",

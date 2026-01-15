@@ -1,0 +1,25 @@
+{
+  "name": "@imazhar101/mcp-github-server",
+  "version": "1.0.0",
+  "description": "GitHub MCP server for repository viewing and code exploration",
+  "type": "module",
+  "main": "dist/servers/github/src/index.js",
+  "bin": {
+    "mcp-github": "dist/servers/github/src/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "@octokit/rest": "^20.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}
