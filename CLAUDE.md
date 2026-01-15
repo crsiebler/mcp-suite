@@ -84,6 +84,7 @@ Each server follows a consistent architecture:
 - **salesforce**: CRM integration with OAuth (7 tools)
 - **bitbucket**: Repository management (40 tools)
 - **aws**: DynamoDB, Lambda, API Gateway (29 tools)
+- **github**: Repository viewing and code exploration (10 tools)
 
 ### Build System
 - Uses custom build script (`scripts/build.js`) with progress tracking
