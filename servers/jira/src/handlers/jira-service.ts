@@ -100,36 +100,89 @@ export class JiraService {
     try {
       this.logger.info("Searching issues", { jql: request.jql });
 
-      const response = await this.client.get("/search", {
-        params: {
-          jql: request.jql,
-          maxResults: request.maxResults || 50,
-          fields:
-            "summary,status,assignee,reporter,priority,issuetype,project,created,updated,description",
-        },
-      });
+      // Try the new /search/jql endpoint first (Jira Cloud enhanced search)
+      try {
+        const response = await this.client.get("/search/jql", {
+          params: {
+            jql: request.jql,
+            maxResults: request.maxResults || 50,
+            fields:
+              "summary,status,assignee,reporter,priority,issuetype,project,created,updated,description",
+          },
+        });
 
-      const issues: JiraIssue[] = response.data.issues.map((issue: any) => ({
-        key: issue.key,
-        summary: issue.fields.summary,
-        status: issue.fields.status.name,
-        assignee: issue.fields.assignee?.displayName || "Unassigned",
-        reporter: issue.fields.reporter.displayName,
-        priority: issue.fields.priority.name,
-        issueType: issue.fields.issuetype.name,
-        project: {
-          key: issue.fields.project.key,
-          name: issue.fields.project.name,
-        },
-        created: issue.fields.created,
-        updated: issue.fields.updated,
-      }));
+        const issues: JiraIssue[] = response.data.issues.map((issue: any) => ({
+          key: issue.key,
+          summary: issue.fields.summary,
+          status: issue.fields.status.name,
+          assignee: issue.fields.assignee?.displayName || "Unassigned",
+          reporter: issue.fields.reporter.displayName,
+          priority: issue.fields.priority.name,
+          issueType: issue.fields.issuetype.name,
+          project: {
+            key: issue.fields.project.key,
+            name: issue.fields.project.name,
+          },
+          created: issue.fields.created,
+          updated: issue.fields.updated,
+        }));
 
-      return {
-        success: true,
-        data: issues,
-        message: `Found ${response.data.total} issues (showing ${issues.length})`,
-      };
+        // New endpoint doesn't provide total count, so we approximate
+        const total = issues.length; // Conservative estimate
+
+        return {
+          success: true,
+          data: issues,
+          message: `Found ${total} issues (showing ${issues.length})`,
+        };
+      } catch (newEndpointError: any) {
+        // Check if this is a 410 Gone error (endpoint removed) or other error
+        const is410Gone = newEndpointError.response?.status === 410;
+        const isMethodNotAllowed = newEndpointError.response?.status === 405;
+
+        if (is410Gone || isMethodNotAllowed) {
+          this.logger.info("New search endpoint not available, falling back to legacy endpoint", {
+            error: newEndpointError.response?.status,
+            endpoint: "/search/jql"
+          });
+
+          // Fall back to the old /search endpoint
+          const response = await this.client.get("/search", {
+            params: {
+              jql: request.jql,
+              startAt: 0, // Old offset-based pagination
+              maxResults: request.maxResults || 50,
+              fields:
+                "summary,status,assignee,reporter,priority,issuetype,project,created,updated,description",
+            },
+          });
+
+          const issues: JiraIssue[] = response.data.issues.map((issue: any) => ({
+            key: issue.key,
+            summary: issue.fields.summary,
+            status: issue.fields.status.name,
+            assignee: issue.fields.assignee?.displayName || "Unassigned",
+            reporter: issue.fields.reporter.displayName,
+            priority: issue.fields.priority.name,
+            issueType: issue.fields.issuetype.name,
+            project: {
+              key: issue.fields.project.key,
+              name: issue.fields.project.name,
+            },
+            created: issue.fields.created,
+            updated: issue.fields.updated,
+          }));
+
+          return {
+            success: true,
+            data: issues,
+            message: `Found ${response.data.total} issues (showing ${issues.length})`,
+          };
+        } else {
+          // Re-throw non-410 errors from new endpoint
+          throw newEndpointError;
+        }
+      }
     } catch (error) {
       return this.errorHandler.handleApiError(error, "Jira");
     }
