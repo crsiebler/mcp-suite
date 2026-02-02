@@ -20,6 +20,7 @@ export class JiraService {
   private logger: Logger;
   private errorHandler: ErrorHandler;
   private config: JiraConfig;
+  private currentUserAccountId: string | null = null;
 
   constructor(config: JiraConfig, logger: Logger) {
     this.config = config;
@@ -233,6 +234,24 @@ export class JiraService {
     }
   }
 
+  async getCurrentUserAccountId(): Promise<string> {
+    if (this.currentUserAccountId) {
+      return this.currentUserAccountId;
+    }
+
+    try {
+      const response = await this.client.get("/myself");
+      this.currentUserAccountId = response.data.accountId;
+      if (!this.currentUserAccountId) {
+        throw new Error("Failed to get accountId from user data");
+      }
+      return this.currentUserAccountId;
+    } catch (error) {
+      this.logger.error("Failed to get current user accountId", error);
+      throw error;
+    }
+  }
+
   async createIssue(
     request: CreateIssueRequest
   ): Promise<ServerResponse<{ key: string; url: string }>> {
@@ -247,9 +266,17 @@ export class JiraService {
           project: { key: request.projectKey },
           summary: request.summary,
           issuetype: { name: request.issueType || "Task" },
-          priority: { name: request.priority || "Medium" },
         },
       };
+
+      // Only set priority if provided by user
+      if (request.priority) {
+        issueData.fields.priority = { name: request.priority };
+      }
+
+      // Set reporter to current user (required in this Jira instance)
+      const accountId = await this.getCurrentUserAccountId();
+      issueData.fields.reporter = { accountId };
 
       const processedDescription = this.processDescription(request.description);
       if (processedDescription) {
