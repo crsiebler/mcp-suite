@@ -70,7 +70,7 @@ disposable fixture. Publication/tagging commands are never verification commands
 US-001 uses Node v26.7.0, npm 11.19.0, TypeScript 5.9.3, Vitest 1.6.1,
 ESLint 8.57.1 and Prettier 3.9.8. The root SDK is 0.5.0; server manifests still
 request 0.5.x, 0.6.x and 1.x. This records the observed environment, not a claim
-of runtime support across all declared versions. See docs/progress.md for actual
+of runtime support across all declared versions. See the [archived progress log](../archive/2026-09-20-mcp-suite-reliability/docs/progress.md) for actual
 check results and the limitations of this initial verification story.
 
 US-002 additionally verifies the frozen workspace install with engine-strict on

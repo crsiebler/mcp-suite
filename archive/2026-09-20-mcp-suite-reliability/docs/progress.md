@@ -502,3 +502,34 @@
 
 - Actual delivered commits before this story: baseline8b760c7; US-0015236625; US-00253fdbcd; US-0036af50cb; US-004dc2df8b; US-0051ad5ca7; US-0067e8b149; US-0078785f63; US-00864f2e09; US-0091acc315; US-01076c7c7a; US-011b94fd7b; US-0120ec00d7; US-013e092133; US-013A5eaf7d0; US-0142c0fce3; US-0159fa7e83. Each has recorded passing native review/check evidence above. US-016 actual hash must come from successful Git output, not this pre-commit journal.
 - Finalization changes only selected story completion/current status and this append-only evidence. Intended commit: feat(US-016): verify isolated packaged MCP contracts. Commit status pending; no remaining implementation criterion, but delivery and final response remain unproven until commit succeeds and clean state is checked. Runtime Codex desktop, standard mode, model identifier unavailable, no implementation advisors/UI. Standing user authorization covers this local story commit only. No archive or external activation performed.
+
+
+## 2026-09-20 - Completed-run archival
+
+- Task: MCP Suite reliability and maintenance, PLAN.md. All 17 stories (US-001 through US-016 plus US-013A) delivered; final commit aaf157e succeeded. The final user-facing delivery report was provided after the commit and clean-worktree verification.
+- Verification: 735 offline tests across 30 files; typecheck, lint, configured formatting, six-server builds and catalog checks passed. The 37 focused package checks passed on Node 22.14 and 26.7. Every required story review passed; US-016 targeted review resolved the stale publication-status wording. Detailed evidence and dispositions remain above.
+- Limits: no live provider or hosted approval/OIDC verification; original notices, registry ownership and hosted activation remain publication prerequisites. Jev integration remains a separately gated follow-on.
+- Subsequent authorized Git operations replaced local and remote main with aaf157e and preserved old main at 2a2881a on codex/backup-main-before-clean-slate-2026-09-20, locally and remotely. Author-name edits remain uncommitted and are outside this archived run.
+- Approval: user requested “Archive the existing plan.” Previewed destination archive/2026-09-20-mcp-suite-reliability/ and removal of the three active copies after byte verification. No archive commit or push requested. Archive contains PLAN.md, docs/progress.md and memory.json; no replacement active state is created.
+- Actual commit history:
+
+```text
+8b760c7 chore(repo): establish clean-slate MCP suite baseline
+5236625 feat(US-001): establish deterministic local verification
+53fdbcd feat(US-002): make workspace builds and packages consistent
+6af50cb feat(US-003): make shared logging protocol-safe
+dc2df8b feat(US-004): tighten shared configuration and validation
+1ad5ca7 feat(US-005): simplify shared types and error contracts
+7e8b149 feat(US-006): correct PostgreSQL connection and query safeguards
+8785f63 feat(US-007): repair Duffel cancellation and uncertain outcomes
+64f2e09 feat(US-008): verify Salesforce bulk-delete reporting
+1acc315 feat(US-009): verify Elasticsearch tool contracts
+76c7c7a feat(US-010): validate Canvas inventory and category selection
+b94fd7b feat(US-011): verify ClickUp tool contracts
+0ec00d7 feat(US-012): bound and verify ASU job-search contracts
+e092133 feat(US-013): reconcile server metadata and inactive configuration
+5eaf7d0 refactor(US-013A): remove AI Job Search server
+2c0fce3 feat(US-014): adopt Changesets release preparation
+9fa7e83 feat(US-015): define verified and gated package publication
+aaf157e feat(US-016): verify isolated packaged MCP contracts
+```

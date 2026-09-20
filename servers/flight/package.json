@@ -19,7 +19,7 @@
     "travel",
     "model-context-protocol"
   ],
-  "author": "Cory <cory.siebler@phitechsolutions.com>",
+  "author": "Cory Siebler <cory.siebler@phitechsolutions.com>",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.6",

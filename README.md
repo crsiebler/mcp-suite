@@ -63,7 +63,7 @@ This checkout is maintained at [crsiebler/mcp-suite](https://github.com/crsieble
 Server manifests and examples use the `@crsiebler` npm scope. Renaming source
 metadata does not publish or transfer npm packages; registry-based examples
 require the corresponding package to be published first. Until then, use the
-[local build workflow](docs/server-development.md). Package author metadata identifies Cory <cory.siebler@phitechsolutions.com>.
+[local build workflow](docs/server-development.md). Package author metadata identifies Cory Siebler <cory.siebler@phitechsolutions.com>.
 Original implementation credit remains with Azharuddin; existing license
 declarations and historical release records are retained.
 

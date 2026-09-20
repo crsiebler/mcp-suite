@@ -2,16 +2,16 @@
 
 ## Ownership and boundaries
 
-| Area                          | Responsibility and evidence                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `servers/<name>/src/index.ts` | Process startup, MCP capabilities/handlers, dispatch, response formatting, and transport |
-| Server `tools/`               | Advertised names and JSON input schemas; most split servers export a tool array          |
-| Server `services/`            | Provider API calls and domain operations                                                 |
-| Server `types/` or `types.ts` | Provider-specific request and response types                                             |
-| `shared/types/`               | Discriminated `ServerResponse`, configuration/logging types, and installed SDK MCP aliases                |
-| `shared/utils/`               | Environment lookup, logging, validation, safe errors and MCP result serialization                                      |
-| `shared/middleware/`          | Unused authentication helper retained unchanged; generic error middleware removed                  |
-| `scripts/`                    | Build and catalog generation, separate from server runtime                            |
+| Area                          | Responsibility and evidence                                                                |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| `servers/<name>/src/index.ts` | Process startup, MCP capabilities/handlers, dispatch, response formatting, and transport   |
+| Server `tools/`               | Advertised names and JSON input schemas; most split servers export a tool array            |
+| Server `services/`            | Provider API calls and domain operations                                                   |
+| Server `types/` or `types.ts` | Provider-specific request and response types                                               |
+| `shared/types/`               | Discriminated `ServerResponse`, configuration/logging types, and installed SDK MCP aliases |
+| `shared/utils/`               | Environment lookup, logging, validation, safe errors and MCP result serialization          |
+| `shared/middleware/`          | Unused authentication helper retained unchanged; generic error middleware removed          |
+| `scripts/`                    | Build and catalog generation, separate from server runtime                                 |
 
 These are conventions, not a shared server framework. ClickUp separates transport, tool schemas, validation and provider mappings. Canvas has category-specific tool and service modules. Do not assume every server has a `handlers/` directory or uses
 all shared middleware.
@@ -87,7 +87,7 @@ package's `dist/`. Generated siblings were removed from shared source. See
 Some servers also have a top-level `index.ts` re-export shim. Its existence does
 not prove it is included in that server's build. Manifests use the `@crsiebler` npm scope and repository URLs under
 `crsiebler/mcp-suite`. These source names do not establish npm publication or
-transfer of previously published packages. Package author metadata identifies Cory <cory.siebler@phitechsolutions.com>;
+transfer of previously published packages. Package author metadata identifies Cory Siebler <cory.siebler@phitechsolutions.com>;
 original implementation credit is retained in the root README.
 
 ## Verification and limits
@@ -102,7 +102,6 @@ artifacts. Provenance is in the [overview](overview.md).
 Jira is now provided by the official hosted Atlassian Rovo MCP rather than a local
 package. See [Rovo setup](atlassian-rovo.md) for authentication and site routing.
 
-
 ## Elasticsearch tool boundary
 
 Elasticsearch's entry point owns stdio and existing credential configuration.
@@ -113,7 +112,6 @@ service calls. The service owns Elasticsearch request/response mappings, with
 Successful data shapes remain provider-specific; shared code does not own index
 administration. See the server README for result migration and limit semantics.
 
-
 ## Canvas category registry
 
 `servers/canvas/src/registry.ts` registers the 15 existing service/tool groups,
@@ -123,7 +121,6 @@ The entry point retains client/authentication configuration and stdio lifecycle.
 Course-only opt-in pagination lives in `services/course-pagination.ts`; other
 service contracts remain unchanged. See [Canvas tools](canvas-tools.md) for
 categories, pagination and error-output migration.
-
 
 ## ClickUp tool boundary
 

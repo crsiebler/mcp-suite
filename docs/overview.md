@@ -24,7 +24,7 @@ observed relationships; it does not establish published-package availability.
 
 The initial static map was inspected on 2026-09-19 against commit `2a2881a`.
 The clean-slate baseline and subsequent story commits now contain the migration
-and implementation. [Progress](progress.md) records the actual commits, checks
+and implementation. [Progress](../archive/2026-09-20-mcp-suite-reliability/docs/progress.md) records the actual commits, checks
 and review outcomes; [testing](testing.md) describes current offline coverage.
 
 Inspection covered root manifests, build/release scripts, shared TypeScript,

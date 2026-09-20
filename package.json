@@ -32,7 +32,7 @@
     "server",
     "typescript"
   ],
-  "author": "Cory <cory.siebler@phitechsolutions.com>",
+  "author": "Cory Siebler <cory.siebler@phitechsolutions.com>",
   "license": "MIT",
   "repository": {
     "type": "git",

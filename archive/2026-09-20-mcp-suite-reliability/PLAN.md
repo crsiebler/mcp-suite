@@ -370,7 +370,7 @@ requires the explicitly authorized story commit. Restore only the provisional
 marker on failed finalization and preserve evidence/checkpoints. A passing syntax
 check or exhausted budget never completes a story.
 
-- [ ] Final report records actual commits, verification/review outcomes, delivered scope and gaps.
+- [x] Final report records actual commits, verification/review outcomes, delivered scope and gaps.
 
 After all stories are delivered, archival is a separate explicit approval under
 references/completed-run-archive.md from the installed skill. Planning and story
