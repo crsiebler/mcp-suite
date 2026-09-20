@@ -24,7 +24,7 @@ mcp-suite/
 │   ├── salesforce/    # Salesforce CRM server with OAuth authentication
 │   ├── clickup/       # ClickUp server for task and project management
 │   └── elasticsearch/ # Elasticsearch server for search and analytics
-├── scripts/           # Build and deployment scripts
+├── scripts/           # Build and catalog scripts
 ├── config/            # Generated server inventory; not runtime settings
 └── tests/             # Test suite (unit, integration, fixtures)
 ```
@@ -106,6 +106,15 @@ Read [AGENTS.md](AGENTS.md), make scoped changes on a feature branch, and run th
 relevant checks from [testing](docs/testing.md). Use
 `<type>(<scope>): <description>` for authorized commits. Preserve upstream
 attribution and review package identity separately from code changes.
+
+## Release workflow
+
+Describe shipped changes with `npm run changeset`; preview with
+`npm run release:status`. Package changelogs own release notes, and package versions
+are independent. See [contribution guidance](docs/server-development.md#releases)
+and [release preparation](docs/releasing.md) for bump choices, migration notes,
+lockfile/artifact verification and initial-release prerequisites. The root is
+private. Hosted publication wiring is pending; nothing publishes automatically.
 
 ## 📝 License
 

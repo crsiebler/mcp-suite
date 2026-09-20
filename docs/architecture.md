@@ -11,7 +11,7 @@
 | `shared/types/`               | Discriminated `ServerResponse`, configuration/logging types, and installed SDK MCP aliases                |
 | `shared/utils/`               | Environment lookup, logging, validation, safe errors and MCP result serialization                                      |
 | `shared/middleware/`          | Unused authentication helper retained unchanged; generic error middleware removed                  |
-| `scripts/`                    | Build and release orchestration, separate from server runtime                            |
+| `scripts/`                    | Build and catalog generation, separate from server runtime                            |
 
 These are conventions, not a shared server framework. ClickUp separates transport, tool schemas, validation and provider mappings. Canvas has category-specific tool and service modules. Do not assume every server has a `handlers/` directory or uses
 all shared middleware.
@@ -133,3 +133,13 @@ name, validates arguments through `input.ts`, and formats raw successes or safe
 shared failures. `provider.ts` owns the 29 request mappings and Workspace-member
 projection. Required input migrations and pagination limits are in the
 [ClickUp guide](../servers/clickup/README.md#contracts-and-migration).
+
+## Release metadata
+
+Npm workspaces discover packages for both builds and Changesets. The pinned CLI
+consumes `.changeset/*.md` into independent package versions and changelogs; its
+config excludes private-root versioning/tagging. Root scripts synchronize the lock
+and regenerate catalog versions after preparation. Shared code is copied, so
+contributors must select affected consumers explicitly. Package changelogs own
+future release statements; releases/ preserves historical records. See
+[releasing](releasing.md) for the local branch boundary and pending hosted activation.

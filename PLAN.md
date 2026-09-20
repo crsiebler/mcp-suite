@@ -36,7 +36,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-013 verified. US-013A removal verified; US-014 through US-016 pending. Missing upstream notices remain a publication prerequisite.
+- Current status: US-001 through US-014 and US-013A verified. US-015 and US-016 pending. Missing upstream notices remain a publication prerequisite.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -281,7 +281,7 @@ Apply this workflow to each story:
 
 ### US-014 - Adopt Changesets and document contribution/release preparation
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 14
 - Depends on: US-013A
 - User benefit: describe changes once and review accurate versions and release notes.

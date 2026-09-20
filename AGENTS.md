@@ -58,10 +58,26 @@ Report actual changes, executed checks, and limitations. Do not infer successful
 integration from skipped tests. Update affected map sections when architecture,
 entry points, commands, or ownership changes; no routine full-map regeneration.
 
-Deployment and publishing are not checks: the release scripts can change package
-versions, publish to npm, create commits/tags, and push tags. They require explicit
-scoped authorization. Preserve upstream attribution and package identity unless
-changes to them are separately requested.
+## Changesets and release boundaries
+
+Use the installed Changesets CLI, not a custom version calculator. Add a Changeset
+for every affected published package when shipped behavior, dependencies, runtime
+requirements or public contracts change. Choose patch/minor/major by consumer
+impact; document breaking migrations. Shared modules are bundled into all six
+packages, so explicitly select affected consumers rather than relying on dependency
+inference. Repository-only docs/tests/tooling may have a justified no-release note.
+Conventional Commit messages remain required and do not replace Changesets.
+
+`npm run release:version` prepares manifests/changelogs, synchronizes the root lock
+and regenerates the catalog; it does not publish or commit. Review generated notes
+and unchanged package versions. Follow docs/releasing.md for exact checks and
+partial-preparation recovery. Keep the root private. Package changelogs own future
+release notes; releases/ is historical only. Do not recreate retired deploy/publish
+scripts or generate duplicate release payloads.
+
+Publishing, tagging, pushing, hosted release PRs and registry configuration require
+separate authorization. Do not infer registry ownership, a remote release branch,
+or license clearance from local source metadata. Preserve original attribution.
 
 
 ## Server inventory and provenance

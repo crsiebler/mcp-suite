@@ -1,32 +1,15 @@
-# Release Template for MCP Suite
+# Package release review
 
-This template is used for creating consistent releases.
+Follow [the release guide](../docs/releasing.md). Each package's `CHANGELOG.md`
+is the source of its release statement; do not create a parallel payload under
+`releases/` or infer notes from the clean-slate commit.
 
-## Release Checklist
+- Review affected packages, version bumps and breaking-change migrations.
+- Verify synchronized manifests, root lockfile and generated catalog.
+- Verify the exact package artifacts and their source commit.
+- Resolve registry ownership, applicable license notices and activation prerequisites.
+- Obtain publication authorization separately from version preparation.
+- Announce only confirmed published versions using `<package-name>@<version>` tags.
 
-- [ ] Update CHANGELOG.md with new version
-- [ ] Create release notes in releases/ directory
-- [ ] Tag the release with semantic version
-- [ ] Update package.json versions if needed
-- [ ] Test all servers build successfully
-- [ ] Verify documentation is up to date
-
-## Release Notes Format
-
-### Version: vX.Y.Z
-### Release Date: YYYY-MM-DD
-
-#### 🆕 New Features
-- List new features and servers
-
-#### 🔧 Improvements
-- List improvements and enhancements
-
-#### 🐛 Bug Fixes
-- List bug fixes
-
-#### 📖 Documentation
-- List documentation updates
-
-#### 🏗️ Infrastructure
-- List infrastructure and build changes
+Publication/announcement automation is a separate implementation step; this
+checklist does not authorize external writes.

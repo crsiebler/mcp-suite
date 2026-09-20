@@ -1,101 +1,107 @@
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  rmSync,
   writeFileSync,
+  rmSync,
 } from "node:fs";
 import { resolve } from "node:path";
-import { runInNewContext } from "node:vm";
-import { expect, it, vi } from "vitest";
+import { expect, it } from "vitest";
 
 const root = resolve(__dirname, "../..");
 const require = createRequire(import.meta.url);
-// Load the legacy entry points with all external commands forbidden. Importing
-// discovery must not run publishing, version changes, or Git commands.
-function releaseDiscovery(script: string, directory: string) {
-  const module = { exports: {} as { getServers: (root: string) => string[] } };
-  const localRequire = createRequire(resolve(root, "scripts", script));
-  const guardedRequire = (name: string) => {
-    if (["child_process", "node:child_process"].includes(name))
-      return {
-        execSync: () => {
-          throw new Error("External command forbidden");
-        },
-      };
-    return localRequire(name);
-  };
-  runInNewContext(readFileSync(resolve(root, "scripts", script), "utf8"), {
-    require: guardedRequire,
-    module,
-    __dirname: resolve(root, "scripts"),
-    process: { cwd: () => directory, argv: [] },
-    console,
-  });
-  return module.exports.getServers(directory);
-}
-
-it.each(["publish.js", "deploy.js"])(
-  "%s includes all six workspace servers without external commands",
-  (script) => {
-    expect(releaseDiscovery(script, root)).toEqual([
-      "canvas",
-      "clickup",
-      "elasticsearch",
-      "flight",
-      "postgresql",
-      "salesforce",
-    ]);
-  }
-);
-
-it("build, catalog and both release scripts follow explicit workspace selection", async () => {
+it("Changesets discovers the same six workspace packages as build and catalog", () => {
   mkdirSync(resolve(root, "dist/test-artifacts"), { recursive: true });
-  const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/discovery-"));
+  const scratch = mkdtempSync(
+    resolve(root, "dist/test-artifacts/release-discovery-")
+  );
+  const run = (program: string, args: string[]) =>
+    execFileSync(program, args, {
+      cwd: scratch,
+      encoding: "utf8",
+      timeout: 10000,
+    });
   try {
+    const packages = require("../../scripts/packages.cjs").readPackages(root);
+    const manifest = JSON.parse(
+      readFileSync(resolve(root, "package.json"), "utf8")
+    );
+    const config = JSON.parse(
+      readFileSync(resolve(root, ".changeset/config.json"), "utf8")
+    );
     writeFileSync(
       resolve(scratch, "package.json"),
-      JSON.stringify({ author: "Fixture", workspaces: ["servers/included"] })
-    );
-    mkdirSync(resolve(scratch, "servers/excluded"), { recursive: true });
-    mkdirSync(resolve(scratch, "servers/included/src"), { recursive: true });
-    mkdirSync(resolve(scratch, "servers/included/dist"));
-    writeFileSync(
-      resolve(scratch, "servers/included/package.json"),
       JSON.stringify({
-        name: "@fixture/included",
+        name: "fixture-root",
+        private: true,
         version: "1.0.0",
-        author: "Fixture",
-        type: "module",
-        main: "dist/index.js",
-        bin: { included: "dist/index.js" },
-        mcpSuite: {
-          displayName: "Included",
-          toolInventory: { module: "dist/index.js", export: "tools" },
-          environment: { required: [], optional: [], notes: "Fixture" },
-        },
+        workspaces: manifest.workspaces,
       })
     );
+    mkdirSync(resolve(scratch, ".changeset"));
     writeFileSync(
-      resolve(scratch, "servers/included/dist/index.js"),
-      'export const tools = [{name:"read"}];'
+      resolve(scratch, ".changeset/config.json"),
+      JSON.stringify(config)
     );
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    try {
-      require("../../scripts/build.js").main(["--list"], { root: scratch });
-      expect(log).toHaveBeenCalledWith(JSON.stringify(["included"]));
-    } finally {
-      log.mockRestore();
+    for (const pkg of packages) {
+      mkdirSync(resolve(scratch, pkg.directory), { recursive: true });
+      writeFileSync(
+        resolve(scratch, pkg.directory, "package.json"),
+        JSON.stringify(pkg.manifest)
+      );
     }
-    const catalog = await require("../../scripts/catalog.cjs").loadCatalog(
-      scratch
+    run("git", ["init", "--quiet", "-b", config.baseBranch]);
+    run("git", ["add", "."]);
+    run("git", [
+      "-c",
+      "user.name=Fixture",
+      "-c",
+      "user.email=fixture@example.invalid",
+      "commit",
+      "--quiet",
+      "-m",
+      "chore(fixture): baseline",
+    ]);
+    // Synthetic changesets make this test independent of actual pending releases.
+    writeFileSync(
+      resolve(scratch, ".changeset/bundled-consumers.md"),
+      `---\n${packages.map((pkg: { manifest: { name: string } }) => `"${pkg.manifest.name}": patch`).join("\n")}\n---\n\nFix a shared bundled helper.\n`
+    );
+    const output = resolve(scratch, "status.json");
+    run(process.execPath, [
+      resolve(root, "node_modules/@changesets/cli/bin.js"),
+      "status",
+      "--output",
+      output,
+    ]);
+    const plan = JSON.parse(readFileSync(output, "utf8"));
+    expect(packages).toHaveLength(6);
+    const names = packages
+      .map((pkg: { manifest: { name: string } }) => pkg.manifest.name)
+      .sort();
+    expect(
+      plan.releases.map((release: { name: string }) => release.name).sort()
+    ).toEqual(names);
+    const catalog = JSON.parse(
+      readFileSync(resolve(root, "config/servers.json"), "utf8")
     );
     expect(
-      catalog.servers.map((server: { name: string }) => server.name)
-    ).toEqual(["included"]);
-    for (const script of ["publish.js", "deploy.js"])
-      expect(releaseDiscovery(script, scratch)).toEqual(["included"]);
+      catalog.servers
+        .map((server: { package: string }) => server.package)
+        .sort()
+    ).toEqual(names);
+    const builtNames = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [resolve(root, "scripts/build.js"), "--list"],
+        { cwd: scratch, encoding: "utf8" }
+      )
+    );
+    expect(builtNames).toEqual(
+      packages.map((pkg: { server: string }) => pkg.server)
+    );
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }

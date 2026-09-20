@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- Maintain six integrations: Canvas, ClickUp, Elasticsearch, Flight (Duffel),
+  PostgreSQL and Salesforce; remove overlapping vendor servers and AI Job Search.
+- Use npm workspaces, a root lockfile and package-local compiled shared modules.
+- Add offline package/provider verification, bounded redacted stderr diagnostics,
+  configuration validation and documented provider-specific contract corrections.
+- Adopt AGENTS.md, source-backed documentation and a generated server catalog.
+- Prepare independent package versions and changelogs with Changesets; retire
+  custom deploy/publish scripts. Hosted publication wiring remains pending.
+
+Package histories: [Canvas](servers/canvas/CHANGELOG.md),
+[ClickUp](servers/clickup/CHANGELOG.md),
+[Elasticsearch](servers/elasticsearch/CHANGELOG.md),
+[Flight](servers/flight/CHANGELOG.md),
+[PostgreSQL](servers/postgresql/CHANGELOG.md),
+[Salesforce](servers/salesforce/CHANGELOG.md).
+
+## Historical context
+
+The entry below is preserved from the original repository history. It describes
+old inventories and paths, not the current setup or a verified publication under
+`@crsiebler`. Future package release statements come from package changelogs;
+see [releasing](docs/releasing.md). No release event is inferred from the new
+clean-slate root commit.
+
 ## [1.0.0] - 2025-06-19
 
 ### Added
@@ -64,11 +90,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved build and deployment scripts
 - Enhanced testing infrastructure
 - Better configuration management
-
-## [Unreleased]
-
-### Planned
-- Additional MCP server integrations
-- Enhanced monitoring and observability
-- Performance optimizations
-- Extended API coverage for existing servers

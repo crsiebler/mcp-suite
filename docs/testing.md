@@ -60,8 +60,9 @@ Keep provider-backed tests out of the default test configuration. Add ordinary
 fixture integration tests under tests/ with `.test.ts` names. If another live
 suite is added, update both Vitest configurations and its explicit opt-in guard.
 
-Documentation validation uses link/path checks and `git diff --check`. Never
-invoke release scripts as checks: they may publish packages and push tags.
+Documentation validation uses link/path checks and `git diff --check`. Release
+preparation mutates versions/changelogs; run it only in an authorized checkout or
+disposable fixture. Publication/tagging commands are never verification commands.
 
 ## Verified baseline
 
@@ -156,3 +157,12 @@ packaged tests compare all discovered tool names to the generated catalog and
 verify each declared required environment variable prevents startup when absent.
 The source checker recognizes literal environment readers, not arbitrary data flow;
 conditional credential semantics remain explicit metadata/docs and existing runtime logic.
+
+## Changesets fixtures
+
+`npm test -- tests/release/changesets.test.ts tests/unit/release-discovery.test.ts`
+uses the actual pinned CLI in disposable project-local Git repositories, with npm
+offline and package lifecycle hooks disabled. It checks independent/combined/major
+bumps, internal dependency updates, no-release changes, explicit shared consumers,
+lock synchronization and preservation of Git HEAD/index/tags. No registry writes
+or hosted workflows run. Read [releasing](releasing.md) before version preparation.

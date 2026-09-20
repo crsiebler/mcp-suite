@@ -7,7 +7,6 @@
     "build": "node scripts/build.js",
     "build:shared": "tsc -p shared/tsconfig.json",
     "clean": "rm -rf dist/",
-    "deploy": "node scripts/deploy.js",
     "lint": "eslint . --ext .ts,.js,.cjs",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -15,9 +14,11 @@
     "format": "prettier --write",
     "format:check": "prettier --check",
     "test:live": "vitest run --config vitest.live.config.ts",
-    "release:publish": "node scripts/publish.js",
     "catalog:generate": "node scripts/catalog.cjs --write",
-    "catalog:check": "node scripts/catalog.cjs --check"
+    "catalog:check": "node scripts/catalog.cjs --check",
+    "changeset": "changeset",
+    "release:status": "changeset status",
+    "release:version": "changeset version && npm install --package-lock-only --ignore-scripts --offline --no-audit --no-fund && npm run catalog:generate"
   },
   "keywords": [
     "api",
@@ -41,6 +42,7 @@
   },
   "homepage": "https://github.com/crsiebler/mcp-suite#readme",
   "devDependencies": {
+    "@changesets/cli": "3.0.1",
     "@elastic/elasticsearch": "^8.13.4",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.15.4",
@@ -58,7 +60,8 @@
     "pg": "^8.16.2"
   },
   "engines": {
-    "node": ">=22.14.0"
+    "node": "^22.14.0 || ^24.0.0 || >=26.0.0",
+    "npm": ">=10.9.0"
   },
   "private": true,
   "workspaces": [

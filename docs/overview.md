@@ -11,6 +11,7 @@ assistant integration is client configuration, not a dependency on Claude Code.
 | Trace requests and shared behavior | [Architecture](architecture.md) | `servers/*/src/index.ts`, `shared/` |
 | Add a server or tool; build locally | [Server development](server-development.md) | `scripts/build.js`, server manifests and tool definitions |
 | Choose checks and understand coverage | [Testing](testing.md) | `package.json`, `tests/`, TypeScript configs |
+| Prepare versions and changelogs | [Releasing](releasing.md) | `.changeset/`, package changelogs, root scripts |
 | Connect an MCP client | [MCP setup](MCP_SETUP_GUIDE.md) | Actual built entry point and server constructor environment reads |
 | Find service-specific options | [Generated server catalog](server-catalog.md) and each server README | `servers/<name>/src/` |
 | Agent obligations and approvals | [AGENTS.md](../AGENTS.md) | Canonical repository policy |

@@ -2,7 +2,8 @@
 
 ## Package and tool contracts
 
-Node.js 22.14.0 or newer is required by the repository and all six packages.
+Server runtime requires Node.js 22.14.0 or newer. Development tooling supports
+Node 22.14+ (22.x), 24.x or 26+, and npm 10.9+; see [releasing](releasing.md).
 The private root owns installation, verification and orchestration. npm workspaces
 in root package.json discover the six packages under servers/. Install the root
 lockfile with `npm ci`; do not create per-server lockfiles. Package versions remain
@@ -77,16 +78,44 @@ metadata notes and the server guide; they are not guessed from an optional read.
 
 ## Releases
 
-The root is private and must not be published. `npm run release:publish` temporarily
-names the legacy publication wrapper, avoiding npm's reserved publish lifecycle
-hook; it is not a validation command. It and `npm run deploy` remain unsafe legacy
-release paths scheduled for replacement by Changesets in US-014/015. Do not execute
-them during verification: they can change versions, publish, commit and push tags.
+Use the installed Changesets CLI: `npm run changeset` records affected packages,
+patch/minor/major intent and a user-facing summary. Commit the Markdown with the
+implementation. `npm run release:status` previews pending versions;
+[release preparation](releasing.md) explains versioning, lock/catalog updates and
+review. The legacy deploy/publish scripts are retired. No publication runs as part
+of preparation or ordinary checks.
 
-See [testing](testing.md) for required checks. Shared source changes affect every
-package that bundles them and will require matching release notes/version choices
-when the Changesets contribution workflow is introduced.
+Select each package whose shipped behavior, dependency, runtime requirement or
+public contract changes. Use patch for compatible fixes, minor for compatible
+features, and major for breaking tool names/arguments/results/configuration or
+runtime requirements. Explain the migration, including before/after behavior and
+what consumers must change. Do not write summaries such as “misc fixes” or repeat
+internal filenames without explaining the effect.
 
+Example Changeset:
+
+```md
+---
+"@crsiebler/mcp-postgresql-server": patch
+---
+
+Preserve the caller's SQL when reporting truncated results. Check the returned
+truncation indicator before assuming the complete result set was returned.
+```
+
+Shared TypeScript is copied into each package, not represented by a workspace
+dependency. Changesets cannot infer those consumers. Inspect imports and emitted
+contents, and explicitly include every affected package; with the current build,
+shared modules are shipped in all six packages. A common shared fix therefore
+normally needs all six selected. No-release changes (tests only, repository-only
+documentation or tooling without shipped impact) may use
+`npm run changeset -- --empty` with a written reason, or an explicit no-release
+explanation in review. An empty Changeset must not hide a shipped change.
+
+Conventional Commit messages remain required: `<type>(<scope>): <description>`.
+They do not replace Changesets. Review package changelogs after generation;
+never hand-bump versions in the implementation commit or create duplicate release
+payloads. Initial registry ownership/version verification is a release prerequisite.
 
 ## Server diagnostics
 
