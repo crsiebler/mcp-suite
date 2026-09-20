@@ -1,0 +1,61 @@
+{
+  "servers": [
+    {
+      "name": "postgresql",
+      "displayName": "PostgreSQL Server",
+      "description": "PostgreSQL database management and query execution",
+      "version": "1.0.0",
+      "category": "database",
+      "capabilities": [
+        "tools"
+      ],
+      "requiredEnvVars": [
+        "POSTGRESQL_CONNECTION_STRING"
+      ],
+      "optionalEnvVars": [],
+      "tools": [
+        "executeQuery",
+        "getTableSchema",
+        "listTables",
+        "getDatabaseStats",
+        "testConnection"
+      ],
+      "resources": [],
+      "prompts": []
+    },
+    {
+      "name": "salesforce",
+      "displayName": "Salesforce Server",
+      "description": "Salesforce CRM CRUD operations using REST APIs with OAuth authentication",
+      "version": "1.0.0",
+      "category": "crm",
+      "capabilities": [
+        "tools"
+      ],
+      "requiredEnvVars": [
+        "SALESFORCE_CLIENT_ID",
+        "SALESFORCE_CLIENT_SECRET",
+        "SALESFORCE_USERNAME",
+        "SALESFORCE_PASSWORD"
+      ],
+      "optionalEnvVars": [
+        "SALESFORCE_INSTANCE_URL",
+        "SALESFORCE_ACCESS_TOKEN",
+        "SALESFORCE_API_VERSION",
+        "SALESFORCE_GRANT_TYPE",
+        "SALESFORCE_LOGIN_URL"
+      ],
+      "tools": [
+        "salesforce_query",
+        "salesforce_create",
+        "salesforce_read",
+        "salesforce_update",
+        "salesforce_delete",
+        "salesforce_describe",
+        "salesforce_list_objects"
+      ],
+      "resources": [],
+      "prompts": []
+    }
+  ]
+}

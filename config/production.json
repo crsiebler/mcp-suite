@@ -1,0 +1,12 @@
+{
+  "logLevel": "info",
+  "servers": {},
+  "monitoring": {
+    "enabled": true,
+    "metricsInterval": 300000
+  },
+  "security": {
+    "validateCertificates": true,
+    "allowSelfSignedCerts": false
+  }
+}
