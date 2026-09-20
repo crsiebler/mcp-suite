@@ -92,3 +92,12 @@ Salesforce failure envelope pending response normalization. This proves those
 paths are protocol-safe, not every provider-backed operation; full tool coverage
 remains separate. The root SDK 0.5 transport accepts a file stream for stderr,
 not the newer SDK's `stderr` pipe accessor.
+
+
+Configuration regressions live in `tests/unit/config.test.ts`,
+`tests/unit/input-validation.test.ts` and `tests/unit/elasticsearch-config.test.ts`.
+They cover absent/blank settings, exact credential/text preservation, strict typed
+boundaries, malformed URLs, zero retries and rejection before provider access.
+The packaged suite additionally launches invalid-setting fixtures with network
+access blocked, checking nonzero exit, empty stdout, named settings and no value
+leakage. Successful startup alone is not evidence of invalid-setting rejection.

@@ -107,8 +107,8 @@ To use this server with Cline (VS Code extension), add the following to your Cli
 
 **Optional:**
 
-- `ELASTICSEARCH_MAX_RETRIES` - Maximum retry attempts (default: 3)
-- `ELASTICSEARCH_REQUEST_TIMEOUT` - Request timeout in milliseconds (default: 30000)
+- `ELASTICSEARCH_MAX_RETRIES` - Maximum retry attempts, integer 0–10 (default: 3; 0 disables retries)
+- `ELASTICSEARCH_REQUEST_TIMEOUT` - Request timeout, integer 1–300000 milliseconds (default: 30000)
 
 ### Example Configuration
 
@@ -328,3 +328,5 @@ npm run dev
 ## License
 
 MIT License - see the root LICENSE file for details.
+
+Configuration is validated before startup; see [configuration rules](../../docs/server-development.md#configuration-and-input-validation) for endpoint restrictions and blank/invalid-setting behavior.

@@ -9,7 +9,11 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { Logger } from "../../../shared/utils/logger.js";
-import { getEnvVar, getLogLevel } from "../../../shared/utils/config.js";
+import {
+  getEnvVar,
+  getLogLevel,
+  getHttpUrlEnvVar,
+} from "../../../shared/utils/config.js";
 import { AIJobSearchService } from "./services/aijobsearch-service.js";
 import { aijobsearchTools } from "./tools/index.js";
 import { AIJobSearchConfig } from "./types/index.js";
@@ -23,7 +27,10 @@ class AIJobSearchServer {
     this.logger = new Logger(getLogLevel(), { server: "aijobsearch" });
 
     const config: AIJobSearchConfig = {
-      apiUrl: getEnvVar("AIJOBSEARCH_API_URL", "https://api-main-poc.aiml.asu.edu"),
+      apiUrl: getHttpUrlEnvVar(
+        "AIJOBSEARCH_API_URL",
+        "https://api-main-poc.aiml.asu.edu"
+      ),
       apiToken: getEnvVar("AIJOBSEARCH_API_TOKEN"),
     };
 

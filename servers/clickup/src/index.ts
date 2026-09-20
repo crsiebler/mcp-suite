@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { getEnvVar } from "../../../shared/utils/config.js";
 import { Logger } from "../../../shared/utils/logger.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -10,11 +11,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import axios, { AxiosInstance } from "axios";
 
-const CLICKUP_API_TOKEN = process.env.CLICKUP_API_TOKEN;
+const CLICKUP_API_TOKEN = getEnvVar("CLICKUP_API_TOKEN");
 
-if (!CLICKUP_API_TOKEN) {
-  throw new Error("CLICKUP_API_TOKEN environment variable is required");
-}
 
 class ClickUpServer {
   private server: Server;

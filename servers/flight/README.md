@@ -34,7 +34,7 @@ A Model Context Protocol (MCP) server that integrates with the [Duffel API](http
 ### Environment Variables
 
 - `DUFFEL_API_KEY` (required): Your Duffel API key
-- `DUFFEL_ENVIRONMENT` (optional): Either 'test' or 'live' (defaults to 'test')
+- `DUFFEL_ENVIRONMENT` (optional): Exactly 'test' or 'live' (defaults to 'test' only when unset; blank/unknown values fail)
 
 ### Getting a Duffel API Key
 

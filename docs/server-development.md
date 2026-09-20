@@ -55,8 +55,8 @@ Inspect tarball contents and verify main/bin/start paths, rather than assuming
 `dist/index.js`. `tests/packaging/packages.test.ts` runs real prepack hooks, installs
 all seven tarballs offline from the npm cache, and initializes/lists tools through
 an SDK client from another working directory. Synthetic settings and a child
-network guard prevent provider access. Logger output is suppressed with LOG_LEVEL
-error for this packaging check; protocol logging safety is a separate story.
+network guard prevent provider access. Debug-level stderr is captured separately;
+initialization, discovery and unknown-tool calls must produce no protocol errors.
 
 ## Running and extending
 
@@ -101,3 +101,47 @@ custom getters or `toJSON`. Depth, field count, traversal and output are bounded
 large details/context are replaced with truncation markers. Synchronous diagnostic
 failures are swallowed so they do not replace the operation result. Logs are
 best-effort diagnostics, not an audit record or a durable sink.
+
+
+## Configuration and input validation
+
+Required settings use `getEnvVar`: missing, empty and whitespace-only values fail
+with the setting name. Nonempty values are returned byte-for-byte, including
+credential whitespace. Defaults apply only when a variable is absent; unset an
+optional setting to use its default. `getOptionalEnvVar` preserves an explicitly
+empty string. Environment names are unchanged.
+
+| Setting | Accepted value / default |
+| --- | --- |
+| `AIJOBSEARCH_API_URL` | HTTP(S) base endpoint; default `https://api-main-poc.aiml.asu.edu` |
+| `CANVAS_BASE_URL` | Required HTTP(S) base endpoint |
+| `ELASTICSEARCH_NODE` | HTTP(S) base endpoint; default `http://localhost:9200` |
+| `ELASTICSEARCH_MAX_RETRIES` | Decimal integer 0–10; default 3; zero disables retries |
+| `ELASTICSEARCH_REQUEST_TIMEOUT` | Decimal integer 1–300000 milliseconds; default 30000 |
+| `DUFFEL_ENVIRONMENT` | Exactly `test` or `live`; default `test` |
+| `LOG_LEVEL` | `debug`, `info`, `warn`, `error` (case-insensitive); default `info` |
+
+Base endpoints reject embedded credentials, whitespace, backslashes, query
+strings, fragments and non-HTTP schemes. Explicit local HTTP hosts and path
+prefixes remain supported. Validation does not resolve DNS or impose a host
+allowlist; this is endpoint syntax validation, not an SSRF security boundary.
+No new filesystem inputs or path policy are introduced. The older `validateUrl`
+helper checks URL syntax only and is not an endpoint/security validator.
+
+Compatibility changes: supplied blank settings and malformed numbers/enums now
+fail instead of silently selecting defaults, accepting numeric prefixes or
+passing invalid values to providers. Elasticsearch startup failures exit nonzero;
+configuration errors identify the setting without printing its value. Required
+Canvas/ClickUp tokens use the same blank-value checks as ASU and Flight. Token
+bytes, credential choice, authentication flows and authorization rules are unchanged.
+PostgreSQL's dangerous-operation flag and Salesforce's optional OAuth setup keep
+their existing parsing/behavior under the no-authentication-change boundary.
+
+Shared helpers also provide strict `true`/`false` boolean parsing with an explicit
+default; they do not add new environment settings. Use typed validation for an
+actual operation rather than inventing generic string cleanup. The unused
+`sanitizeString` export was removed; `requireText` rejects non-string/blank input
+and returns exact text. ASU extraction taxonomy/context and text-mode matching
+use it, preserving spaces, newlines and angle brackets. This does not HTML-escape
+text or validate the remote ASU taxonomy contract; callers must apply the rules
+of their own operation. The auth middleware's existing validators are unchanged.

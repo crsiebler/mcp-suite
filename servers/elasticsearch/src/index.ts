@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+import {
+  ConfigurationError,
+  getHttpUrlEnvVar,
+  getIntegerEnvVar,
+} from "../../../shared/utils/config.js";
 import { Logger } from "../../../shared/utils/logger.js";
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -372,8 +377,10 @@ class ElasticsearchServer {
 
   async run(): Promise<void> {
     // Get Elasticsearch configuration from environment variables
-    const elasticsearchNode =
-      process.env.ELASTICSEARCH_NODE || "http://localhost:9200";
+    const elasticsearchNode = getHttpUrlEnvVar(
+      "ELASTICSEARCH_NODE",
+      "http://localhost:9200"
+    );
 
     const config: ElasticsearchConfig = {
       node: elasticsearchNode,
@@ -394,16 +401,16 @@ class ElasticsearchServer {
       };
     }
 
-    // Optional configuration
-    if (process.env.ELASTICSEARCH_MAX_RETRIES) {
-      config.maxRetries = parseInt(process.env.ELASTICSEARCH_MAX_RETRIES);
-    }
-
-    if (process.env.ELASTICSEARCH_REQUEST_TIMEOUT) {
-      config.requestTimeout = parseInt(
-        process.env.ELASTICSEARCH_REQUEST_TIMEOUT
-      );
-    }
+    config.maxRetries = getIntegerEnvVar("ELASTICSEARCH_MAX_RETRIES", {
+      min: 0,
+      max: 10,
+      defaultValue: 3,
+    });
+    config.requestTimeout = getIntegerEnvVar("ELASTICSEARCH_REQUEST_TIMEOUT", {
+      min: 1,
+      max: 300000,
+      defaultValue: 30000,
+    });
 
     this.elasticsearchService = new ElasticsearchService(config);
 
@@ -416,11 +423,12 @@ class ElasticsearchServer {
 }
 
 const server = new ElasticsearchServer();
-server
-  .run()
-  .catch((error) =>
-    new Logger("error", { server: "elasticsearch" }).error(
-      "Server startup failed",
-      error
-    )
+server.run().catch((error) => {
+  new Logger("error", { server: "elasticsearch" }).error(
+    error instanceof ConfigurationError
+      ? error.message
+      : "Server startup failed",
+    error
   );
+  process.exitCode = 1;
+});

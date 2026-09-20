@@ -9,7 +9,11 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { Logger } from "../../../shared/utils/logger.js";
-import { getEnvVar, getLogLevel } from "../../../shared/utils/config.js";
+import {
+  getEnvVar,
+  getLogLevel,
+  getEnumEnvVar,
+} from "../../../shared/utils/config.js";
 import { DuffelService } from "./services/duffel-service.js";
 import { flightTools } from "./tools/index.js";
 import { DuffelConfig } from "./types/index.js";
@@ -24,7 +28,11 @@ class FlightServer {
 
     const config: DuffelConfig = {
       apiKey: getEnvVar("DUFFEL_API_KEY"),
-      environment: (process.env.DUFFEL_ENVIRONMENT as 'test' | 'live') || 'test',
+      environment: getEnumEnvVar(
+        "DUFFEL_ENVIRONMENT",
+        ["test", "live"] as const,
+        "test"
+      ),
     };
 
     this.duffelService = new DuffelService(config, this.logger);

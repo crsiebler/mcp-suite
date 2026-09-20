@@ -18,8 +18,8 @@ export class ElasticsearchService {
     this.client = new Client({
       node: config.node,
       auth: config.auth,
-      maxRetries: config.maxRetries || 3,
-      requestTimeout: config.requestTimeout || 30000,
+      maxRetries: config.maxRetries ?? 3,
+      requestTimeout: config.requestTimeout ?? 30000,
       sniffOnStart: config.sniffOnStart || false,
       sniffInterval: config.sniffInterval || false,
     });

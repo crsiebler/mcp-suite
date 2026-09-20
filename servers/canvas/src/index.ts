@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { getHttpUrlEnvVar, getEnvVar } from "../../../shared/utils/config.js";
 import { Logger } from "../../../shared/utils/logger.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -44,14 +45,9 @@ import { LtiLaunchDefinitionTools } from "./tools/lti-launch-definition-tools.js
 import { PageTools } from "./tools/page-tools.js";
 import { GradingStandardTools } from "./tools/grading-standard-tools.js";
 
-const CANVAS_BASE_URL = process.env.CANVAS_BASE_URL;
-const CANVAS_API_TOKEN = process.env.CANVAS_API_TOKEN;
+const CANVAS_BASE_URL = getHttpUrlEnvVar("CANVAS_BASE_URL");
+const CANVAS_API_TOKEN = getEnvVar("CANVAS_API_TOKEN");
 
-if (!CANVAS_BASE_URL || !CANVAS_API_TOKEN) {
-  throw new Error(
-    "CANVAS_BASE_URL and CANVAS_API_TOKEN environment variables are required"
-  );
-}
 
 class CanvasServer {
   private server: Server;

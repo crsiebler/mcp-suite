@@ -11,6 +11,17 @@
       "rejected_count": 0,
       "last_validated_story": "US-002",
       "status": "active"
+    },
+    {
+      "id": "base-url-empty-delimiters",
+      "lens": "correctness",
+      "scope": ["shared/utils/config.ts", "tests/unit/config.test.ts"],
+      "guidance": "When base endpoints forbid query/fragment components, reject literal delimiters before inspecting parsed URL.search/hash; empty components normalize to empty strings. Preserve percent-encoded path punctuation and test both cases.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-004",
+      "status": "active"
     }
   ],
   "suppressions": []

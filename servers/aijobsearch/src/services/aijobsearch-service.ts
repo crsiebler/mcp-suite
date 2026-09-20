@@ -1,3 +1,4 @@
+import { requireText } from "../../../../shared/utils/validation.js";
 import axios from "axios";
 import { Logger } from "../../../../shared/utils/logger.js";
 import {
@@ -21,6 +22,8 @@ export class AIJobSearchService {
     context: string;
   }): Promise<SkillsExtractionResponse> {
     try {
+      requireText(args?.taxonomy, "taxonomy");
+      requireText(args?.context, "context");
       this.logger.debug("Extracting skills");
 
       const response = await axios.post(
@@ -65,9 +68,7 @@ export class AIJobSearchService {
           },
         };
       } else if (args.type === "text") {
-        if (!args.context) {
-          throw new Error("context is required when type is 'text'");
-        }
+        requireText(args.context, "context");
         requestBody = {
           type: "text",
           context: args.context,

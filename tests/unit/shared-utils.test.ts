@@ -3,7 +3,7 @@ import {
   validateRequired,
   validateEmail,
   validateUrl,
-  sanitizeString,
+  requireText,
 } from "../../shared/utils/validation.ts";
 
 describe("Validation Utils", () => {
@@ -50,12 +50,11 @@ describe("Validation Utils", () => {
     });
   });
 
-  describe("sanitizeString", () => {
-    it("should remove dangerous characters", () => {
-      expect(sanitizeString('<script>alert("xss")</script>')).toBe(
-        'scriptalert("xss")/script'
-      );
-      expect(sanitizeString("  normal text  ")).toBe("normal text");
+  describe("requireText", () => {
+    it("preserves exact validated text", () => {
+      const value = "  Map<string, number>\n";
+      expect(requireText(value, "context")).toBe(value);
+      expect(() => requireText("  ", "context")).toThrow("context");
     });
   });
 });

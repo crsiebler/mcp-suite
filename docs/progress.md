@@ -101,3 +101,39 @@
 - Only completion/status and append-only journal finalization changed after review. US-003 completion is provisional until successful commit. Authorization unchanged; no publication, push, live writes or global configuration.
 - Intended commit: feat(US-003): make shared logging protocol-safe. Commit status: pending (not yet delivered); Git and final response establish outcome.
 - Next: US-004 shared configuration/validation. Read-only preparation found getEnvVar accepts empty values; generic sanitization has no retained server consumer, only utility tests; auth middleware validation consumers must remain within no-auth-change boundary. No US-004 edits performed.
+
+## 2026-09-20 - US-004: configuration and input validation checkpoint
+
+- Previous turn was progress: US-003 delivered as 6af50cb. Revalidated clean codex/clean-slate before edits. User's standing implementation/dependency/configuration/story-commit approval applies; no publication, global edits or live service writes.
+- Added typed config helpers: required values reject missing/empty/whitespace without trimming supplied bytes; strict boolean, bounded safe integer, enum and base HTTP URL parsing; LOG_LEVEL preserves case-insensitive known levels but now rejects invalid supplied values. Defaults apply only to absent settings; optional strings preserve explicitly empty values.
+- Caller migration so far: ASU/Canvas/Elasticsearch HTTP base URLs, Duffel environment enum, Elasticsearch retries0..10/default3 and timeout1..300000/default30000. Elasticsearch client now preserves explicit retries0 instead of replacing it with3. Authentication and PostgreSQL dangerous-operation parsing are unchanged.
+- Red evidence: new config suite initially failed for blank required values, invalid log levels and missing typed APIs. Vitest1 stubEnv(undefined) stores literal undefined text; fixture helper corrected to delete captured env keys for genuine absence. Input tests reproduced six invalid-context provider calls before validation; retry0 regression reproduced fallback3.
+- Replaced unused sanitizeString export with requireText, preserving exact valid text including whitespace/angle brackets. ASU extraction taxonomy/context and text-mode matching validate before provider access. Shared auth consumers validateRequired/validateApiKey unchanged. Existing utility sanitizer test replaced with preservation/empty-input checks.
+- Checks: npm run type-check PASS; npm run lint PASS; npm test PASS70 including seven installed-package builds/startup checks. Configured formatting applied to changed utility/tests and changed ranges of legacy source; git diff --check PASS. Initial enum inference and hook return typing corrected. Tests use synthetic config and mocked providers only.
+- Remaining before review: inspect required-token configuration coverage (Canvas/ClickUp still use existing raw env reads), finish configuration/migration documentation, strengthen caller-boundary verification as warranted, and native staged review. No staged changes or commit; story remains pending. Initial/targeted review budgets unused; no US-004 reviewer exists.
+- Runtime: Codex desktop, GPT-6 family exact model unavailable, standard mode; no advisors. Existing memory unchanged. Intended commit: feat(US-004): tighten shared configuration and validation.
+
+## 2026-09-20 - US-004: complete candidate checks
+
+- Previous goal turn was progress: typed helpers and ASU text validation implemented with passing regressions. Current branch and story-owned changes revalidated before further edits; memory remains valid/unchanged.
+- Packaged-entry red evidence: whitespace Canvas/ClickUp tokens started successfully; invalid Elasticsearch retry/timeout settings exited0. Required token reads now use shared getEnvVar without altering credential values or authorization logic. Elasticsearch catches typed ConfigurationError with field-name-only text and exits1; other startup failures keep sanitized diagnostics.
+- Added eight actual tarball-entry invalid-setting checks (network guard, no provider calls) for tokens, endpoint, enum, log level, retries and timeout. They require exit1, empty stdout, setting name in stderr and no supplied private value. Initial four failures now pass.
+- Documented exact accepted values/defaults/bounds, supplied-blank behavior, helper migration, URL validation limits, zero retries and unchanged authentication/authorization boundaries. Updated server READMEs and testing guide; corrected stale documentation that claimed packaged logging remained suppressed.
+- Final checks: npm run type-check PASS; npm run lint PASS; npm test PASS78 across9files including15 packaged checks; configured formatting/check for helpers/tests and range formatting for legacy server edits; git diff --check PASS. Packaged tests rebuild current source for all seven servers. Documentation references verified against existing files/source.
+- Review: native story-reviewer required for config/provider-boundary behavior and tests; US-004 attempt1 expanded-initial/initial, no prior session or findings. Candidate remains immutable during review. No advisors/UI/live changes.
+- Intended commit: feat(US-004): tighten shared configuration and validation. Review/commit pending.
+
+## 2026-09-20 - US-004: initial review remediation
+
+- Native story-reviewer /root/review_us004 attempt1 expanded-initial/initial returned valid changes_requested with one medium correctness finding: shared-config-empty-url-delimiters.
+- Disposition accepted_fixed: parsed URL.search/hash missed bare '?'/'#', permitting malformed base-path concatenation. Added four failing literal delimiter regressions and two passing encoded-path character characterizations; reject literal query/fragment delimiters before parsing, preserving %3F/%23 bytes.
+- Checks after fix: configured formatter PASS; npm run type-check PASS; npm run lint PASS; npm test PASS84 across9files including15 packaged checks; git diff --check PASS. No unrelated changes or auth modification.
+- Next: one targeted pass in the same saved session /root/review_us004. Initial pass consumed, targeted unused. Commit pending, completion not marked.
+
+## 2026-09-20 - US-004: passing targeted review and delivery preparation
+
+- Native story-reviewer /root/review_us004 attempt1 expanded-initial/targeted returned valid pass, resolving shared-config-empty-url-delimiters. One initial and one targeted pass consumed; no unresolved findings. Reviewer read staged remediation/tests without rerunning checks.
+- Memory evidence event: PLAN.md / US-004 / base-url-empty-delimiters / shared-config-empty-url-delimiters / accepted_fixed. Added once with evidence_count1/accepted_count1/rejected_count0 based on four red delimiter cases, exact encoded-path preservation, and final84tests/typecheck/lint. Existing pattern preserved; no suppressions or mature AGENTS promotion.
+- Only plan completion/status, memory and append-only journal changed after passing review. US-004 completion provisional until successful commit; authorization unchanged and all intended source staged, no unrelated changes.
+- Intended commit: feat(US-004): tighten shared configuration and validation. Commit status: pending (not yet delivered); Git and final response establish delivery.
+- Next: US-005 shared types/error contracts. Read-only preparation found ServerResponse only used by unused generic ErrorHandler; ErrorHandler has only one new test consumer, auth middleware has no production consumer and remains quarantined. No US-005 edits performed.

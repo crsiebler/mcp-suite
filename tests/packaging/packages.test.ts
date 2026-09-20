@@ -1,6 +1,6 @@
 import { once } from "node:events";
 import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
   createWriteStream,
   existsSync,
@@ -189,4 +189,42 @@ for (const pkg of packages) {
     expect(diagnostics).not.toContain("fixture-token");
     expect(diagnostics).not.toContain("postgresql://");
   }, 15000);
+}
+
+const invalidSettings = [
+  ["canvas", "CANVAS_API_TOKEN", "  "],
+  ["clickup", "CLICKUP_API_TOKEN", "  "],
+  ["aijobsearch", "AIJOBSEARCH_API_TOKEN", ""],
+  ["aijobsearch", "AIJOBSEARCH_API_URL", "file:///private-endpoint"],
+  ["flight", "DUFFEL_ENVIRONMENT", "private-environment"],
+  ["flight", "LOG_LEVEL", "private-log-level"],
+  ["elasticsearch", "ELASTICSEARCH_MAX_RETRIES", "private-retry"],
+  ["elasticsearch", "ELASTICSEARCH_REQUEST_TIMEOUT", "0"],
+];
+for (const [server, key, value] of invalidSettings) {
+  it(`${server} rejects invalid ${key} before starting MCP`, () => {
+    const pkg = packages.find((item) => item.server === server)!;
+    const entry = resolve(
+      scratch,
+      "node_modules",
+      pkg.manifest.name,
+      pkg.manifest.main
+    );
+    const result = spawnSync(
+      process.execPath,
+      ["--require", resolve(root, "tests/fixtures/offline-process.cjs"), entry],
+      {
+        cwd: scratch,
+        env: { ...env, [key]: value },
+        input: "",
+        encoding: "utf8",
+        timeout: 5000,
+      }
+    );
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(1);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain(key);
+    expect(result.stderr).not.toContain("private-");
+  });
 }
