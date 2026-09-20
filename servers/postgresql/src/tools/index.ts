@@ -4,7 +4,7 @@ export const postgresqlTools: McpTool[] = [
   {
     name: "execute_query",
     description:
-      "Execute a SQL query on the PostgreSQL database. When dangerous operations are disabled, only SELECT queries are allowed and automatically limited to 100 results. When enabled, supports INSERT, UPDATE, DELETE, and other write operations.",
+      "Execute one SQL statement unchanged with optional string parameters. Read-only checks apply unless dangerous operations are enabled. Returned rows are capped (default 100), with truncated and returnedRowCount metadata; use explicit SQL LIMIT to reduce database work. Execution has a deadline; verify uncertain outcomes before retrying.",
     inputSchema: {
       type: "object",
       properties: {

@@ -33,7 +33,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-005 verified; US-006 is next. Remaining stories pending.
+- Current status: US-001 through US-006 verified; US-007 is next. Remaining stories pending.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -165,7 +165,7 @@ Apply this workflow to each story:
 
 ### US-006 - Correct PostgreSQL connection and query safeguards
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 6
 - Depends on: US-003, US-004
 - User benefit: query with verified transport security and bounded execution.

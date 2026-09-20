@@ -177,6 +177,31 @@ for (const pkg of packages) {
           }
         }
       }
+      if (pkg.server === "postgresql") {
+        expect(result.tools.map((tool) => tool.name).sort()).toEqual([
+          "check_dangerous_operations_allowed",
+          "execute_query",
+        ]);
+        const policy = CallToolResultSchema.parse(
+          await client.callTool({
+            name: "check_dangerous_operations_allowed",
+            arguments: {},
+          })
+        );
+        const policyText = policy.content[0];
+        if (policyText.type !== "text") throw new Error("Expected text result");
+        expect(JSON.parse(policyText.text)).toMatchObject({ allowed: false });
+        for (const args of [{}, { query: "SELECT 1" }]) {
+          const failure = CallToolResultSchema.parse(
+            await client.callTool({ name: "execute_query", arguments: args })
+          );
+          expect(failure.isError).toBe(true);
+          const text = failure.content[0];
+          if (text.type !== "text") throw new Error("Expected text result");
+          expect(text.text).not.toContain("Network access blocked");
+          expect(text.text).not.toContain("postgresql://");
+        }
+      }
       // Invalid names exercise real dispatch/error handling without provider I/O.
       // SDKs differ between a tool-error result and a JSON-RPC error response.
       const outcome = await client

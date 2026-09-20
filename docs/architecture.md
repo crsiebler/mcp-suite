@@ -37,9 +37,14 @@ not publish a separate shared package; shared changes can affect multiple releas
 string and operation policy from the environment, constructs PostgreSQLService,
 and registers MCP handlers. The list handler returns `postgresqlTools`; tool calls
 are dispatched and formatted into MCP responses. `run()` connects stdio transport.
-The service delegates database operations to a `pg.Pool` through
-[PostgreSQLService](../servers/postgresql/src/services/postgresql-service.ts).
-SQL validation and transaction behavior belong to that service, not MCP itself.
+[PostgreSQLService](../servers/postgresql/src/services/postgresql-service.ts)
+preserves operation checks and delegates client ownership/transactions to
+[query execution](../servers/postgresql/src/services/query-execution.ts).
+[PostgreSQL configuration](../servers/postgresql/src/config.ts) owns verified TLS,
+managed connection options and execution/result bounds. SQL passes unchanged;
+response truncation does not bound driver buffering. See the
+[server guide](../servers/postgresql/README.md) for migration and outcome limits.
+SQL validation and transaction behavior belong to the service, not MCP itself.
 Do not equate advertised read-only settings with a completed security audit.
 
 ## Configuration and external effects

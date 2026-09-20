@@ -63,10 +63,7 @@ class PostgreSQLServer {
         if (error instanceof McpError) {
           throw error;
         }
-        throw new McpError(
-          ErrorCode.InternalError,
-          `Tool execution failed: ${error}`
-        );
+        throw new McpError(ErrorCode.InternalError, "Tool execution failed");
       }
     });
   }
@@ -75,8 +72,8 @@ class PostgreSQLServer {
     switch (toolName) {
       case "execute_query":
         return await this.postgresqlService.executeQuery(
-          args.query,
-          args.params
+          args?.query,
+          args?.params
         );
       case "check_dangerous_operations_allowed":
         return {

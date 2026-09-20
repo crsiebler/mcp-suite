@@ -54,7 +54,7 @@ it("omits raw SQL and parameters while preserving query execution", async () => 
     "private-parameter",
   ]);
   expect(result.success).toBe(true);
-  expect(db.query).toHaveBeenCalledWith("select 'private-sql' LIMIT 100", [
+  expect(db.query).toHaveBeenCalledWith("select 'private-sql'", [
     "private-parameter",
   ]);
   expect(output()).toContain("Executing");

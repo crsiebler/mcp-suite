@@ -110,3 +110,11 @@ serialization failures. Packaged ASU checks call both actual tools with invalid
 arguments and blocked network operations, verifying safe tool-error results.
 Provider-specific response schemas and successful live provider operations are
 not established by these fixtures.
+
+
+PostgreSQL `postgresql-config` tests construct real pg objects without connecting;
+`postgresql-service` tests use fake clients/clocks for SQL preservation, result
+truncation, transaction selection, failures, deadlines and late acquisitions.
+Packaged PostgreSQL checks also call both advertised tools, including invalid
+input and a guarded connection failure. These do not establish live certificate
+validation, database permissions or server-side cancellation timing.

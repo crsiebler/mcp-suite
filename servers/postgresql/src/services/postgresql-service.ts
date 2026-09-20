@@ -1,9 +1,15 @@
 import { Pool } from "pg";
 import { Logger } from "../../../../shared/utils/logger.js";
-import { DatabaseStats } from "../types/database.js";
+import { postgresqlConfig } from "../config.js";
+import {
+  executeTransaction,
+  type DatabaseResponse,
+} from "./query-execution.js";
 
 export class PostgreSQLService {
   private pool: Pool;
+  private queryTimeoutMs: number;
+  private maxRows: number;
   private logger: Logger;
   private allowDangerousOperations: boolean;
 
@@ -14,15 +20,10 @@ export class PostgreSQLService {
   ) {
     this.logger = logger;
     this.allowDangerousOperations = allowDangerousOperations;
-    this.pool = new Pool({
-      connectionString,
-      max: 5,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-      ssl: {
-        rejectUnauthorized: false, // Allow self-signed certificates for RDS
-      },
-    });
+    const config = postgresqlConfig(connectionString);
+    this.pool = new Pool(config.pool);
+    this.queryTimeoutMs = config.queryTimeoutMs;
+    this.maxRows = config.maxRows;
 
     this.pool.on("error", (err: Error) => {
       this.logger.error("Unexpected PostgreSQL client error", err);
@@ -30,116 +31,73 @@ export class PostgreSQLService {
   }
 
   async executeQuery(
-    query: string,
-    params?: any[]
-  ): Promise<{ success: boolean; data?: any; error?: string }> {
-    const client = await this.pool.connect();
+    query: unknown,
+    params?: unknown
+  ): Promise<DatabaseResponse> {
+    if (
+      typeof query !== "string" ||
+      !query.trim() ||
+      (params !== undefined &&
+        (!Array.isArray(params) ||
+          params.some((value) => typeof value !== "string")))
+    ) {
+      return {
+        success: false,
+        error:
+          "query must be nonblank text and params must be an array of strings.",
+      };
+    }
+    this.logger.info("Executing database query");
+    const lowerQuery = query.trim().toLowerCase();
+    // Enhanced safety checks - only allow SELECT statements and utility commands unless dangerous operations are enabled
+    if (!this.allowDangerousOperations && !this.isReadOnlyQuery(lowerQuery)) {
+      return {
+        success: false,
+        error:
+          "Only read-only queries are allowed. Permitted operations: SELECT, SHOW, DESCRIBE, EXPLAIN. Set allowDangerousOperations to true to enable write operations.",
+      };
+    }
 
-    try {
-      this.logger.info("Executing database query");
+    // Additional safety: Check for dangerous functions and procedures (unless dangerous operations are allowed)
+    if (!this.allowDangerousOperations) {
+      const dangerousFunctions = [
+        "pg_sleep",
+        "pg_terminate_backend",
+        "pg_cancel_backend",
+        "current_setting",
+        "set_config",
+        "pg_reload_conf",
+        "pg_rotate_logfile",
+        "pg_stat_file",
+        "pg_read_file",
+        "copy",
+        "lo_",
+        "dblink",
+        "file_fdw",
+      ];
 
-      // Validate query for safety (block potentially dangerous operations)
-      const trimmedQuery = query.trim();
-      const lowerQuery = trimmedQuery.toLowerCase();
+      const hasDangerousFunction = dangerousFunctions.some((func) =>
+        lowerQuery.includes(func.toLowerCase())
+      );
 
-      // Enhanced safety checks - only allow SELECT statements and utility commands unless dangerous operations are enabled
-      if (!this.allowDangerousOperations && !this.isReadOnlyQuery(lowerQuery)) {
+      if (hasDangerousFunction) {
         return {
           success: false,
           error:
-            "Only read-only queries are allowed. Permitted operations: SELECT, SHOW, DESCRIBE, EXPLAIN. Set allowDangerousOperations to true to enable write operations.",
+            "Query contains potentially dangerous functions. Only safe read operations are allowed.",
         };
       }
-
-      // Additional safety: Check for dangerous functions and procedures (unless dangerous operations are allowed)
-      if (!this.allowDangerousOperations) {
-        const dangerousFunctions = [
-          "pg_sleep",
-          "pg_terminate_backend",
-          "pg_cancel_backend",
-          "current_setting",
-          "set_config",
-          "pg_reload_conf",
-          "pg_rotate_logfile",
-          "pg_stat_file",
-          "pg_read_file",
-          "copy",
-          "lo_",
-          "dblink",
-          "file_fdw",
-        ];
-
-        const hasDangerousFunction = dangerousFunctions.some((func) =>
-          lowerQuery.includes(func.toLowerCase())
-        );
-
-        if (hasDangerousFunction) {
-          return {
-            success: false,
-            error:
-              "Query contains potentially dangerous functions. Only safe read operations are allowed.",
-          };
-        }
-      }
-
-      // Start a transaction (read-only for safety unless dangerous operations are allowed)
-      if (this.allowDangerousOperations && !this.isReadOnlyQuery(lowerQuery)) {
-        await client.query("BEGIN");
-      } else {
-        await client.query("BEGIN READ ONLY");
-      }
-
-      // Add LIMIT 100 to SELECT queries for safety (unless dangerous operations are allowed)
-      let modifiedQuery = trimmedQuery;
-
-      if (
-        !this.allowDangerousOperations &&
-        lowerQuery.startsWith("select") &&
-        !lowerQuery.includes("limit")
-      ) {
-        // Remove trailing semicolon if present, add LIMIT, then add semicolon back
-        if (modifiedQuery.endsWith(";")) {
-          modifiedQuery = modifiedQuery.slice(0, -1) + " LIMIT 100;";
-        } else {
-          modifiedQuery += " LIMIT 100";
-        }
-      }
-
-      const result = await client.query(modifiedQuery, params);
-
-      // Commit the read-only transaction
-      await client.query("COMMIT");
-
-      return {
-        success: true,
-        data: {
-          rows: result.rows,
-          rowCount: result.rowCount || 0,
-          fields: result.fields?.map((field: any) => ({
-            name: field.name,
-            dataTypeID: field.dataTypeID,
-            dataTypeSize: field.dataTypeSize,
-            dataTypeModifier: field.dataTypeModifier,
-          })),
-        },
-      };
-    } catch (error) {
-      this.logger.error("Error executing query", error);
-
-      // Rollback transaction on error
-      try {
-        await client.query("ROLLBACK");
-      } catch (rollbackError) {
-        this.logger.error("Error rolling back transaction", rollbackError);
-      }
-
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    } finally {
-      client.release();
     }
+
+    return executeTransaction(
+      this.pool,
+      this.logger,
+      query,
+      params as string[] | undefined,
+      !(this.allowDangerousOperations && !this.isReadOnlyQuery(lowerQuery)),
+      this.queryTimeoutMs,
+      this.maxRows
+    );
   }
 
   private isReadOnlyQuery(query: string): boolean {
