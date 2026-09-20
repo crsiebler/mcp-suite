@@ -33,7 +33,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 verified; US-002 is next. Remaining stories pending.
+- Current status: US-001 and US-002 verified; US-003 is next. Remaining stories pending.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -112,7 +112,7 @@ Apply this workflow to each story:
 
 ### US-002 - Make build and package entry points consistent
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 2
 - Depends on: US-001
 - User benefit: run every retained server from its distributed files.

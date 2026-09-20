@@ -1,8 +1,8 @@
 # Testing and verification
 
 Install locked root dependencies with `npm ci`. Run commands from the repository
-root. Package-specific workspace installation and packaged startup are handled by
-US-002; the initial root check does not prove every server's declared SDK version.
+root. The root lockfile installs all seven workspaces and their declared SDK versions.
+No per-server lockfiles or installs are needed.
 
 | Command                                         | Purpose                                                                     |
 | ----------------------------------------------- | --------------------------------------------------------------------------- |
@@ -33,8 +33,7 @@ setting; it does not validate that the supplied token belongs to a test account.
 Never echo credentials or forward provider diagnostics to test logs.
 
 Build Flight first and verify its compiled entry path. The current TypeScript
-layout produces `servers/flight/dist/servers/flight/src/index.js`. US-002 owns
-packaging changes and must keep this harness aligned. The SDK stdio transport
+layout produces `servers/flight/dist/servers/flight/src/index.js`. Keep this harness aligned when the packaging layout changes. The SDK stdio transport
 owns its child process; close it after the suite, including failed setup.
 
 These tests read provider data and create a flight offer request; they do not
@@ -49,10 +48,13 @@ and mechanical fixes use native validation and existing characterization checks.
 Keep real service logic and replace the provider boundary with realistic fixtures.
 Do not treat a fake as proof of the live provider contract.
 
-Source tests should explicitly import local `.ts` implementations when generated
-`.js` siblings still exist, so tests cannot accidentally exercise stale output.
-The root no-emit check permits these test imports; package builds retain their own
-compiler configurations. US-002 will separate generated shared output.
+Source tests can explicitly import local `.ts` implementations under the root
+no-emit compiler configuration. Shared generated siblings have been removed;
+package builds keep emitted code under dist/. The packaging suite runs real
+prepack hooks, installs tarballs using only the npm cache, and uses a real SDK
+client to initialize/list tools with synthetic environment values and a process
+network guard. It cleans up its own fixtures under dist/test-artifacts. No provider
+requests are permitted. Successful discovery is not full tool-call coverage.
 
 Keep provider-backed tests out of the default test configuration. Add ordinary
 fixture integration tests under tests/ with `.test.ts` names. If another live
@@ -68,3 +70,9 @@ ESLint 8.57.1 and Prettier 3.9.8. The root SDK is 0.5.0; server manifests still
 request 0.5.x, 0.6.x and 1.x. This records the observed environment, not a claim
 of runtime support across all declared versions. See docs/progress.md for actual
 check results and the limitations of this initial verification story.
+
+US-002 additionally verifies the frozen workspace install with engine-strict on
+Node 22.14.0/npm 10.9.2, plus all seven builds, typecheck, lint and all 19 offline
+tests. Node 22.14.0 is now the declared minimum for the root and all seven
+packages. The test fixture validates all packages together using the locked graph;
+it does not independently prove each package's production-only dependency closure.

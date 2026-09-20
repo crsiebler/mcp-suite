@@ -9,13 +9,13 @@
     "clean": "rm -rf dist/",
     "deploy": "node scripts/deploy.js",
     "lint": "eslint . --ext .ts,.js,.cjs",
-    "publish": "node scripts/publish.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "type-check": "tsc --noEmit --incremental false",
     "format": "prettier --write",
     "format:check": "prettier --check",
-    "test:live": "vitest run --config vitest.live.config.ts"
+    "test:live": "vitest run --config vitest.live.config.ts",
+    "release:publish": "node scripts/publish.js"
   },
   "keywords": [
     "api",
@@ -56,6 +56,10 @@
     "pg": "^8.16.2"
   },
   "engines": {
-    "node": ">=18.0.0"
-  }
+    "node": ">=22.14.0"
+  },
+  "private": true,
+  "workspaces": [
+    "servers/*"
+  ]
 }

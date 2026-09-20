@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "patterns": [
+    {
+      "id": "locked-engines-baseline",
+      "lens": "correctness",
+      "scope": ["package.json", "package-lock.json", "servers/*/package.json"],
+      "guidance": "When workspace dependency resolution changes, align declared Node engines with required transitive engines and verify engine-strict frozen installation plus builds/tests on the declared minimum runtime.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-002",
+      "status": "active"
+    }
+  ],
+  "suppressions": []
+}

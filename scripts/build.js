@@ -1,235 +1,77 @@
 #!/usr/bin/env node
-const { execSync } = require("child_process");
-const { existsSync, writeFileSync, mkdirSync } = require("fs");
-const { join } = require("path");
-const readline = require("readline");
+const { spawnSync } = require("node:child_process");
+const { mkdirSync, rmSync, writeFileSync, existsSync } = require("node:fs");
+const { resolve } = require("node:path");
+const { readPackages } = require("./packages.cjs");
 
-class ProgressBar {
-  constructor(total, width = 30) {
-    this.total = total;
-    this.current = 0;
-    this.width = width;
-  }
+const defaultRoot = resolve(__dirname, "..");
 
-  update(current, label = "") {
-    this.current = current;
-    const percentage = Math.round((current / this.total) * 100);
-    const filled = Math.round((current / this.total) * this.width);
-    const empty = this.width - filled;
-
-    const bar = "█".repeat(filled) + "░".repeat(empty);
-    const progress = `[${bar}] ${percentage}% (${current}/${this.total})`;
-
-    process.stdout.write(`\r${progress} ${label}`);
-
-    if (current === this.total) {
-      process.stdout.write("\n");
-    }
-  }
-
-  finish() {
-    this.update(this.total);
-  }
-}
-
-const ROOT_DIR = process.cwd();
-const SERVERS_DIR = join(ROOT_DIR, "servers");
-
-function getServers() {
-  try {
-    const entries = execSync("ls -d servers/*/", { encoding: "utf8" })
-      .trim()
-      .split("\n");
-    return entries.map((entry) =>
-      entry.replace("servers/", "").replace("/", "")
-    );
-  } catch (error) {
-    console.log("No servers found");
-    return [];
-  }
-}
-
-function buildServer(serverName, progressBar, current) {
-  const serverPath = join(SERVERS_DIR, serverName);
-  const packageJsonPath = join(serverPath, "package.json");
-
-  if (!existsSync(packageJsonPath)) {
-    progressBar.update(current, `⚠️  Skipping ${serverName} (no package.json)`);
-    return false;
-  }
-
-  try {
-    progressBar.update(current, `📦 Building ${serverName}...`);
-
-    // Build to local dist directory within the server folder
-    const localDistPath = join(serverPath, "dist");
-
-    execSync(
-      `npx tsc --project ${serverPath}/tsconfig.json --outDir ${localDistPath}`,
-      {
-        cwd: ROOT_DIR,
-        stdio: "pipe",
-      }
-    );
-
-    progressBar.update(current + 1, `✅ ${serverName} completed`);
-    return true;
-  } catch (error) {
-    progressBar.update(
-      current + 1,
-      `❌ ${serverName} failed: ${error.message.split("\n")[0]}`
-    );
-    return false;
-  }
-}
-
-function buildShared() {
-  try {
-    console.log("📦 Building shared modules...");
-    execSync("npm run build:shared", {
-      cwd: ROOT_DIR,
-      stdio: "pipe",
-    });
-
-    // Create package.json in shared dist folder
-    const sharedDistPath = join(ROOT_DIR, "dist", "shared");
-    if (!existsSync(sharedDistPath)) {
-      mkdirSync(sharedDistPath, { recursive: true });
-    }
-    const sharedPackageJsonPath = join(sharedDistPath, "package.json");
-    const sharedPackageJson = {
-      type: "module",
-    };
-    writeFileSync(
-      sharedPackageJsonPath,
-      JSON.stringify(sharedPackageJson, null, 2)
-    );
-
-    console.log("✅ Shared modules completed\n");
-    return true;
-  } catch (error) {
-    console.log(`❌ Shared modules failed: ${error.message.split("\n")[0]}`);
-    return false;
-  }
-}
-
-function displayServerMenu(servers) {
-  console.log("\n📦 Available servers to build:");
-  console.log("─".repeat(40));
-
-  servers.forEach((server, index) => {
-    console.log(`${index + 1}. ${server}`);
+function compile(root, project, output, run) {
+  const compiler = resolve(root, "node_modules/typescript/bin/tsc");
+  if (!existsSync(compiler))
+    throw new Error("TypeScript is missing; run npm ci first");
+  rmSync(output, { recursive: true, force: true });
+  const result = run(process.execPath, [compiler, "--project", project], {
+    cwd: root,
+    encoding: "utf8",
+    // Compiler diagnostics contain source locations, not environment dumps.
+    stdio: ["ignore", "pipe", "pipe"],
   });
-
-  console.log(`${servers.length + 1}. all (build all servers)`);
-  console.log("─".repeat(40));
-}
-
-function getUserChoice(servers) {
-  return new Promise((resolve) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    displayServerMenu(servers);
-    rl.question("\n🔧 Enter your choice (number): ", (answer) => {
-      rl.close();
-      const choice = parseInt(answer.trim());
-
-      if (choice >= 1 && choice <= servers.length) {
-        resolve([servers[choice - 1]]);
-      } else if (choice === servers.length + 1) {
-        resolve(servers);
-      } else {
-        console.log("❌ Invalid choice. Please try again.");
-        resolve(getUserChoice(servers));
-      }
-    });
-  });
-}
-
-function parseCommandLineArgs() {
-  const args = process.argv.slice(2);
-  if (args.length === 0) {
-    return null;
-  }
-
-  const serverArg = args.find((arg) => arg.startsWith("--server="));
-  if (serverArg) {
-    const serverName = serverArg.split("=")[1];
-    if (serverName === "all") {
-      return "all";
-    }
-    return [serverName];
-  }
-
-  return null;
-}
-
-function buildSelectedServers(selectedServers) {
-  console.log(
-    `\n🚀 Building ${selectedServers.length} server(s): ${selectedServers.join(", ")}\n`
-  );
-
-  const progressBar = new ProgressBar(selectedServers.length);
-  let successful = 0;
-  let failed = 0;
-
-  for (let i = 0; i < selectedServers.length; i++) {
-    const server = selectedServers[i];
-    if (buildServer(server, progressBar, i)) {
-      successful++;
-    } else {
-      failed++;
-    }
-  }
-
-  console.log(`\n📊 Build Summary:`);
-  console.log(`✅ Successful: ${successful}`);
-  console.log(`❌ Failed: ${failed}`);
-
-  if (failed > 0) {
-    process.exit(1);
+  if (result.stdout) process.stderr.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+  if (result.error || result.status !== 0) {
+    throw new Error(`TypeScript failed for ${project}`);
   }
 }
 
-async function main() {
-  // Build shared modules first
-  if (!buildShared()) {
-    process.exit(1);
-  }
-
-  const servers = getServers();
-
-  if (servers.length === 0) {
-    console.log("No servers found to build");
+function main(
+  args = process.argv.slice(2),
+  { root = defaultRoot, run = spawnSync } = {}
+) {
+  const packages = readPackages(root);
+  if (args.length === 1 && args[0] === "--list") {
+    console.log(JSON.stringify(packages.map((pkg) => pkg.server)));
     return;
   }
-
-  // Check for command line arguments
-  const cmdArgs = parseCommandLineArgs();
-  let selectedServers;
-
-  if (cmdArgs === "all") {
-    selectedServers = servers;
-  } else if (cmdArgs && Array.isArray(cmdArgs)) {
-    // Validate server name
-    const serverName = cmdArgs[0];
-    if (servers.includes(serverName)) {
-      selectedServers = cmdArgs;
-    } else {
-      console.log(
-        `❌ Server "${serverName}" not found. Available servers: ${servers.join(", ")}`
-      );
-      process.exit(1);
-    }
-  } else {
-    // Interactive mode
-    selectedServers = await getUserChoice(servers);
+  if (
+    args.length > 1 ||
+    (args.length && !/^--server=[a-z0-9-]+$/.test(args[0]))
+  ) {
+    throw new Error(
+      "Usage: npm run build -- [--server=<name>|--server=all|--list]"
+    );
   }
+  const target = args.length ? args[0].slice("--server=".length) : "all";
+  const selected =
+    target === "all"
+      ? packages
+      : packages.filter((pkg) => pkg.server === target);
+  if (!selected.length) throw new Error(`Unknown server: ${target}`);
 
-  buildSelectedServers(selectedServers);
+  console.error("Building shared modules");
+  const sharedOutput = resolve(root, "dist/shared");
+  compile(root, resolve(root, "shared/tsconfig.json"), sharedOutput, run);
+  mkdirSync(sharedOutput, { recursive: true });
+  writeFileSync(resolve(sharedOutput, "package.json"), '{"type":"module"}\n');
+  for (const pkg of selected) {
+    console.error(`Building ${pkg.manifest.name}`);
+    // Each standalone package compiles its own copy of shared sources, so no
+    // runtime imports escape its tarball. The shared pass validates them first.
+    compile(
+      root,
+      resolve(pkg.path, "tsconfig.json"),
+      resolve(pkg.path, "dist"),
+      run
+    );
+  }
 }
 
-main();
+if (require.main === module) {
+  try {
+    main();
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
+  }
+}
+module.exports = { main };

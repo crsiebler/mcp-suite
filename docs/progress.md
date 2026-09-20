@@ -33,3 +33,40 @@
 - Intended commit: feat(US-001): establish deterministic local verification.
 - Commit status: pending (not yet delivered); Git and final response establish success.
 - Next: US-002 workspace/build/packaging implementation.
+
+## 2026-09-19 - US-002: workspace and packaging candidate
+
+- Previous delivery: US-001 committed as 5236625. Branch codex/clean-slate was clean at start; standing implementation/dependency/configuration/planned-removal/story-commit approval applies. Memory absent, no prior story-002 review.
+- Risk: cross-package build/pack lifecycle; native staged review required. No advisors used; changes follow the selected nested package layout. Runtime Node v26.7.0/npm 11.19.0, standard mode.
+- Red evidence: two new CLI tests failed on original script (unknown target from another cwd returned zero; --list emitted build output). Fixed with script-relative root, workspace metadata and argument validation before compilation.
+- Implemented: seven npm workspaces/private root and single lockfile; root lifecycle publish renamed release:publish; current-source prepack hooks with no duplicate prepublishOnly; script-owned compiler invocation uses argument arrays and deterministic shared-first ordering; selected output cleaned; shared output under dist; 28 obsolete generated shared files and two redundant server locks removed within approved scope. Fixed Elasticsearch start/dev and shared import, PostgreSQL logger extension.
+- Frozen install: npm ci --ignore-scripts --no-audit --no-fund PASS (361 packages). Existing dependency ranges preserved; root SDK0.5.0, five workspaces SDK0.6.1, Flight SDK1.30.0. npm run build -- --server=all PASS; source/test typecheck and lint PASS.
+- Test evidence: CLI tests PASS3 (cwd-independent discovery, preflight rejection, compiler args/order/failure); real npm pack hooks + installed tarballs PASS7 (initialize/list/close), with synthetic config and child network guard. Pack JSON initially mixed progress output, fixed by stderr progress. Initial unpinned offline fixture install lacked registry metadata; fixture now remaps the exact locked graph and tarball integrities, validated by npm ci --offline. No live calls or publication.
+- Documentation: README, architecture, server-development and testing describe workspace install/build/pack paths, shared bundling, lifecycle side effects and actual limits. LOG_LEVEL=error suppresses known existing logger stdout during packaging; US-003 owns protocol-safe diagnostics, US-016 full tool-call/package coverage.
+- Intended commit: feat(US-002): make workspace builds and packages consistent.
+- Review/commit status: pending. Next: final formatting/all checks and native staged review.
+
+## 2026-09-19 - US-002: final candidate checks
+
+- npm run type-check PASS; npm run lint PASS; npm test PASS19 across four files, including seven installed-tarball startup checks. All-server build and frozen workspace install passed earlier in this candidate.
+- Configured formatting applied only to changed extant files; npm run format:check PASS; git diff --check PASS. No provider access, package publication or external Git writes.
+- Staging the complete US-002 candidate for native story-reviewer attempt 1, expanded-initial/initial. UI not applicable. Candidate will remain immutable during review; no previous findings or session for this story.
+- Intended commit: feat(US-002): make workspace builds and packages consistent. Commit status: pending (not yet delivered).
+
+## 2026-09-19 - US-002: initial review remediation
+
+- Reviewer: native story-reviewer /root/review_us002, attempt 1, expanded-initial/initial. Valid changes_requested JSON with one medium finding: package-lock-node-engine-mismatch.
+- Disposition: accepted_fixed. Root advertised Node >=18 while locked @hono/node-server2.1.1 requires >=20. Raised the coherent repository/all-seven-package baseline to >=22.14.0 and updated README/development/testing docs and lock metadata; no SDK range changes.
+- Verified official Node22.14.0 Darwin ARM64 archive against published SHA-256; extracted only under ignored dist/test-artifacts/node-baseline (no global installation). Actual runtime v22.14.0, npm10.9.2.
+- Baseline verification: npm ci --engine-strict --ignore-scripts --no-audit --no-fund PASS361; npm run build -- --server=all PASS7; npm run type-check PASS; npm run lint PASS; npm test PASS19 including tarball startup.
+- Residual risk carried forward: combined fixture graph does not prove independent production-only dependency closure; full packaged tool execution remains US-016. Logging suppression remains US-003.
+- Next: single targeted re-review in the same actual session. No new initial review or replacement reviewer. Commit remains pending.
+
+## 2026-09-19 - US-002: passing targeted review and delivery preparation
+
+- Native story-reviewer /root/review_us002 attempt1, expanded-initial/targeted returned valid pass JSON; package-lock-node-engine-mismatch resolved. One initial and one targeted pass consumed; no further review required.
+- Memory event: PLAN.md / US-002 / locked-engines-baseline / package-lock-node-engine-mismatch / accepted_fixed. Promoted once with evidence_count1/accepted_count1/rejected_count0, based on strict install/build/typecheck/lint/19tests on actual Node22.14.0. No suppressions or mature AGENTS promotion.
+- Residual limits retained: logging safety US-003; independent production-only dependency closure/full packaged tool execution US-016. No false claims of live service compatibility.
+- Finalization: provisionally mark only US-002 story complete; append-only journal/memory only after passing review. No implementation changes after review.
+- Intended commit: feat(US-002): make workspace builds and packages consistent. Commit status: pending (not yet delivered); Git and response establish success.
+- Next: US-003 protocol-safe shared logging.

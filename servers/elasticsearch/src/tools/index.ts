@@ -1,4 +1,4 @@
-import { McpTool } from "shared/types/mcp.js";
+import { McpTool } from "../../../../shared/types/mcp.js";
 
 export const tools: McpTool[] = [
   // Connection and Health Tools

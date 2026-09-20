@@ -7,18 +7,13 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "./",
+    "outDir": "../dist/shared",
     "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.d.ts"
-  ]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "**/*.d.ts"]
 }

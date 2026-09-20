@@ -8,8 +8,8 @@
     "mcp-clickup": "dist/servers/clickup/src/index.js"
   },
   "scripts": {
-    "build": "tsc",
-    "prepublishOnly": "npm run build"
+    "build": "node ../../scripts/build.js --server=clickup",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
@@ -22,5 +22,8 @@
   "files": [
     "dist"
   ],
-  "author": "Cory <cory.siebler@phitechsolutions.com>"
+  "author": "Cory <cory.siebler@phitechsolutions.com>",
+  "engines": {
+    "node": ">=22.14.0"
+  }
 }

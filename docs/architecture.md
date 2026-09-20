@@ -2,20 +2,34 @@
 
 ## Ownership and boundaries
 
-| Area | Responsibility and evidence |
-| --- | --- |
+| Area                          | Responsibility and evidence                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
 | `servers/<name>/src/index.ts` | Process startup, MCP capabilities/handlers, dispatch, response formatting, and transport |
-| Server `tools/` | Advertised names and JSON input schemas; most split servers export a tool array |
-| Server `services/` | Provider API calls and domain operations |
-| Server `types/` or `types.ts` | Provider-specific request and response types |
-| `shared/types/` | `ServerResponse`, configuration/logging types, and local MCP descriptions |
-| `shared/utils/` | Environment lookup, logging, and validation helpers |
-| `shared/middleware/` | Authentication/header and error helpers, used where explicitly imported |
-| `scripts/` | Build and release orchestration, separate from server runtime |
+| Server `tools/`               | Advertised names and JSON input schemas; most split servers export a tool array          |
+| Server `services/`            | Provider API calls and domain operations                                                 |
+| Server `types/` or `types.ts` | Provider-specific request and response types                                             |
+| `shared/types/`               | `ServerResponse`, configuration/logging types, and local MCP descriptions                |
+| `shared/utils/`               | Environment lookup, logging, and validation helpers                                      |
+| `shared/middleware/`          | Authentication/header and error helpers, used where explicitly imported                  |
+| `scripts/`                    | Build and release orchestration, separate from server runtime                            |
 
 These are conventions, not a shared server framework. ClickUp keeps its tool
 handlers in `src/index.ts`. Canvas has category-specific tool and service modules. Do not assume every server has a `handlers/` directory or uses
 all shared middleware.
+
+## Workspace and package output
+
+The private root and root package-lock.json own seven npm workspaces. Package
+metadata is the shared discovery source in scripts/packages.cjs. The build wrapper
+uses argument arrays and an installed compiler, checking shared sources before
+selected package builds. Each package ships its nested dist/servers/<name>/src
+entry plus dist/shared runtime modules; imports stay inside the package. Generated
+shared output is no longer tracked beside source. Package prepack builds current
+source and keeps npm pack JSON output free of progress messages.
+
+See [server development](server-development.md) for commands and
+[testing](testing.md) for tarball verification and limits. This packaging model does
+not publish a separate shared package; shared changes can affect multiple releases.
 
 ## Representative request path
 
@@ -64,7 +78,6 @@ See [testing](testing.md). This map traces representative static flows, not ever
 API operation. It does not establish live authentication, protocol compatibility,
 provider permissions, logging safety, or parity between checked-in and published
 artifacts. Provenance is in the [overview](overview.md).
-
 
 ## External replacements
 

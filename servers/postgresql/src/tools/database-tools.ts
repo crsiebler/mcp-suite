@@ -1,5 +1,5 @@
 import { PostgreSQLService } from "../services/postgresql-service";
-import { Logger } from "../../../../shared/utils/logger";
+import { Logger } from "../../../../shared/utils/logger.js";
 
 const logger = new Logger("info", { server: "DatabaseTools" });
 

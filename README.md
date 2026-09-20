@@ -32,12 +32,15 @@ mcp-suite/
 
 ## 🚀 Quick Start
 
+Requires Node.js 22.14.0 or newer. The locked workspace dependency graph is
+verified against this minimum.
+
 1. **Clone and install dependencies:**
 
    ```bash
    git clone https://github.com/crsiebler/mcp-suite.git
    cd mcp-suite
-   npm install
+   npm ci
    ```
 
 2. **Build all servers:**
@@ -70,7 +73,6 @@ Seven local servers remain: AIJobSearch, Canvas, ClickUp, Elasticsearch,
 Flight (Duffel), PostgreSQL, and Salesforce.
 
 For Jira Cloud, use the [official Atlassian Rovo MCP](docs/atlassian-rovo.md).
-
 
 <details>
 <summary><strong>🐘 PostgreSQL Server</strong> - Database management and analytics</summary>
@@ -120,7 +122,6 @@ salesforce_delete, salesforce_describe, salesforce_list_objects
 
 </details>
 
-
 <details>
 <summary><strong>📋 ClickUp Server</strong> - Task management and project organization</summary>
 
@@ -148,7 +149,6 @@ create_time_entry, get_goals, create_goal
 ```
 
 </details>
-
 
 <details>
 <summary><strong>🎓 Canvas Server</strong> - Learning management system integration</summary>
@@ -255,7 +255,6 @@ upload_user_file, get_pandata_events_token
 
 </details>
 
-
 <details>
 <summary><strong>🔍 Elasticsearch Server</strong> - Search, analytics, and document management</summary>
 
@@ -294,8 +293,11 @@ elasticsearch_bulk_operation, elasticsearch_delete_by_query, elasticsearch_reind
 - [Testing](docs/testing.md): command selection, prerequisites, and coverage limits.
 
 Build one server with `npm run build -- --server=postgresql`, or all servers with
-`npm run build -- --server=all`. Without arguments, the build opens an interactive
-menu. Building does not start a server.
+`npm run build -- --server=all`. Without arguments, the build is non-interactive
+and builds all seven npm workspaces. The private root and single root lockfile own
+installation; use `npm ci`. `npm pack --workspace=<package-name>` runs the package
+prepack build. See the server-development guide for artifact checks and paths.
+Building does not start a server.
 
 ## Runtime diagnostics
 
