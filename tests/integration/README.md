@@ -1,11 +1,10 @@
 # Integration checks
 
-The retained suites cover Duffel flight operations. See
-[testing guidance](../../docs/testing.md) before running the suite.
+`flight-server.test.ts` is excluded from `npm test` and `npm run test:watch`.
+Use `npm run test:live` only after scoped approval to contact Duffel with a test
+account. It formally skips unless RUN_LIVE_TESTS=1, DUFFEL_API_KEY is set, and
+DUFFEL_ENVIRONMENT is test (default). Do not log the token.
 
-- `flight-server.test.ts` requires credentials and can contact Duffel. Inspect
-  calls and use an authorized test account.
-
-Build and verify the actual compiled entry path before launching a suite. Early
-returns are not proof that integration passed. Dependencies must already be installed; do not use
-live credentials or install packages solely to validate documentation.
+See [testing guidance](../../docs/testing.md) for the compiled entry path,
+SDK-owned transport, checks performed, and limitations. Build the server before
+an authorized live run. The offline service fixtures require no credentials.

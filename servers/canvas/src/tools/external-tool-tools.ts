@@ -493,7 +493,7 @@ export class ExternalToolTools {
           args.tool_id
         );
 
-      case "create_external_tool":
+      case "create_external_tool": {
         const createData: any = {
           client_id: args.client_id,
           name: args.name,
@@ -553,8 +553,9 @@ export class ExternalToolTools {
           args.context_id,
           createData
         );
+      }
 
-      case "update_external_tool":
+      case "update_external_tool": {
         const updateData: any = {
           name: args.name,
           privacy_level: args.privacy_level,
@@ -591,6 +592,7 @@ export class ExternalToolTools {
           args.tool_id,
           updateData
         );
+      }
 
       case "delete_external_tool":
         return await this.externalToolService.deleteExternalTool(

@@ -714,18 +714,20 @@ export class QuizTools {
 
   async handleToolCall(name: string, args: any) {
     switch (name) {
-      case "list_quizzes":
+      case "list_quizzes": {
         const { course_id, ...listParams } = args;
         return await this.quizService.listQuizzes(course_id, listParams);
+      }
 
       case "get_quiz":
         return await this.quizService.getQuiz(args.course_id, args.quiz_id);
 
-      case "create_quiz":
+      case "create_quiz": {
         const { course_id: createCourseId, ...createParams } = args;
         return await this.quizService.createQuiz(createCourseId, createParams);
+      }
 
-      case "update_quiz":
+      case "update_quiz": {
         const {
           course_id: updateCourseId,
           quiz_id: updateQuizId,
@@ -736,6 +738,7 @@ export class QuizTools {
           updateQuizId,
           updateParams
         );
+      }
 
       case "delete_quiz":
         return await this.quizService.deleteQuiz(args.course_id, args.quiz_id);
@@ -755,7 +758,7 @@ export class QuizTools {
         );
 
       // Quiz Questions
-      case "list_quiz_questions":
+      case "list_quiz_questions": {
         const {
           course_id: listQuestionsCourseId,
           quiz_id: listQuestionsQuizId,
@@ -766,6 +769,7 @@ export class QuizTools {
           listQuestionsQuizId,
           listQuestionsParams
         );
+      }
 
       case "get_quiz_question":
         return await this.quizService.getQuizQuestion(
@@ -774,7 +778,7 @@ export class QuizTools {
           args.question_id
         );
 
-      case "create_quiz_question":
+      case "create_quiz_question": {
         const {
           course_id: createQuestionCourseId,
           quiz_id: createQuestionQuizId,
@@ -785,8 +789,9 @@ export class QuizTools {
           createQuestionQuizId,
           createQuestionParams
         );
+      }
 
-      case "update_quiz_question":
+      case "update_quiz_question": {
         const {
           course_id: updateQuestionCourseId,
           quiz_id: updateQuestionQuizId,
@@ -799,6 +804,7 @@ export class QuizTools {
           updateQuestionId,
           updateQuestionParams
         );
+      }
 
       case "delete_quiz_question":
         return await this.quizService.deleteQuizQuestion(

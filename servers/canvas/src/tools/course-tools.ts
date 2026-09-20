@@ -597,12 +597,13 @@ export class CourseTools {
       case "get_course_settings":
         return await this.courseService.getCourseSettings(args.course_id);
 
-      case "update_course_settings":
+      case "update_course_settings": {
         const { course_id, ...settings } = args;
         return await this.courseService.updateCourseSettings(
           course_id,
           settings
         );
+      }
 
       default:
         throw new Error(`Unknown course tool: ${name}`);

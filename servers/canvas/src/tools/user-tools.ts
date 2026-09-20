@@ -1073,7 +1073,7 @@ export class UserTools {
       case "get_user_settings":
         return await this.userService.getUserSettings(args.user_id);
 
-      case "update_user_settings":
+      case "update_user_settings": {
         const settings: any = {};
         if (args.manual_mark_as_read !== undefined)
           settings.manual_mark_as_read = args.manual_mark_as_read;
@@ -1097,6 +1097,7 @@ export class UserTools {
           args.user_id,
           settings
         );
+      }
 
       case "get_custom_colors":
         return await this.userService.getCustomColors(args.user_id);

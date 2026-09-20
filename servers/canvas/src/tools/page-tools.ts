@@ -624,14 +624,15 @@ export class PageTools {
           args.url_or_id
         );
 
-      case "create_course_page":
+      case "create_course_page": {
         const { course_id: createCourseId, ...createCourseParams } = args;
         return await this.pageService.createCoursePage(
           createCourseId,
           createCourseParams
         );
+      }
 
-      case "update_course_page":
+      case "update_course_page": {
         const {
           course_id: updateCourseId,
           url_or_id: updateCourseUrlOrId,
@@ -642,6 +643,7 @@ export class PageTools {
           updateCourseUrlOrId,
           updateCourseParams
         );
+      }
 
       case "delete_course_page":
         return await this.pageService.deleteCoursePage(
@@ -658,12 +660,13 @@ export class PageTools {
       case "get_course_front_page":
         return await this.pageService.getCourseFrontPage(args.course_id);
 
-      case "update_course_front_page":
+      case "update_course_front_page": {
         const { course_id: frontPageCourseId, ...frontPageParams } = args;
         return await this.pageService.updateCourseFrontPage(
           frontPageCourseId,
           frontPageParams
         );
+      }
 
       case "list_course_page_revisions":
         return await this.pageService.getCoursePageRevisions(
@@ -702,14 +705,15 @@ export class PageTools {
           args.url_or_id
         );
 
-      case "create_group_page":
+      case "create_group_page": {
         const { group_id: createGroupId, ...createGroupParams } = args;
         return await this.pageService.createGroupPage(
           createGroupId,
           createGroupParams
         );
+      }
 
-      case "update_group_page":
+      case "update_group_page": {
         const {
           group_id: updateGroupId,
           url_or_id: updateGroupUrlOrId,
@@ -720,6 +724,7 @@ export class PageTools {
           updateGroupUrlOrId,
           updateGroupParams
         );
+      }
 
       case "delete_group_page":
         return await this.pageService.deleteGroupPage(
@@ -730,12 +735,13 @@ export class PageTools {
       case "get_group_front_page":
         return await this.pageService.getGroupFrontPage(args.group_id);
 
-      case "update_group_front_page":
+      case "update_group_front_page": {
         const { group_id: frontPageGroupId, ...groupFrontPageParams } = args;
         return await this.pageService.updateGroupFrontPage(
           frontPageGroupId,
           groupFrontPageParams
         );
+      }
 
       case "list_group_page_revisions":
         return await this.pageService.getGroupPageRevisions(

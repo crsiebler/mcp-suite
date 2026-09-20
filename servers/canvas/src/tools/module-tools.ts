@@ -648,7 +648,7 @@ export class ModuleTools {
           }
         );
 
-      case "create_module":
+      case "create_module": {
         const {
           course_id: createCourseId,
           name,
@@ -666,8 +666,9 @@ export class ModuleTools {
           prerequisite_module_ids,
           publish_final_grade,
         });
+      }
 
-      case "update_module":
+      case "update_module": {
         const {
           course_id: updateCourseId,
           module_id: updateModuleId,
@@ -692,6 +693,7 @@ export class ModuleTools {
             published,
           }
         );
+      }
 
       case "delete_module":
         return await this.moduleService.deleteModule(
@@ -728,7 +730,7 @@ export class ModuleTools {
           }
         );
 
-      case "create_module_item":
+      case "create_module_item": {
         const {
           course_id: itemCourseId,
           module_id: itemModuleId,
@@ -776,8 +778,9 @@ export class ModuleTools {
           itemModuleId,
           itemData
         );
+      }
 
-      case "update_module_item":
+      case "update_module_item": {
         const {
           course_id: updateItemCourseId,
           module_id: updateItemModuleId,
@@ -816,6 +819,7 @@ export class ModuleTools {
           updateItemId,
           updateItemData
         );
+      }
 
       case "delete_module_item":
         return await this.moduleService.deleteModuleItem(

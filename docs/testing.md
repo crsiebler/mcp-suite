@@ -1,60 +1,70 @@
 # Testing and verification
 
-## Choose checks by their effects
+Install locked root dependencies with `npm ci`. Run commands from the repository
+root. Package-specific workspace installation and packaged startup are handled by
+US-002; the initial root check does not prove every server's declared SDK version.
 
-The scripts in [package.json](../package.json) are the command source. Dependencies
-must already be installed; do not let `npx` silently download missing tools.
+| Command                                         | Purpose                                                                     |
+| ----------------------------------------------- | --------------------------------------------------------------------------- |
+| `npm run type-check`                            | Check source, tests and Vitest configuration without emitting files         |
+| `npm run lint`                                  | ESLint correctness checks for TypeScript and handwritten JavaScript         |
+| `npm run format -- <changed-files>`             | Format only intended changed files with Prettier                            |
+| `npm run format:check -- <changed-files>`       | Check formatting of those files                                             |
+| `npm test`                                      | Offline default; excludes the live Flight suite even when credentials exist |
+| `npm test -- tests/unit/shared-utils.test.ts`   | Seven utility baseline tests                                                |
+| `npm test -- tests/unit/duffel-service.test.ts` | Real Duffel service mapping with an Axios adapter fixture                   |
+| `npm run test:watch`                            | Watch the same offline suite                                                |
+| `npm run test:live`                             | Select live Flight tests; skipped unless explicitly enabled below           |
 
-| Command | Purpose and prerequisites |
-| --- | --- |
-| `npm run type-check` | Root TypeScript check; requires local TypeScript and dependency types |
-| `npm run lint` | ESLint for `.ts`/`.js`; requires installed ESLint and a usable configuration |
-| `npm test -- tests/unit/shared-utils.test.ts` | Focused validation-helper tests |
-| `npm test -- tests/integration/<name>-server.test.ts` | Selected integration file; inspect environment and external effects first |
-| `npm test` | All discovered Vitest tests, including integration files |
-| `npm run test:watch` | Interactive Vitest watch mode |
+ESLint uses its recommended correctness rules. TypeScript owns symbol resolution
+for `.ts` files; unused TypeScript declarations are not currently a baseline gate.
+Generated shared JavaScript/declarations, build output and dependency trees are
+excluded from lint. No rules from a previous lint configuration were removed.
+Prettier uses double quotes and ES5 trailing commas. For small fixes in legacy
+files, range-format the changed section rather than reformatting unrelated code.
+Typechecking includes live tests even when they are skipped at runtime.
 
-The root TypeScript config excludes test files. A passing root typecheck does not
-establish that integration-test imports match the installed MCP SDK.
+## Live Flight checks
 
-No tracked ESLint configuration, Vitest configuration, Markdown formatter, or
-formatter script was found during this mapping. A lint script alone does not
-prove lint is runnable. Keep formatting consistent and report unavailable tooling;
-do not add dependencies/configuration merely to make a documentation check run.
+Live execution requires all of: `RUN_LIVE_TESTS=1`, a `DUFFEL_API_KEY`, and
+`DUFFEL_ENVIRONMENT=test` (the default). Obtain scoped approval and use an
+appropriate test account before running against Duffel. Test mode is a declared
+setting; it does not validate that the supplied token belongs to a test account.
+Never echo credentials or forward provider diagnostics to test logs.
 
-## Current test coverage and limits
+Build Flight first and verify its compiled entry path. The current TypeScript
+layout produces `servers/flight/dist/servers/flight/src/index.js`. US-002 owns
+packaging changes and must keep this harness aligned. The SDK stdio transport
+owns its child process; close it after the suite, including failed setup.
 
-| Source | Observed behavior |
-| --- | --- |
-| [Shared utility tests](../tests/unit/shared-utils.test.ts) | Exercises required values, email/URL validation, and sanitization; no service credentials needed |
-| [Flight integration](../tests/integration/flight-server.test.ts) | Credential-gated Duffel calls; reads `DUFFEL_ENVIRONMENT`, defaulting to test |
+These tests read provider data and create a flight offer request; they do not
+book or cancel an order. Missing opt-in, credentials, or test mode causes six
+formal skips. Skips are not proof of live compatibility. Do not run live tests as
+part of ordinary validation, or enable them merely because credentials exist.
 
-Several tests return early instead of reporting formal skips. Some expect
-`dist/index.js`. Verify output locations
-before running integration tests. The Flight client imports and transport
-construction must be checked against installed SDK versions before claiming those
-suites are executable.
+## Adding checks
 
-The [integration README](../tests/integration/README.md) describes the retained
-Flight checks. CI alone does not disable every provider test.
+Write meaningful failing regressions before behavior changes. For configuration
+and mechanical fixes use native validation and existing characterization checks.
+Keep real service logic and replace the provider boundary with realistic fixtures.
+Do not treat a fake as proof of the live provider contract.
 
-## Adding meaningful checks
+Source tests should explicitly import local `.ts` implementations when generated
+`.js` siblings still exist, so tests cannot accidentally exercise stale output.
+The root no-emit check permits these test imports; package builds retain their own
+compiler configurations. US-002 will separate generated shared output.
 
-For behavior changes, first reproduce the failure with an isolated test. Mock the
-provider boundary for ordinary dispatch/validation/normalization tests; assert
-actual results and error shapes. Add a stdio integration check when transport
-behavior changes. Separate live-provider validation from offline checks, and
-report skipped/unavailable coverage explicitly.
+Keep provider-backed tests out of the default test configuration. Add ordinary
+fixture integration tests under tests/ with `.test.ts` names. If another live
+suite is added, update both Vitest configurations and its explicit opt-in guard.
 
-For documentation-only work, validate relative links, referenced paths, command
-syntax against scripts, and `git diff --check`. Recheck substantive relationships
-in source. Do not start services, install dependencies, or run live integration
-calls just to validate a repository map.
+Documentation validation uses link/path checks and `git diff --check`. Never
+invoke release scripts as checks: they may publish packages and push tags.
 
-## Mapping verification snapshot
+## Verified baseline
 
-On 2026-09-19, project `node_modules` was absent. Typecheck, lint, builds, and tests
-were not run; no dependencies were installed. No configured Markdown formatter
-was found. Documentation verification is reported with the migration handoff;
-this snapshot does not claim runtime success. Source provenance is in the
-[overview](overview.md).
+US-001 uses Node v26.7.0, npm 11.19.0, TypeScript 5.9.3, Vitest 1.6.1,
+ESLint 8.57.1 and Prettier 3.9.8. The root SDK is 0.5.0; server manifests still
+request 0.5.x, 0.6.x and 1.x. This records the observed environment, not a claim
+of runtime support across all declared versions. See docs/progress.md for actual
+check results and the limitations of this initial verification story.

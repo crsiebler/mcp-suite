@@ -6,22 +6,25 @@
   "scripts": {
     "build": "node scripts/build.js",
     "build:shared": "tsc -p shared/tsconfig.json",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint . --ext .ts,.js",
-    "type-check": "tsc --noEmit",
     "clean": "rm -rf dist/",
     "deploy": "node scripts/deploy.js",
-    "publish": "node scripts/publish.js"
+    "lint": "eslint . --ext .ts,.js,.cjs",
+    "publish": "node scripts/publish.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit --incremental false",
+    "format": "prettier --write",
+    "format:check": "prettier --check",
+    "test:live": "vitest run --config vitest.live.config.ts"
   },
   "keywords": [
+    "api",
+    "canvas",
+    "integration",
     "mcp",
     "model-context-protocol",
-    "canvas",
     "postgresql",
     "salesforce",
-    "api",
-    "integration",
     "server",
     "typescript"
   ],
@@ -42,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
+    "prettier": "3.9.8",
     "typescript": "^5.9.3",
     "vitest": "^1.0.0"
   },

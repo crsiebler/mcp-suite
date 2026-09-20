@@ -13,12 +13,18 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "composite": true,
+    "composite": false,
     "baseUrl": ".",
     "paths": {
       "shared/*": ["./shared/*"]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
-  "include": ["servers/**/*", "shared/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+  "include": [
+    "servers/**/*.ts",
+    "shared/**/*.ts",
+    "tests/**/*.ts",
+    "vitest*.config.ts"
+  ],
+  "exclude": ["node_modules", "**/node_modules/**", "**/dist/**", "**/*.d.ts"]
 }

@@ -49,7 +49,7 @@ function getServers() {
   }
 }
 
-function buildServer(serverName, progressBar, current, total) {
+function buildServer(serverName, progressBar, current) {
   const serverPath = join(SERVERS_DIR, serverName);
   const packageJsonPath = join(serverPath, "package.json");
 
@@ -60,10 +60,10 @@ function buildServer(serverName, progressBar, current, total) {
 
   try {
     progressBar.update(current, `📦 Building ${serverName}...`);
-    
+
     // Build to local dist directory within the server folder
     const localDistPath = join(serverPath, "dist");
-    
+
     execSync(
       `npx tsc --project ${serverPath}/tsconfig.json --outDir ${localDistPath}`,
       {
@@ -71,7 +71,7 @@ function buildServer(serverName, progressBar, current, total) {
         stdio: "pipe",
       }
     );
-    
+
     progressBar.update(current + 1, `✅ ${serverName} completed`);
     return true;
   } catch (error) {
@@ -90,7 +90,7 @@ function buildShared() {
       cwd: ROOT_DIR,
       stdio: "pipe",
     });
-    
+
     // Create package.json in shared dist folder
     const sharedDistPath = join(ROOT_DIR, "dist", "shared");
     if (!existsSync(sharedDistPath)) {
@@ -98,10 +98,13 @@ function buildShared() {
     }
     const sharedPackageJsonPath = join(sharedDistPath, "package.json");
     const sharedPackageJson = {
-      "type": "module"
+      type: "module",
     };
-    writeFileSync(sharedPackageJsonPath, JSON.stringify(sharedPackageJson, null, 2));
-    
+    writeFileSync(
+      sharedPackageJsonPath,
+      JSON.stringify(sharedPackageJson, null, 2)
+    );
+
     console.log("✅ Shared modules completed\n");
     return true;
   } catch (error) {
@@ -113,11 +116,11 @@ function buildShared() {
 function displayServerMenu(servers) {
   console.log("\n📦 Available servers to build:");
   console.log("─".repeat(40));
-  
+
   servers.forEach((server, index) => {
     console.log(`${index + 1}. ${server}`);
   });
-  
+
   console.log(`${servers.length + 1}. all (build all servers)`);
   console.log("─".repeat(40));
 }
@@ -126,14 +129,14 @@ function getUserChoice(servers) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
 
     displayServerMenu(servers);
     rl.question("\n🔧 Enter your choice (number): ", (answer) => {
       rl.close();
       const choice = parseInt(answer.trim());
-      
+
       if (choice >= 1 && choice <= servers.length) {
         resolve([servers[choice - 1]]);
       } else if (choice === servers.length + 1) {
@@ -152,11 +155,11 @@ function parseCommandLineArgs() {
     return null;
   }
 
-  const serverArg = args.find(arg => arg.startsWith('--server='));
+  const serverArg = args.find((arg) => arg.startsWith("--server="));
   if (serverArg) {
-    const serverName = serverArg.split('=')[1];
-    if (serverName === 'all') {
-      return 'all';
+    const serverName = serverArg.split("=")[1];
+    if (serverName === "all") {
+      return "all";
     }
     return [serverName];
   }
@@ -165,7 +168,9 @@ function parseCommandLineArgs() {
 }
 
 function buildSelectedServers(selectedServers) {
-  console.log(`\n🚀 Building ${selectedServers.length} server(s): ${selectedServers.join(", ")}\n`);
+  console.log(
+    `\n🚀 Building ${selectedServers.length} server(s): ${selectedServers.join(", ")}\n`
+  );
 
   const progressBar = new ProgressBar(selectedServers.length);
   let successful = 0;
@@ -173,7 +178,7 @@ function buildSelectedServers(selectedServers) {
 
   for (let i = 0; i < selectedServers.length; i++) {
     const server = selectedServers[i];
-    if (buildServer(server, progressBar, i, selectedServers.length)) {
+    if (buildServer(server, progressBar, i)) {
       successful++;
     } else {
       failed++;
@@ -183,7 +188,7 @@ function buildSelectedServers(selectedServers) {
   console.log(`\n📊 Build Summary:`);
   console.log(`✅ Successful: ${successful}`);
   console.log(`❌ Failed: ${failed}`);
-  
+
   if (failed > 0) {
     process.exit(1);
   }
@@ -194,7 +199,7 @@ async function main() {
   if (!buildShared()) {
     process.exit(1);
   }
-  
+
   const servers = getServers();
 
   if (servers.length === 0) {
@@ -206,7 +211,7 @@ async function main() {
   const cmdArgs = parseCommandLineArgs();
   let selectedServers;
 
-  if (cmdArgs === 'all') {
+  if (cmdArgs === "all") {
     selectedServers = servers;
   } else if (cmdArgs && Array.isArray(cmdArgs)) {
     // Validate server name
@@ -214,7 +219,9 @@ async function main() {
     if (servers.includes(serverName)) {
       selectedServers = cmdArgs;
     } else {
-      console.log(`❌ Server "${serverName}" not found. Available servers: ${servers.join(", ")}`);
+      console.log(
+        `❌ Server "${serverName}" not found. Available servers: ${servers.join(", ")}`
+      );
       process.exit(1);
     }
   } else {

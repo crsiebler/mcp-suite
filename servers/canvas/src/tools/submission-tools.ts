@@ -800,7 +800,7 @@ export class SubmissionTools {
 
   async handleToolCall(name: string, args: any) {
     switch (name) {
-      case "submit_assignment":
+      case "submit_assignment": {
         const {
           course_id,
           assignment_id,
@@ -816,8 +816,9 @@ export class SubmissionTools {
           assignment_id,
           { ...submissionParams, comment }
         );
+      }
 
-      case "list_assignment_submissions":
+      case "list_assignment_submissions": {
         const {
           course_id: listCourseId,
           assignment_id: listAssignmentId,
@@ -828,15 +829,17 @@ export class SubmissionTools {
           listAssignmentId,
           listParams
         );
+      }
 
-      case "list_submissions_for_multiple_assignments":
+      case "list_submissions_for_multiple_assignments": {
         const { course_id: multiCourseId, ...multiParams } = args;
         return await this.submissionService.listSubmissionsForMultipleAssignments(
           multiCourseId,
           multiParams
         );
+      }
 
-      case "get_submission":
+      case "get_submission": {
         const {
           course_id: getCourseId,
           assignment_id: getAssignmentId,
@@ -849,8 +852,9 @@ export class SubmissionTools {
           user_id,
           getParams
         );
+      }
 
-      case "get_submission_by_anonymous_id":
+      case "get_submission_by_anonymous_id": {
         const {
           course_id: getAnonCourseId,
           assignment_id: getAnonAssignmentId,
@@ -863,8 +867,9 @@ export class SubmissionTools {
           anonymous_id,
           getAnonParams
         );
+      }
 
-      case "grade_submission":
+      case "grade_submission": {
         const {
           course_id: gradeCourseId,
           assignment_id: gradeAssignmentId,
@@ -918,8 +923,9 @@ export class SubmissionTools {
             prefer_points_over_scheme,
           }
         );
+      }
 
-      case "grade_submission_by_anonymous_id":
+      case "grade_submission_by_anonymous_id": {
         const {
           course_id: gradeAnonCourseId,
           assignment_id: gradeAnonAssignmentId,
@@ -969,6 +975,7 @@ export class SubmissionTools {
             include_visibility: anonIncludeVis,
           }
         );
+      }
 
       case "list_gradeable_students":
         return await this.submissionService.listGradeableStudents(
@@ -1049,12 +1056,13 @@ export class SubmissionTools {
           args.assignment_id
         );
 
-      case "get_gradebook_history_feed":
+      case "get_gradebook_history_feed": {
         const { course_id: feedCourseId, ...feedParams } = args;
         return await this.submissionService.getGradebookHistoryFeed(
           feedCourseId,
           feedParams
         );
+      }
 
       default:
         throw new Error(`Unknown submission tool: ${name}`);

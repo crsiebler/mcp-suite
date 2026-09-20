@@ -668,29 +668,32 @@ export class AssignmentTools {
 
   async handleToolCall(name: string, args: any) {
     switch (name) {
-      case "list_assignments":
+      case "list_assignments": {
         const { course_id, ...listParams } = args;
         return await this.assignmentService.listAssignments(
           course_id,
           listParams
         );
+      }
 
-      case "get_assignment":
+      case "get_assignment": {
         const { course_id: getCourseId, assignment_id, ...getParams } = args;
         return await this.assignmentService.getAssignment(
           getCourseId,
           assignment_id,
           getParams
         );
+      }
 
-      case "create_assignment":
+      case "create_assignment": {
         const { course_id: createCourseId, ...createParams } = args;
         return await this.assignmentService.createAssignment(
           createCourseId,
           createParams
         );
+      }
 
-      case "update_assignment":
+      case "update_assignment": {
         const {
           course_id: updateCourseId,
           assignment_id: updateAssignmentId,
@@ -701,6 +704,7 @@ export class AssignmentTools {
           updateAssignmentId,
           updateParams
         );
+      }
 
       case "delete_assignment":
         return await this.assignmentService.deleteAssignment(
@@ -734,7 +738,7 @@ export class AssignmentTools {
           args.override_id
         );
 
-      case "create_assignment_override":
+      case "create_assignment_override": {
         const {
           course_id: overrideCourseId,
           assignment_id: overrideAssignmentId,
@@ -745,8 +749,9 @@ export class AssignmentTools {
           overrideAssignmentId,
           overrideData
         );
+      }
 
-      case "update_assignment_override":
+      case "update_assignment_override": {
         const {
           course_id: updateOverrideCourseId,
           assignment_id: updateOverrideAssignmentId,
@@ -759,6 +764,7 @@ export class AssignmentTools {
           override_id,
           updateOverrideData
         );
+      }
 
       case "delete_assignment_override":
         return await this.assignmentService.deleteAssignmentOverride(
