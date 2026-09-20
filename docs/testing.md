@@ -118,3 +118,10 @@ truncation, transaction selection, failures, deadlines and late acquisitions.
 Packaged PostgreSQL checks also call both advertised tools, including invalid
 input and a guarded connection failure. These do not establish live certificate
 validation, database permissions or server-side cancellation timing.
+
+
+Duffel cancellation fixtures (`duffel-cancellation.test.ts`) exercise pending quote
+creation, exact quote/order checks, nullable refunds/expiry, already-confirmed
+state, stale/provider failures and uncertain confirmation outcomes without retries.
+Packaged Flight checks verify both new tools, safe error envelopes and removal of
+the old cancel tool. No booking, cancellation or refund occurs in these checks.

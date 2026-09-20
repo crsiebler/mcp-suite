@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { toMcpResult } from "../../../shared/utils/result.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -64,6 +65,13 @@ class FlightServer {
           request.params.name,
           request.params.arguments
         );
+        if (
+          [
+            "duffel_quote_order_cancellation",
+            "duffel_confirm_order_cancellation",
+          ].includes(request.params.name)
+        )
+          return toMcpResult(result);
         return this.formatResponse(result);
       } catch (error) {
         this.logger.error("Tool call failed", error);
@@ -94,7 +102,10 @@ class FlightServer {
 
       // Offers
       case "duffel_get_offers":
-        return await this.duffelService.getOffers(args.offer_request_id, args.limit);
+        return await this.duffelService.getOffers(
+          args.offer_request_id,
+          args.limit
+        );
       case "duffel_get_offer":
         return await this.duffelService.getOffer(args.offer_id);
 
@@ -105,8 +116,13 @@ class FlightServer {
         return await this.duffelService.getOrder(args.order_id);
       case "duffel_list_orders":
         return await this.duffelService.listOrders(args.limit, args.after);
-      case "duffel_cancel_order":
-        return await this.duffelService.cancelOrder(args.order_id);
+      case "duffel_quote_order_cancellation":
+        return await this.duffelService.quoteOrderCancellation(args?.order_id);
+      case "duffel_confirm_order_cancellation":
+        return await this.duffelService.confirmOrderCancellation(
+          args?.order_id,
+          args?.cancellation_id
+        );
 
       // Seat maps
       case "duffel_get_seat_maps":
@@ -116,7 +132,13 @@ class FlightServer {
       case "duffel_get_airlines":
         return await this.duffelService.getAirlines(args.limit);
       case "duffel_get_airports":
-        return await this.duffelService.getAirports(args.limit, args.iata_code, args.iata_country_code, args.after, args.before);
+        return await this.duffelService.getAirports(
+          args.limit,
+          args.iata_code,
+          args.iata_country_code,
+          args.after,
+          args.before
+        );
 
       default:
         throw new McpError(

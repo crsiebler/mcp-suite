@@ -33,7 +33,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-006 verified; US-007 is next. Remaining stories pending.
+- Current status: US-001 through US-007 verified; US-008 is next. Remaining stories pending.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -178,7 +178,7 @@ Apply this workflow to each story:
 
 ### US-007 - Repair Duffel cancellation and uncertain outcomes
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 7
 - Depends on: US-003, US-005
 - User benefit: review cancellation terms before a booking is cancelled.

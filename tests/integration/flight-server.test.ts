@@ -76,7 +76,9 @@ describe.runIf(enabled)("Flight Server Integration Tests", () => {
     expect(toolNames).toContain("duffel_create_order");
     expect(toolNames).toContain("duffel_get_order");
     expect(toolNames).toContain("duffel_list_orders");
-    expect(toolNames).toContain("duffel_cancel_order");
+    expect(toolNames).not.toContain("duffel_cancel_order");
+    expect(toolNames).toContain("duffel_quote_order_cancellation");
+    expect(toolNames).toContain("duffel_confirm_order_cancellation");
     expect(toolNames).toContain("duffel_get_seat_maps");
     expect(toolNames).toContain("duffel_get_airlines");
     expect(toolNames).toContain("duffel_get_airports");

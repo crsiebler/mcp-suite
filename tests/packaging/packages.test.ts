@@ -202,6 +202,46 @@ for (const pkg of packages) {
           expect(text.text).not.toContain("postgresql://");
         }
       }
+      if (pkg.server === "flight") {
+        const names = result.tools.map((tool) => tool.name);
+        expect(names).not.toContain("duffel_cancel_order");
+        for (const name of [
+          "duffel_quote_order_cancellation",
+          "duffel_confirm_order_cancellation",
+        ]) {
+          expect(names).toContain(name);
+          const tool = result.tools.find((tool) => tool.name === name)!;
+          expect(tool.annotations).toMatchObject({
+            readOnlyHint: false,
+            idempotentHint: false,
+          });
+          for (const args of [
+            {},
+            { order_id: "ord_fixture", cancellation_id: "ore_fixture" },
+          ]) {
+            const response = CallToolResultSchema.parse(
+              await client.callTool({ name, arguments: args })
+            );
+            expect(response.isError).toBe(true);
+            const content = response.content[0];
+            if (content.type !== "text")
+              throw new Error("Expected text result");
+            const body = JSON.parse(content.text);
+            expect(body.success).toBe(false);
+            expect(body.error.code).toBe(
+              "order_id" in args ? "internal_error" : "invalid_input"
+            );
+            expect(content.text).not.toContain("Network access blocked");
+            expect(content.text).not.toContain("synthetic-test-key");
+          }
+        }
+        await expect(
+          client.callTool({
+            name: "duffel_cancel_order",
+            arguments: { order_id: "ord_fixture" },
+          })
+        ).rejects.toMatchObject({ code: -32601 });
+      }
       // Invalid names exercise real dispatch/error handling without provider I/O.
       // SDKs differ between a tool-error result and a JSON-RPC error response.
       const outcome = await client

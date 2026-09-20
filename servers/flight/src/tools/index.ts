@@ -30,7 +30,8 @@ export const flightTools: Tool[] = [
         },
         return_date: {
           type: "string",
-          description: "Return date in ISO format (YYYY-MM-DD) for round-trip flights",
+          description:
+            "Return date in ISO format (YYYY-MM-DD) for round-trip flights",
         },
         passengers: {
           type: "object",
@@ -137,7 +138,8 @@ export const flightTools: Tool[] = [
             properties: {
               id: {
                 type: "string",
-                description: "Passenger ID (must match offer request passengers)",
+                description:
+                  "Passenger ID (must match offer request passengers)",
               },
               type: {
                 type: "string",
@@ -181,7 +183,12 @@ export const flightTools: Tool[] = [
                   properties: {
                     type: {
                       type: "string",
-                      enum: ["passport", "tax_id", "known_traveler_number", "passenger_redress_number"],
+                      enum: [
+                        "passport",
+                        "tax_id",
+                        "known_traveler_number",
+                        "passenger_redress_number",
+                      ],
                     },
                     unique_identifier: {
                       type: "string",
@@ -189,11 +196,13 @@ export const flightTools: Tool[] = [
                     },
                     expires_on: {
                       type: "string",
-                      description: "Document expiry date in ISO format (YYYY-MM-DD)",
+                      description:
+                        "Document expiry date in ISO format (YYYY-MM-DD)",
                     },
                     issued_on: {
                       type: "string",
-                      description: "Document issue date in ISO format (YYYY-MM-DD)",
+                      description:
+                        "Document issue date in ISO format (YYYY-MM-DD)",
                     },
                     issuing_country_code: {
                       type: "string",
@@ -278,7 +287,13 @@ export const flightTools: Tool[] = [
                   description: "Billing address country code",
                 },
               },
-              required: ["number", "expiry_month", "expiry_year", "cvc", "name"],
+              required: [
+                "number",
+                "expiry_month",
+                "expiry_year",
+                "cvc",
+                "name",
+              ],
             },
           },
           required: ["type", "amount", "currency"],
@@ -322,17 +337,40 @@ export const flightTools: Tool[] = [
     },
   },
   {
-    name: "duffel_cancel_order",
-    description: "Cancel a specific order",
+    name: "duffel_quote_order_cancellation",
+    description:
+      "Create a pending cancellation quote without cancelling the booking. Review its refund, destination, credits and expiry with the user before requesting confirmation. Creating a new quote supersedes earlier quotes.",
     inputSchema: {
       type: "object",
       properties: {
-        order_id: {
-          type: "string",
-          description: "The ID of the order to cancel",
-        },
+        order_id: { type: "string", pattern: "^[A-Za-z0-9_]{1,128}$" },
       },
       required: ["order_id"],
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+  },
+  {
+    name: "duffel_confirm_order_cancellation",
+    description:
+      "Cancel the order using the exact reviewed cancellation ID, after explicit user approval in the host. Rechecks quote identity and expiry. A timeout can leave an uncertain outcome; verify order state and never automatically retry. Tool arguments and annotations do not constitute user approval.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "string", pattern: "^[A-Za-z0-9_]{1,128}$" },
+        cancellation_id: { type: "string", pattern: "^[A-Za-z0-9_]{1,128}$" },
+      },
+      required: ["order_id", "cancellation_id"],
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
     },
   },
   {
@@ -383,7 +421,8 @@ export const flightTools: Tool[] = [
         },
         iata_country_code: {
           type: "string",
-          description: "Filter by specific country IATA code (e.g., 'GB', 'US')",
+          description:
+            "Filter by specific country IATA code (e.g., 'GB', 'US')",
         },
         after: {
           type: "string",
@@ -391,7 +430,8 @@ export const flightTools: Tool[] = [
         },
         before: {
           type: "string",
-          description: "Cursor for pagination - get airports before this cursor",
+          description:
+            "Cursor for pagination - get airports before this cursor",
         },
       },
       required: [],
