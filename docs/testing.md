@@ -125,3 +125,8 @@ creation, exact quote/order checks, nullable refunds/expiry, already-confirmed
 state, stale/provider failures and uncertain confirmation outcomes without retries.
 Packaged Flight checks verify both new tools, safe error envelopes and removal of
 the old cancel tool. No booking, cancellation or refund occurs in these checks.
+
+Salesforce bulk-delete fixtures use fake fetch responses for the real service:
+ordered arrays, partial failures, all-or-none rollback, malformed outcomes, ID
+matching and input limits. The packaged SDK check verifies the bulk tool's MCP
+error flag. These tests do not delete live records or exercise authentication.

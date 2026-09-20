@@ -223,3 +223,23 @@
 - Only selected plan completion/status and append-only journal finalization changed after review. Completion provisional until successful authorized commit; intended files staged and no unrelated changes.
 - Intended commit: feat(US-007): repair Duffel cancellation and uncertain outcomes. Commit status pending (not yet delivered); actual Git outcome establishes delivery.
 - Next: US-008 Salesforce bulk-delete reporting. Read-only preparation found bulkDelete assumes response.results instead of verifying the Composite API response shape. No US-008 edits yet; verify official schema before implementing fixtures.
+
+## 2026-09-20 - US-008: Salesforce bulk-delete candidate verification
+
+- Previous goal turn made progress: US-007 delivered8785f63. Verified clean codex/clean-slate before implementation; standing approval covers this story/commit. No live deletions, credentials, auth logic changes, dependencies or global edits.
+- Exa official sources: Salesforce Delete Records Using sObject Collections documents an ordered array of DeleteResult objects (up to200), HTTP200 can include failures, allOrNone defaultsfalse and true rolls back the standalone request on a failure. Official fetch returned narrative/schema but not hidden example bodies; examples crosschecked via search text, fixtures synthetic. Official Salesforce Help Locate the Unique ID of a Record confirms 15character case-sensitive and18character case-safe IDs.
+- New focused bulk-delete-result.ts validates the array, count/order/IDs, boolean outcomes/error codes and all-or-none consistency. Reports requestedId plus optional providerid, status codes, counts and rollback state; does not copy private provider messages. Malformed responses fail with unknown-outcome guidance, not fabricated successful rows. Service validates1..200IDs/boolean flag and encodes queryparameters. sobject_type compatibility argument remains unused by the ID-based endpoint, documented.
+- MCP bulk-delete failures now set isError while preserving the Salesforce success/data/error JSON envelope. Other tools and authentication/refresh logic unchanged. Tool schema matches bounds; README documents migration from rawdataarray to data.results and per-record/aggregate outcomes.
+- Red evidence: initial17tests yielded13failures, reproducing partial/rollback misclassification, malformed response acceptance, URL parameter injection and private-error copying. Packaged test reproduced missing isError before transport fix. Two further ID regressions exposed incorrect case-sensitive18character matching and ignored suffixes; corrected full18case-insensitive comparison with15case-sensitive compatibility.
+- Checks: final npm test PASS209 across16files, including21bulk-delete fixtures,15packaged checks and all seven prepack builds. npm run type-check PASS; npm run lint PASS; configured format/range-format applied; git diff --check PASS. Diff inspection confirms makeRequest/authentication code untouched. No live Salesforce enforcement claim.
+- Runtime Codex desktop, GPT-6 family exact model unavailable, standard mode; no advisors/UI. US-008 attempt1 expanded-initial/initial requires native story-reviewer for destructive-operation reporting/test-sensitive changes. No session yet; both passes unused. Candidate immutable during review. Memory unchanged/valid.
+- Intended commit: feat(US-008): verify Salesforce bulk-delete reporting. Review/commit pending; story incomplete.
+
+## 2026-09-20 - US-008: passing review and delivery preparation
+
+- Native story-reviewer /root/review_us008, attempt1 expanded-initial/initial, returned valid pass JSON with no findings or resolutions. Full schema/pass type validated. Initial pass consumed; targeted unnecessary. No code changes after review.
+- Residual limit: synthetic offline fixtures cannot establish transaction enforcement or permissions against a live Salesforce organization. Authentication remains unchanged and no live deletion tests were run.
+- Learning candidate bulk-operation-http-success-is-not-record-success is useful but lacks an accepted_fixed review event; memory remains unchanged rather than inventing an evidence count.
+- Only selected plan completion/status and append-only journal finalization changed after review. Final checks remain PASS209 offline tests, typecheck, lint, configured formatting and whitespace checks, including all seven prepack builds. Standing execution/story-commit authorization remains valid.
+- Intended commit: feat(US-008): verify Salesforce bulk-delete reporting. Commit status pending (not yet delivered); actual Git outcome establishes delivery.
+- Next: US-009 Elasticsearch contracts, all18tools and fixture-only provider mappings/error/result-bound checks. No US-009 edits performed.

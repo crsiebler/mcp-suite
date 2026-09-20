@@ -1,3 +1,4 @@
+import { bulkDeleteResult, isRecordId } from "./bulk-delete-result.js";
 import { Logger } from "../../../../shared/utils/logger.js";
 import {
   SalesforceConfig,
@@ -255,49 +256,49 @@ export class SalesforceService {
 
   async bulkDelete(
     sobjectType: string,
-    ids: string[],
-    allOrNone: boolean = false
+    ids: unknown,
+    allOrNone: unknown = false
   ): Promise<{
     success: boolean;
     data?: SalesforceBulkDeleteResponse;
     error?: string;
   }> {
-    try {
-      if (!ids || ids.length === 0) {
-        return {
-          success: false,
-          error: "No IDs provided for bulk deletion",
-        };
-      }
-
-      if (ids.length > 200) {
-        return {
-          success: false,
-          error:
-            "Maximum of 200 records can be deleted in a single bulk delete operation",
-        };
-      }
-
-      // For objects of the same type, we can use the Composite API's sObject Collections
-      const endpoint = `/composite/sobjects?ids=${ids.join(
-        ","
-      )}&allOrNone=${allOrNone}`;
-      const response = await this.makeRequest(endpoint, "DELETE");
-
-      // Check if any records failed to delete when allOrNone is false
-      const hasErrors =
-        response.results &&
-        response.results.some((result: any) => !result.success);
-
-      return {
-        success: !hasErrors,
-        data: response,
-      };
-    } catch (error) {
+    if (
+      !Array.isArray(ids) ||
+      ids.length === 0 ||
+      ids.length > 200 ||
+      !ids.every(isRecordId) ||
+      typeof allOrNone !== "boolean"
+    ) {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          "Provide 1–200 Salesforce record IDs and a boolean all_or_none value.",
+      };
+    }
+    try {
+      // The Collections endpoint uses IDs, not sobjectType, to select records.
+      const params = new URLSearchParams({
+        ids: ids.join(","),
+        allOrNone: String(allOrNone),
+      });
+      const response: unknown = await this.makeRequest(
+        `/composite/sobjects?${params}`,
+        "DELETE"
+      );
+      const data = bulkDeleteResult(response, ids, allOrNone);
+      if (!data)
+        return {
+          success: false,
+          error:
+            "Invalid bulk-delete response; deletion outcomes are unknown. Verify records before retrying.",
+        };
+      return { success: data.failedCount === 0, data };
+    } catch {
+      return {
+        success: false,
+        error:
+          "Bulk deletion failed; outcomes may be unknown. Verify records before retrying.",
       };
     }
   }

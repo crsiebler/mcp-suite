@@ -66,15 +66,15 @@ class SalesforceServer {
       const { name, arguments: args } = request.params;
 
       try {
+        const result = await this.handleToolCall(name, args);
         return {
+          ...(name === "salesforce_bulk_delete"
+            ? { isError: result.success !== true }
+            : {}),
           content: [
             {
               type: "text",
-              text: JSON.stringify(
-                await this.handleToolCall(name, args),
-                null,
-                2
-              ),
+              text: JSON.stringify(result, null, 2),
             },
           ],
         };
@@ -133,9 +133,9 @@ class SalesforceServer {
 
         case "salesforce_bulk_delete":
           return await this.salesforceService.bulkDelete(
-            args.sobject_type,
-            args.ids,
-            args.all_or_none
+            args?.sobject_type,
+            args?.ids,
+            args?.all_or_none
           );
 
         case "salesforce_describe":

@@ -52,10 +52,15 @@ export interface SalesforceDeleteResponse {
 
 export interface SalesforceBulkDeleteResponse {
   results: {
-    id: string;
+    requestedId: string;
+    id?: string | null;
     success: boolean;
-    errors?: any[];
+    errors: { statusCode: string }[];
   }[];
+  allOrNone: boolean;
+  rolledBack: boolean;
+  deletedCount: number;
+  failedCount: number;
 }
 
 export interface SalesforceDescribeResponse {

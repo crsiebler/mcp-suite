@@ -33,7 +33,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-007 verified; US-008 is next. Remaining stories pending.
+- Current status: US-001 through US-008 verified; US-009 is next. Remaining stories pending.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -190,7 +190,7 @@ Apply this workflow to each story:
 
 ### US-008 - Verify Salesforce bulk-delete reporting
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 8
 - Depends on: US-005
 - User benefit: see partial failures and transaction semantics accurately.

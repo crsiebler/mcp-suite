@@ -242,6 +242,18 @@ for (const pkg of packages) {
           })
         ).rejects.toMatchObject({ code: -32601 });
       }
+      if (pkg.server === "salesforce") {
+        const result = CallToolResultSchema.parse(
+          await client.callTool({
+            name: "salesforce_bulk_delete",
+            arguments: { sobject_type: "Account", ids: [] },
+          })
+        );
+        expect(result.isError).toBe(true);
+        const content = result.content[0];
+        if (content.type !== "text") throw new Error("Expected text result");
+        expect(JSON.parse(content.text)).toMatchObject({ success: false });
+      }
       // Invalid names exercise real dispatch/error handling without provider I/O.
       // SDKs differ between a tool-error result and a JSON-RPC error response.
       const outcome = await client

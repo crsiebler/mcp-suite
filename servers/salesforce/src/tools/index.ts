@@ -109,7 +109,7 @@ export const salesforceTools: McpTool[] = [
   {
     name: "salesforce_bulk_delete",
     description:
-      "Delete multiple records from Salesforce using the Composite API",
+      "Delete up to 200 IDs through sObject Collections. Reports each requested ID and aggregate failures; all_or_none rolls back the entire request on failure. Requires host approval for deletion.",
     inputSchema: {
       type: "object",
       properties: {
@@ -122,7 +122,10 @@ export const salesforceTools: McpTool[] = [
           type: "array",
           items: {
             type: "string",
+            pattern: "^(?:[A-Za-z0-9]{15}|[A-Za-z0-9]{18})$",
           },
+          minItems: 1,
+          maxItems: 200,
           description: "Array of Salesforce record IDs to delete (maximum 200)",
         },
         all_or_none: {

@@ -223,3 +223,45 @@ The server provides detailed error messages for common issues:
 - Subject to Salesforce API rate limits
 - Large query results may be truncated (use LIMIT clause)
 - Binary data and attachments require special handling
+
+## Bulk deletion result contract
+
+`salesforce_bulk_delete` keeps its arguments: `sobject_type`, `ids` (1–200 IDs),
+and optional `all_or_none` (boolean, default false). IDs must be 15 or 18 ASCII
+alphanumeric characters. `sobject_type` is retained for compatibility; the
+Collections endpoint selects records from their IDs, so it does not restrict
+those IDs to the named object type. Keep explicit host approval for deletion.
+
+Salesforce returns an ordered array of DeleteResult objects. HTTP 200 alone does
+not mean every record was deleted. With `all_or_none: false`, successful records
+can be deleted even when others fail; with true, any failure rolls back the
+standalone Collections request. This server does not wrap it in an outer Composite
+transaction. [Salesforce Collections deletion](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_composite_sobjects_collections_delete.htm)
+
+Migration: the old implementation returned the provider array under `data` while
+checking a nonexistent `response.results` property. The corrected response uses
+`data.results` and reports `success: false` for any per-record failure. MCP
+`isError` is also true for bulk-delete failures; other Salesforce tool envelopes
+are unchanged.
+
+`data` contains:
+
+- `results`: in input order, with `requestedId`, optional provider `id`, `success`
+  and an `errors` array containing provider `statusCode` values. Provider IDs may
+  be absent/null for failed records; `requestedId` identifies the affected input.
+- `allOrNone` and `rolledBack`: requested transaction behavior and whether a
+  valid failure response indicates the all-or-none request was rolled back.
+- `deletedCount` and `failedCount`: outcomes from the validated per-record results;
+  rolled-back rows count as failed, not deleted.
+
+Raw provider error messages/field values are omitted from this response; use the
+status codes and requested IDs for investigation. Malformed, missing, reordered
+or contradictory results return a safe failure without invented record outcomes.
+Network/provider failures also report uncertainty: inspect records before
+retrying any deletion. No new automatic retries or authentication changes are
+introduced; the existing authentication/refresh behavior remains in place.
+
+Offline fixtures cover arrays, partial failures, all-or-none rollback, invalid
+responses, input boundaries and the 200-record limit. Packaged checks verify the
+bulk tool's MCP error flag. These checks make no live Salesforce deletion and do
+not prove permissions or transaction enforcement against a real organization.
