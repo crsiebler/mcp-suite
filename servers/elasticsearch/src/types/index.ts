@@ -1,3 +1,5 @@
+import type { ShardOutcome } from "../services/outcomes.js";
+
 export interface ElasticsearchConfig {
   node: string;
   auth?:
@@ -27,18 +29,19 @@ export interface SearchOptions {
 }
 
 export interface SearchResult {
+  _shards?: ShardOutcome;
   took: number;
   timed_out: boolean;
   hits: {
     total: {
       value: number;
       relation: string;
-    };
-    max_score: number;
+    } | null;
+    max_score: number | null;
     hits: Array<{
       _index: string;
       _id: string;
-      _score: number;
+      _score: number | null;
       _source: any;
       highlight?: any;
     }>;

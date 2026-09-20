@@ -104,3 +104,14 @@ artifacts. Provenance is in the [overview](overview.md).
 
 Jira is now provided by the official hosted Atlassian Rovo MCP rather than a local
 package. See [Rovo setup](atlassian-rovo.md) for authentication and site routing.
+
+
+## Elasticsearch tool boundary
+
+Elasticsearch's entry point owns stdio and existing credential configuration.
+`servers/elasticsearch/src/handler.ts` dispatches the 18 tools and formats safe MCP
+errors; `input.ts` checks required fields and advertised argument limits before
+service calls. The service owns Elasticsearch request/response mappings, with
+`services/outcomes.ts` reducing provider failure details to machine types.
+Successful data shapes remain provider-specific; shared code does not own index
+administration. See the server README for result migration and limit semantics.

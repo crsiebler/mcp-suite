@@ -18,11 +18,11 @@ npx @crsiebler/mcp-elasticsearch-server
 
 ```bash
 # From project root
-npm install
-npm run build
+npm ci
+npm run build -- --server=elasticsearch
 
 # The server will be available at:
-./dist/servers/elasticsearch/src/index.js
+./servers/elasticsearch/dist/servers/elasticsearch/src/index.js
 ```
 
 ## Cline MCP Configuration
@@ -44,12 +44,12 @@ To use this server with Cline (VS Code extension), add the following to your Cli
       "command": "npx",
       "args": ["@crsiebler/mcp-elasticsearch-server"],
       "env": {
-        "ELASTICSEARCH_URL": "http://localhost:9200",
+        "ELASTICSEARCH_NODE": "http://localhost:9200",
         "ELASTICSEARCH_USERNAME": "elastic",
         "ELASTICSEARCH_PASSWORD": "your-password"
       },
       "disabled": false,
-      "alwaysAllow": ["search_documents", "get_indices", "create_index"]
+      "alwaysAllow": []
     }
   }
 }
@@ -89,7 +89,7 @@ To use this server with Cline (VS Code extension), add the following to your Cli
 - Search results limited to 1000 documents maximum
 - Bulk operations limited to 100 operations per request
 - Delete by query limited to 10,000 documents maximum
-- Aggregation results limited to prevent memory issues
+- Aggregation document hits limited to 100; bucket counts and response bytes depend on cluster limits
 - Connection timeout and retry controls
 
 ## Quick Setup
@@ -130,7 +130,7 @@ export ELASTICSEARCH_MAX_RETRIES="5"
 export ELASTICSEARCH_REQUEST_TIMEOUT="60000"
 ```
 
-## Available Tools (19)
+## Available Tools (18)
 
 ### Connection & Health Tools (3)
 
@@ -167,7 +167,7 @@ elasticsearch_update_document    - Update an existing document
 elasticsearch_delete_document    - Delete a document by ID
 ```
 
-### Bulk & Advanced Operations (4)
+### Bulk & Advanced Operations (3)
 
 ```
 elasticsearch_bulk_operation     - Multiple document operations (max 100 ops)
@@ -285,17 +285,12 @@ This server includes several built-in controls to prevent overwhelming your Elas
 ### Build and Run
 
 ```bash
-# Install dependencies
-npm install
-
-# Build the server
-npm run build
-
-# Run the server
-npm start
-
-# Development with auto-rebuild
-npm run dev
+# From the repository root
+npm ci
+npm run build -- --server=elasticsearch
+npm start --workspace=@crsiebler/mcp-elasticsearch-server
+npm test -- tests/unit/elasticsearch-service.test.ts tests/unit/elasticsearch-handler.test.ts
+npm run type-check
 ```
 
 ### Dependencies
@@ -330,3 +325,56 @@ npm run dev
 MIT License - see the root LICENSE file for details.
 
 Configuration is validated before startup; see [configuration rules](../../docs/server-development.md#configuration-and-input-validation) for endpoint restrictions and blank/invalid-setting behavior.
+
+## Verified tool contracts and migration
+
+The 18 names above are unchanged. `src/handler.ts` owns dispatch and MCP results;
+`src/input.ts` validates tool arguments before provider access. The provider
+service retains Elasticsearch-specific index and document operations. Authentication
+selection is unchanged.
+
+- Success content retains the existing raw JSON data shape. Execution failures
+  now return MCP `isError: true` with `{ "success": false, "error": { "code": "...",
+"message": "..." } }` instead of throwing raw provider errors. Retry metadata
+  is advisory. Connection-test errors and failed index-existence requests now
+  return errors rather than implying disconnected/absent data.
+- Search, aggregation and count preserve safe `_shards` counts and machine failure
+  types. Failed shards set `isError: true` while retaining available hits/counts;
+  a successful HTTP response can still be incomplete. Nested failure reasons
+  are omitted.
+- Bulk `errors: true`, query/reindex failure lists, version conflicts and reported
+  timeouts set `isError: true` while retaining the partial result data. Error
+  reasons/nested causes are omitted; machine error types and per-operation status
+  remain. Inspect partial results before retrying: mutations are not rolled back
+  as a group. The underlying client's configured retry behavior is unchanged.
+- `size` is a nonnegative integer: search accepts 0–1000 (default 10), aggregation
+  accepts 0–100 (default 0). Oversized inputs are rejected, not silently clamped.
+  Zero search size remains zero. Aggregation responses now include requested hits.
+  `from` is a nonnegative safe integer; Elasticsearch still enforces its configured
+  result window. This interface does not expose `search_after` or scroll pagination.
+- Untracked search totals are `null`, not fabricated zero totals. Null relevance
+  scores remain null; `gte` total relations remain lower bounds. Empty hits,
+  indices, buckets and node maps remain valid empty data.
+- Bulk input requires 1–100 actions. Update/delete require `id`; index/create/update
+  require object `document`. Update documents are sent as `{ "doc": document }`.
+  Single-document refresh flags preserve explicit `false`.
+- Concrete index information retains `{ stats, mappings, settings }`. An alias or
+  pattern resolving to other names returns `{ indices: { "resolved-name": { stats,
+mappings, settings } } }` so resolved data is not lost.
+- All tools advertise read/write annotations. Creation, indexing, updates, deletion,
+  bulk operations and reindexing are writes; creation is non-destructive, the other
+  writes may overwrite/delete data. Hints are not authorization controls. Hosts
+  must apply their own write approval policy, and Elasticsearch credentials determine
+  actual privileges. Older clients may ignore these annotations.
+
+Hit/action limits do not bound document byte size, aggregation buckets, index/node
+inventory size, or reindex volume. Delete-by-query sends `max_docs: 10000`; partial
+failures and concurrent changes remain provider semantics. Query DSL and mappings
+are object-validated here and semantically validated by Elasticsearch.
+
+Official contracts: [bulk request and partial failures](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-bulk),
+[search totals and pagination](https://www.elastic.co/guide/en/elasticsearch/reference/8.19/search-your-data.html).
+Fixtures use the real service with a fake client, and packaged tests use SDK 0.5
+stdio with network access blocked. They establish local mappings, input boundaries,
+error formatting and startup; they do not validate live cluster permissions or
+create/delete any cluster resources.

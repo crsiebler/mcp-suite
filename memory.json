@@ -33,6 +33,17 @@
       "rejected_count": 0,
       "last_validated_story": "US-005",
       "status": "active"
+    },
+    {
+      "id": "elasticsearch-http-success-can-contain-shard-failures",
+      "lens": "correctness",
+      "scope": ["servers/elasticsearch/src/**"],
+      "guidance": "Preserve and classify shard outcome metadata before projecting Elasticsearch read responses; HTTP success and an unset timeout flag do not establish a complete result.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-009",
+      "status": "active"
     }
   ],
   "suppressions": []

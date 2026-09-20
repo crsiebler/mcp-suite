@@ -1,3 +1,4 @@
+import { errorType, operationFailures, shardOutcome } from "./outcomes.js";
 import { Client } from "@elastic/elasticsearch";
 import {
   ElasticsearchConfig,
@@ -30,18 +31,12 @@ export class ElasticsearchService {
     cluster_name?: string;
     version?: string;
   }> {
-    try {
-      const response = await this.client.info();
-      return {
-        connected: true,
-        cluster_name: response.cluster_name,
-        version: response.version.number,
-      };
-    } catch (error) {
-      return {
-        connected: false,
-      };
-    }
+    const response = await this.client.info();
+    return {
+      connected: true,
+      cluster_name: response.cluster_name,
+      version: response.version.number,
+    };
   }
 
   async getClusterHealth(): Promise<ClusterHealth> {
@@ -69,25 +64,23 @@ export class ElasticsearchService {
   }
 
   async getIndexInfo(index: string): Promise<any> {
-    try {
-      const [stats, mappings, settings] = await Promise.all([
-        this.client.indices.stats({ index }),
-        this.client.indices.getMapping({ index }),
-        this.client.indices.getSettings({ index }),
-      ]);
-
-      return {
-        stats: stats.indices?.[index],
-        mappings: mappings[index]?.mappings,
-        settings: settings[index]?.settings,
-      };
-    } catch (error) {
-      throw new Error(
-        `Failed to get index info: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
-    }
+    const [stats, mappings, settings] = await Promise.all([
+      this.client.indices.stats({ index }),
+      this.client.indices.getMapping({ index }),
+      this.client.indices.getSettings({ index }),
+    ]);
+    const details = (name: string) => ({
+      stats: stats.indices?.[name],
+      mappings: mappings[name]?.mappings,
+      settings: settings[name]?.settings,
+    });
+    // Preserve the single concrete-index shape; aliases/patterns resolve to keys.
+    if (Object.hasOwn(mappings, index)) return details(index);
+    return {
+      indices: Object.fromEntries(
+        Object.keys(mappings).map((name) => [name, details(name)])
+      ),
+    };
   }
 
   async createIndex(
@@ -117,19 +110,14 @@ export class ElasticsearchService {
   }
 
   async indexExists(index: string): Promise<boolean> {
-    try {
-      const response = await this.client.indices.exists({ index });
-      return response;
-    } catch {
-      return false;
-    }
+    return this.client.indices.exists({ index });
   }
 
   async search(options: SearchOptions): Promise<SearchResult> {
     const searchParams: any = {
       index: options.index,
-      size: Math.min(options.size || 10, 1000), // Limit to max 1000 results
-      from: options.from || 0,
+      size: Math.min(options.size ?? 10, 1000), // Limit to max 1000 results
+      from: options.from ?? 0,
     };
 
     if (options.query) {
@@ -168,22 +156,17 @@ export class ElasticsearchService {
     return {
       took: response.took,
       timed_out: response.timed_out,
+      _shards: shardOutcome(response._shards),
       hits: {
-        total: {
-          value:
-            typeof response.hits.total === "number"
-              ? response.hits.total
-              : response.hits.total?.value || 0,
-          relation:
-            typeof response.hits.total === "object"
-              ? response.hits.total?.relation || "eq"
-              : "eq",
-        },
-        max_score: response.hits.max_score || 0,
+        total:
+          typeof response.hits.total === "number"
+            ? { value: response.hits.total, relation: "eq" }
+            : (response.hits.total ?? null),
+        max_score: response.hits.max_score ?? null,
         hits: response.hits.hits.map((hit: any) => ({
           _index: hit._index,
           _id: hit._id,
-          _score: hit._score || 0,
+          _score: hit._score ?? null,
           _source: hit._source,
           highlight: hit.highlight,
         })),
@@ -192,7 +175,10 @@ export class ElasticsearchService {
     };
   }
 
-  async count(index: string, query?: any): Promise<{ count: number }> {
+  async count(
+    index: string,
+    query?: any
+  ): Promise<{ count: number; _shards?: ReturnType<typeof shardOutcome> }> {
     const params: any = { index };
 
     if (query) {
@@ -200,7 +186,7 @@ export class ElasticsearchService {
     }
 
     const response = await this.client.count(params);
-    return response;
+    return { count: response.count, _shards: shardOutcome(response._shards) };
   }
 
   async getDocument(index: string, id: string): Promise<any> {
@@ -231,7 +217,7 @@ export class ElasticsearchService {
       params.id = operation.id;
     }
 
-    if (operation.refresh) {
+    if (operation.refresh !== undefined) {
       params.refresh = operation.refresh;
     }
 
@@ -256,7 +242,7 @@ export class ElasticsearchService {
       body: { doc: document },
     };
 
-    if (refresh) {
+    if (refresh !== undefined) {
       params.refresh = refresh;
     }
 
@@ -276,7 +262,7 @@ export class ElasticsearchService {
   ): Promise<any> {
     const params: any = { index, id };
 
-    if (refresh) {
+    if (refresh !== undefined) {
       params.refresh = refresh;
     }
 
@@ -302,13 +288,13 @@ export class ElasticsearchService {
       body.push(action);
 
       if (op.action !== "delete" && op.document) {
-        body.push(op.document);
+        body.push(op.action === "update" ? { doc: op.document } : op.document);
       }
     });
 
     const params: any = { body };
 
-    if (operation.refresh) {
+    if (operation.refresh !== undefined) {
       params.refresh = operation.refresh;
     }
 
@@ -326,7 +312,10 @@ export class ElasticsearchService {
           _version: item[action]._version,
           result: item[action].result,
           status: item[action].status,
-          error: item[action].error,
+          error:
+            item[action].error === undefined
+              ? undefined
+              : errorType(item[action].error),
         };
       }),
     };
@@ -335,7 +324,7 @@ export class ElasticsearchService {
   async performAggregation(options: AggregationOptions): Promise<any> {
     const searchParams: any = {
       index: options.index,
-      size: options.size || 0, // Default to 0 to only get aggregations
+      size: options.size ?? 0, // Default to 0 to only get aggregations
       body: {
         aggs: options.aggs,
       },
@@ -349,9 +338,9 @@ export class ElasticsearchService {
 
     return {
       took: response.took,
-      hits: {
-        total: response.hits.total,
-      },
+      timed_out: response.timed_out,
+      _shards: shardOutcome(response._shards),
+      hits: response.hits,
       aggregations: response.aggregations,
     };
   }
@@ -368,7 +357,7 @@ export class ElasticsearchService {
       max_docs: 10000,
     };
 
-    if (refresh) {
+    if (refresh !== undefined) {
       params.refresh = refresh;
     }
 
@@ -386,7 +375,7 @@ export class ElasticsearchService {
       throttled_millis: response.throttled_millis,
       requests_per_second: response.requests_per_second,
       throttled_until_millis: response.throttled_until_millis,
-      failures: response.failures,
+      failures: operationFailures(response.failures),
     };
   }
 
@@ -420,7 +409,7 @@ export class ElasticsearchService {
       throttled_millis: response.throttled_millis,
       requests_per_second: response.requests_per_second,
       throttled_until_millis: response.throttled_until_millis,
-      failures: response.failures,
+      failures: operationFailures(response.failures),
     };
   }
 

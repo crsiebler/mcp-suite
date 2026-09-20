@@ -130,3 +130,9 @@ Salesforce bulk-delete fixtures use fake fetch responses for the real service:
 ordered arrays, partial failures, all-or-none rollback, malformed outcomes, ID
 matching and input limits. The packaged SDK check verifies the bulk tool's MCP
 error flag. These tests do not delete live records or exercise authentication.
+
+Elasticsearch fixtures cover all 18 dispatch names, advertised bounds/annotations,
+provider request mappings, empty results, partial bulk/query outcomes and actual
+Elastic error classes. Packaged SDK tests exercise every tool's invalid-input or
+guarded read failure. No cluster is created or mutated. These are local contract
+checks, not live provider/permission or exhaustive response-schema validation.

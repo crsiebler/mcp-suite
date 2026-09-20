@@ -36,6 +36,7 @@ const env = {
   SALESFORCE_INSTANCE_URL: "https://fixture.invalid",
   SALESFORCE_ACCESS_TOKEN: "fixture-token",
   ELASTICSEARCH_NODE: "http://127.0.0.1:1",
+  ELASTICSEARCH_MAX_RETRIES: "0",
 };
 
 beforeAll(() => {
@@ -253,6 +254,36 @@ for (const pkg of packages) {
         const content = result.content[0];
         if (content.type !== "text") throw new Error("Expected text result");
         expect(JSON.parse(content.text)).toMatchObject({ success: false });
+      }
+      if (pkg.server === "elasticsearch") {
+        expect(result.tools).toHaveLength(18);
+        for (const tool of result.tools) {
+          expect(tool.annotations).toMatchObject({
+            readOnlyHint: expect.any(Boolean),
+          });
+          const response = CallToolResultSchema.parse(
+            await client.callTool({ name: tool.name, arguments: {} })
+          );
+          expect(response.isError).toBe(true);
+          const content = response.content[0];
+          if (content.type !== "text") throw new Error("Expected text result");
+          const data = JSON.parse(content.text);
+          expect(data).toMatchObject({ success: false });
+          if (
+            Array.isArray(tool.inputSchema.required) &&
+            tool.inputSchema.required.length > 0
+          )
+            expect(data.error.code).toBe("invalid_input");
+          expect(content.text).not.toContain("Network access blocked");
+          expect(content.text).not.toContain("fixture-token");
+        }
+        const search = CallToolResultSchema.parse(
+          await client.callTool({
+            name: "elasticsearch_search",
+            arguments: { index: "fixture", size: 0 },
+          })
+        );
+        expect(search.isError).toBe(true);
       }
       // Invalid names exercise real dispatch/error handling without provider I/O.
       // SDKs differ between a tool-error result and a JSON-RPC error response.
