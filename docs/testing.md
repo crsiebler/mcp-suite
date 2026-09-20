@@ -143,3 +143,11 @@ The inventory smoke test does not prove every argument's provider semantics.
 `canvas-pagination.test.ts` exercises real course service/registry pagination with
 an Axios adapter; no live student, grading, login or SSO operations occur.
 Packaged checks cover default/selected exposure and unknown-category startup.
+
+
+ClickUp fixtures cover all 29 names, actual Axios request mappings and provider
+error paths. Boundary cases cover required arguments, numeric payload encoding,
+page zero, comment cursor pairs, Workspace filtering/member projection, mutation
+hints and unknown timeout outcomes without retries. Packaged checks exercise all
+29 invalid-input/guarded-read paths through the actual SDK. No task, hierarchy,
+time entry or goal is changed remotely; live account capabilities remain unverified.

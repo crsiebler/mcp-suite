@@ -33,7 +33,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-010 verified; US-011 is next. Remaining stories pending.
+- Current status: US-001 through US-011 verified; US-012 is next. Remaining stories pending.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -226,7 +226,7 @@ Apply this workflow to each story:
 
 ### US-011 - Verify ClickUp contracts
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 11
 - Depends on: US-002, US-005
 - User benefit: reliably use the retained operations that motivated keeping ClickUp.

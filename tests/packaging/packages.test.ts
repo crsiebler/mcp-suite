@@ -286,6 +286,37 @@ for (const pkg of packages) {
         );
         expect(search.isError).toBe(true);
       }
+      if (pkg.server === "clickup") {
+        expect(result.tools).toHaveLength(29);
+        for (const tool of result.tools) {
+          expect(tool.annotations).toMatchObject({
+            readOnlyHint: tool.name.startsWith("get_"),
+          });
+          const response = CallToolResultSchema.parse(
+            await client.callTool({ name: tool.name, arguments: {} })
+          );
+          expect(response.isError).toBe(true);
+          const content = response.content[0];
+          if (content.type !== "text") throw new Error("Expected text result");
+          expect(JSON.parse(content.text)).toMatchObject({
+            success: false,
+            error: {
+              code:
+                tool.name === "get_teams" ? "internal_error" : "invalid_input",
+            },
+          });
+          expect(content.text).not.toMatch(
+            /Network access blocked|fixture-token/
+          );
+        }
+        const response = CallToolResultSchema.parse(
+          await client.callTool({
+            name: "get_task",
+            arguments: { task_id: "fixture" },
+          })
+        );
+        expect(response.isError).toBe(true);
+      }
       // Invalid names exercise real dispatch/error handling without provider I/O.
       // SDKs differ between a tool-error result and a JSON-RPC error response.
       const outcome = await client

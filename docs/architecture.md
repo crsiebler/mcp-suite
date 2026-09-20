@@ -13,8 +13,7 @@
 | `shared/middleware/`          | Unused authentication helper retained unchanged; generic error middleware removed                  |
 | `scripts/`                    | Build and release orchestration, separate from server runtime                            |
 
-These are conventions, not a shared server framework. ClickUp keeps its tool
-handlers in `src/index.ts`. Canvas has category-specific tool and service modules. Do not assume every server has a `handlers/` directory or uses
+These are conventions, not a shared server framework. ClickUp separates transport, tool schemas, validation and provider mappings. Canvas has category-specific tool and service modules. Do not assume every server has a `handlers/` directory or uses
 all shared middleware.
 
 ## Workspace and package output
@@ -126,3 +125,13 @@ The entry point retains client/authentication configuration and stdio lifecycle.
 Course-only opt-in pagination lives in `services/course-pagination.ts`; other
 service contracts remain unchanged. See [Canvas tools](canvas-tools.md) for
 categories, pagination and error-output migration.
+
+
+## ClickUp tool boundary
+
+`servers/clickup/src/index.ts` retains the Axios credential setup and MCP transport.
+`tools.ts` combines three domain schema arrays; `handler.ts` resolves the advertised
+name, validates arguments through `input.ts`, and formats raw successes or safe
+shared failures. `provider.ts` owns the 29 request mappings and Workspace-member
+projection. Required input migrations and pagination limits are in the
+[ClickUp guide](../servers/clickup/README.md#contracts-and-migration).
