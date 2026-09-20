@@ -18,7 +18,6 @@ mcp-suite/
 │   ├── utils/          # Utility functions (logger, config, validation)
 │   └── middleware/     # Unused authentication helper, retained unchanged
 ├── servers/            # Individual MCP servers
-│   ├── aijobsearch/   # ASU skills extraction and job matching
 │   ├── flight/        # Duffel flight search and booking
 │   ├── canvas/        # Canvas LMS server for educational workflows
 │   ├── postgresql/    # PostgreSQL database management server
@@ -69,19 +68,17 @@ declarations and historical release records are retained.
 
 ## Available servers
 
-The [generated server catalog](docs/server-catalog.md) lists all seven npm
+The [generated server catalog](docs/server-catalog.md) lists all six npm
 workspaces, exact tool names/counts, compiled entry points and credential settings:
-AI Job Search, Canvas, ClickUp, Elasticsearch, Flight (Duffel), PostgreSQL and
+Canvas, ClickUp, Elasticsearch, Flight (Duffel), PostgreSQL and
 Salesforce. Its source is workspace manifest metadata plus actual built tool exports.
 Run `npm run catalog:check` to detect stale inventory; it builds current source first.
 
-AI Job Search remains experimental: its provider routes/taxonomy are unverified.
-Resolve its [live-readiness blocker](servers/aijobsearch/README.md#provider-readiness-unresolved)
-before sending private content. Canvas defaults to all tools and supports optional
+Canvas defaults to all tools and supports optional
 [category selection](docs/canvas-tools.md). Provider account permissions still apply.
 
 For Jira Cloud, use the [official Atlassian Rovo MCP](docs/atlassian-rovo.md).
-The ten removed vendor-overlapping servers are not local packages.
+The ten removed vendor-overlapping servers and AI Job Search are not local packages.
 
 ## Development
 
@@ -92,7 +89,7 @@ The ten removed vendor-overlapping servers are not local packages.
 
 Build one server with `npm run build -- --server=postgresql`, or all servers with
 `npm run build -- --server=all`. Without arguments, the build is non-interactive
-and builds all seven npm workspaces. The private root and single root lockfile own
+and builds all six npm workspaces. The private root and single root lockfile own
 installation; use `npm ci`. `npm pack --workspace=<package-name>` runs the package
 prepack build. See the server-development guide for artifact checks and paths.
 Building does not start a server.

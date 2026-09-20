@@ -1,10 +1,10 @@
 # MCP setup
 
-Use the [generated catalog](server-catalog.md) for all seven retained servers,
+Use the [generated catalog](server-catalog.md) for all six retained servers,
 exact tool names, environment settings and repository-relative entry points.
 The catalog distinguishes startup requirements from conditional provider credentials.
-Server READMEs own provider-specific options and limitations. AI Job Search's provider
-contract remains unverified; Canvas can expose selected tool categories.
+Server READMEs own provider-specific options and limitations. Canvas can expose
+selected tool categories.
 
 ## Build locally
 

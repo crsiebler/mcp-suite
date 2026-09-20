@@ -30,8 +30,6 @@ mkdirSync(resolve(root, "dist/test-artifacts"), { recursive: true });
 const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/packages-"));
 const env = {
   LOG_LEVEL: "debug",
-  AIJOBSEARCH_API_TOKEN: "fixture-token",
-  AIJOBSEARCH_API_URL: "https://fixture.invalid",
   CANVAS_API_TOKEN: "fixture-token",
   CANVAS_BASE_URL: "https://fixture.invalid",
   CLICKUP_API_TOKEN: "fixture-token",
@@ -58,7 +56,7 @@ beforeAll(() => {
       }
     )
   );
-  expect(packed).toHaveLength(7);
+  expect(packed).toHaveLength(6);
   const dependencies: Record<string, string> = {};
   // Reuse the exact lock graph and tarball integrities. An unpinned npm install
   // would require registry metadata even after npm ci cached all tarballs.
@@ -169,30 +167,6 @@ for (const pkg of packages) {
       expect(result.tools.map((tool) => tool.name).sort()).toEqual(entry.tools);
       expect(entry.toolCount).toBe(result.tools.length);
       if (pkg.server === "canvas") expect(result.tools).toHaveLength(185);
-      if (pkg.server === "aijobsearch") {
-        for (const name of ["extract_skills", "match_jobs"]) {
-          for (const args of [
-            {},
-            { taxonomy: "fixture", context: "fixture", type: "text" },
-          ]) {
-            const response = CallToolResultSchema.parse(
-              await client.callTool({ name, arguments: args })
-            );
-            expect(response.isError).toBe(true);
-            const content = response.content[0];
-            if (content.type !== "text")
-              throw new Error("Expected text result");
-            expect(JSON.parse(content.text)).toMatchObject({
-              success: false,
-              error: {
-                code: "context" in args ? "internal_error" : "invalid_input",
-              },
-            });
-            expect(content.text).not.toContain("Network access blocked");
-            expect(content.text).not.toContain("fixture-token");
-          }
-        }
-      }
       if (pkg.server === "postgresql") {
         expect(result.tools.map((tool) => tool.name).sort()).toEqual([
           "check_dangerous_operations_allowed",
@@ -347,7 +321,7 @@ for (const pkg of packages) {
       } else {
         const failure = CallToolResultSchema.parse(outcome.result);
         if (pkg.server === "salesforce") {
-          // Salesforce retains its existing envelope; ASU is the first migrated caller.
+          // Salesforce retains its provider-specific envelope.
           const content = failure.content[0];
           expect(content.type).toBe("text");
           if (content.type === "text")
@@ -412,9 +386,6 @@ const invalidSettings: Array<[string, string, string | undefined]> = [
   ["canvas", "CANVAS_API_TOKEN", "  "],
   ["canvas", "CANVAS_TOOL_CATEGORIES", "private-category"],
   ["clickup", "CLICKUP_API_TOKEN", "  "],
-  ["aijobsearch", "AIJOBSEARCH_API_TOKEN", ""],
-  ["aijobsearch", "AIJOBSEARCH_API_URL", undefined],
-  ["aijobsearch", "AIJOBSEARCH_API_URL", "file:///private-endpoint"],
   ["flight", "DUFFEL_ENVIRONMENT", "private-environment"],
   ["flight", "LOG_LEVEL", "private-log-level"],
   ["elasticsearch", "ELASTICSEARCH_MAX_RETRIES", "private-retry"],

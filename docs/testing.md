@@ -1,7 +1,7 @@
 # Testing and verification
 
 Install locked root dependencies with `npm ci`. Run commands from the repository
-root. The root lockfile installs all seven workspaces and their declared SDK versions.
+root. The root lockfile installs all six workspaces and their declared SDK versions.
 No per-server lockfiles or installs are needed.
 
 | Command                                         | Purpose                                                                     |
@@ -73,7 +73,7 @@ check results and the limitations of this initial verification story.
 
 US-002 additionally verifies the frozen workspace install with engine-strict on
 Node 22.14.0/npm 10.9.2, plus all seven builds, typecheck, lint and all 19 offline
-tests. Node 22.14.0 is now the declared minimum for the root and all seven
+tests. Node 22.14.0 is now the declared minimum for the root and all six
 packages. The test fixture validates all packages together using the locked graph;
 it does not independently prove each package's production-only dependency closure.
 
@@ -85,7 +85,7 @@ stderr routing, filtering, synthetic-secret redaction, bounded output, hostile
 serialization and provider call-site privacy. Service tests replace only network
 or database boundaries; no live requests or database changes occur.
 
-Packaging checks run all seven installed tarballs with `LOG_LEVEL=debug`, capture
+Packaging checks run all six installed tarballs with `LOG_LEVEL=debug`, capture
 stderr to fixture-local files, and fail on SDK protocol parsing errors during
 initialization, discovery and an unknown-tool call. They preserve the current
 Salesforce failure envelope pending response normalization. This proves those
@@ -95,7 +95,7 @@ not the newer SDK's `stderr` pipe accessor.
 
 
 Configuration regressions live in `tests/unit/config.test.ts`,
-`tests/unit/input-validation.test.ts` and `tests/unit/elasticsearch-config.test.ts`.
+`tests/unit/elasticsearch-config.test.ts`.
 They cover absent/blank settings, exact credential/text preservation, strict typed
 boundaries, malformed URLs, zero retries and rejection before provider access.
 The packaged suite additionally launches invalid-setting fixtures with network
@@ -103,13 +103,10 @@ access blocked, checking nonzero exit, empty stdout, named settings and no value
 leakage. Successful startup alone is not evidence of invalid-setting rejection.
 
 
-Shared result/error tests (`server-result`, `aijobsearch-errors` and
-`aijobsearch-handler`) verify SDK schema compatibility, both migrated tool success
-and failure envelopes, error privacy, input rejection, retry metadata and
-serialization failures. Packaged ASU checks call both actual tools with invalid
-arguments and blocked network operations, verifying safe tool-error results.
-Provider-specific response schemas and successful live provider operations are
-not established by these fixtures.
+Shared result/error tests (`server-result`) verify SDK schema compatibility,
+success/failure serialization, safe error classification and retry metadata.
+Provider-specific fixtures verify retained handlers; no removed server is required
+by shared utility tests.
 
 
 PostgreSQL `postgresql-config` tests construct real pg objects without connecting;
@@ -151,13 +148,6 @@ page zero, comment cursor pairs, Workspace filtering/member projection, mutation
 hints and unknown timeout outcomes without retries. Packaged checks exercise all
 29 invalid-input/guarded-read paths through the actual SDK. No task, hierarchy,
 time entry or goal is changed remotely; live account capabilities remain unverified.
-
-
-ASU `aijobsearch-contracts` fixtures cover skills extraction and both job-matching
-variants, provisional response validation, UTF-8/serialized request limits, deadlines,
-timer cleanup and privacy. `aijobsearch-transport` uses loopback HTTP only to verify
-actual Axios response limits, redirect refusal and cancellation. Packaged startup
-requires an explicit endpoint. See the [ASU readiness blocker](../servers/aijobsearch/README.md#provider-readiness-unresolved): local checks do not prove provider support.
 
 
 Catalog validation uses `npm run catalog:check` (all-server build followed by a

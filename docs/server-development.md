@@ -2,9 +2,9 @@
 
 ## Package and tool contracts
 
-Node.js 22.14.0 or newer is required by the repository and all seven packages.
+Node.js 22.14.0 or newer is required by the repository and all six packages.
 The private root owns installation, verification and orchestration. npm workspaces
-in root package.json discover the seven packages under servers/. Install the root
+in root package.json discover the six packages under servers/. Install the root
 lockfile with `npm ci`; do not create per-server lockfiles. Package versions remain
 independent. Adding a server means adding its manifest/source/configuration under
 the workspace pattern, not maintaining another handwritten build list.
@@ -53,7 +53,7 @@ Packing, including dry runs, can execute lifecycle hooks; it is not read-only.
 
 Inspect tarball contents and verify main/bin/start paths, rather than assuming
 `dist/index.js`. `tests/packaging/packages.test.ts` runs real prepack hooks, installs
-all seven tarballs offline from the npm cache, and initializes/lists tools through
+all six tarballs offline from the npm cache, and initializes/lists tools through
 an SDK client from another working directory. Synthetic settings and a child
 network guard prevent provider access. Debug-level stderr is captured separately;
 initialization, discovery and unknown-tool calls must produce no protocol errors.
@@ -119,7 +119,6 @@ empty string. Environment names are unchanged.
 
 | Setting | Accepted value / default |
 | --- | --- |
-| `AIJOBSEARCH_API_URL` | Required HTTP(S) base endpoint; no default (ASU provider contract unverified) |
 | `CANVAS_BASE_URL` | Required HTTP(S) base endpoint |
 | `ELASTICSEARCH_NODE` | HTTP(S) base endpoint; default `http://localhost:9200` |
 | `ELASTICSEARCH_MAX_RETRIES` | Decimal integer 0–10; default 3; zero disables retries |
@@ -138,7 +137,7 @@ Compatibility changes: supplied blank settings and malformed numbers/enums now
 fail instead of silently selecting defaults, accepting numeric prefixes or
 passing invalid values to providers. Elasticsearch startup failures exit nonzero;
 configuration errors identify the setting without printing its value. Required
-Canvas/ClickUp tokens use the same blank-value checks as ASU and Flight. Token
+Canvas/ClickUp tokens use the same blank-value checks as Flight. Token
 bytes, credential choice, authentication flows and authorization rules are unchanged.
 PostgreSQL's dangerous-operation flag and Salesforce's optional OAuth setup keep
 their existing parsing/behavior under the no-authentication-change boundary.
@@ -147,10 +146,7 @@ Shared helpers also provide strict `true`/`false` boolean parsing with an explic
 default; they do not add new environment settings. Use typed validation for an
 actual operation rather than inventing generic string cleanup. The unused
 `sanitizeString` export was removed; `requireText` rejects non-string/blank input
-and returns exact text. ASU extraction taxonomy/context and text-mode matching
-use it, preserving spaces, newlines and angle brackets. This does not HTML-escape
-text or validate the remote ASU taxonomy contract; callers must apply the rules
-of their own operation. The auth middleware's existing validators are unchanged.
+and returns exact text. Callers must apply the rules of their own operation. The auth middleware's existing validators are unchanged.
 
 
 ## Shared result migration
@@ -158,8 +154,8 @@ of their own operation. The auth middleware's existing validators are unchanged.
 `ServerResponse<T>` is a discriminated success-with-data or failure-with-error
 union; use `unknown` at unvalidated external boundaries. `McpTool`, `McpResource`
 and `McpPrompt` alias installed SDK types without changing SDK versions.
-AI Job Search is the first fully migrated dispatch consumer. Do not assume other
-servers already expose this envelope; see its [migration notes](../servers/aijobsearch/README.md#response-contract).
+Consumers retain provider-specific success shapes; inspect the selected handler
+before assuming that it returns the shared envelope.
 
 Preserve original provider errors until `normalizeFailure` can classify metadata,
 then pass the safe result through `toMcpResult`. Do not interpolate error messages

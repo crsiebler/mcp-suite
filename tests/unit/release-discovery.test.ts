@@ -37,10 +37,9 @@ function releaseDiscovery(script: string, directory: string) {
 }
 
 it.each(["publish.js", "deploy.js"])(
-  "%s includes all seven workspace servers without external commands",
+  "%s includes all six workspace servers without external commands",
   (script) => {
     expect(releaseDiscovery(script, root)).toEqual([
-      "aijobsearch",
       "canvas",
       "clickup",
       "elasticsearch",

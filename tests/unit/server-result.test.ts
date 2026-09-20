@@ -5,7 +5,6 @@ import {
 import { expect, it } from "vitest";
 import { normalizeFailure, InputError } from "../../shared/utils/errors.ts";
 import { toMcpResult } from "../../shared/utils/result.ts";
-import { aijobsearchTools } from "../../servers/aijobsearch/src/tools/index.ts";
 import { tools as elasticTools } from "../../servers/elasticsearch/src/tools/index.ts";
 
 it.each([
@@ -88,7 +87,7 @@ it("normalizes input and unknown failures without serializing arbitrary rejectio
   }
 });
 it("returns SDK-valid success/error envelopes and handles unserializable data", () => {
-  const data = { skills_list: [] };
+  const data = { items: [] };
   const success = toMcpResult({ success: true, data });
   expect(CallToolResultSchema.parse(success).isError).toBe(false);
   expect(success.content[0]).toEqual({
@@ -102,7 +101,7 @@ it("returns SDK-valid success/error envelopes and handles unserializable data", 
   expect(JSON.stringify(failure)).toContain("invalid_response");
 });
 it("validates shared MCP tool descriptions against the installed SDK schema", () => {
-  for (const tool of [...aijobsearchTools, ...elasticTools])
+  for (const tool of elasticTools)
     expect(ToolSchema.safeParse(tool).success).toBe(true);
 });
 

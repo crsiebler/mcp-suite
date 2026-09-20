@@ -27,7 +27,6 @@ it("lists workspace packages without building from an unrelated cwd", () => {
     timeout: 10000,
   });
   expect(JSON.parse(result)).toEqual([
-    "aijobsearch",
     "canvas",
     "clickup",
     "elasticsearch",

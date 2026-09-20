@@ -1,7 +1,6 @@
 import axios from "axios";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { Logger } from "../../shared/utils/logger.ts";
-import { AIJobSearchService } from "../../servers/aijobsearch/src/services/aijobsearch-service.ts";
 import { PostgreSQLService } from "../../servers/postgresql/src/services/postgresql-service.ts";
 import { SalesforceService } from "../../servers/salesforce/src/services/salesforce-service.ts";
 import { DuffelService } from "../../servers/flight/src/services/duffel-service.ts";
@@ -28,23 +27,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-});
-
-it("omits private job-search context and skill inputs from debug logs", async () => {
-  vi.spyOn(axios, "post").mockResolvedValue({
-    data: { skills_list: [], jobs_list: [] },
-  });
-  const service = new AIJobSearchService(
-    { apiUrl: "https://fixture.invalid", apiToken: "synthetic-token" },
-    logger()
-  );
-  await service.extractSkills({
-    taxonomy: "private-taxonomy",
-    context: "private-resume",
-  });
-  await service.matchJobs({ type: "text", context: "private-description" });
-  expect(output()).toContain("Extracting skills");
-  expect(output()).not.toContain("private-");
 });
 
 it("omits raw SQL and parameters while preserving query execution", async () => {

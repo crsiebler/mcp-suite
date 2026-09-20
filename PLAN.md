@@ -2,17 +2,20 @@
 
 ## Objective and context
 
-Make the seven retained servers reproducibly buildable, testable, protocol-safe,
+Make the six retained servers reproducibly buildable, testable, protocol-safe,
 and maintainable before adding a model-backed integration.
 
 - Sources: user-approved recommendations and audits in this conversation;
   AGENTS.md, docs/testing.md, docs/server-development.md, scripts/, config/,
   shared/, remaining manifests and tool/service implementations.
-- Retained servers: aijobsearch, canvas, clickup, elasticsearch, flight,
+- Retained servers: canvas, clickup, elasticsearch, flight,
   postgresql, salesforce.
 - Included in the clean-slate baseline: ten server removals; author metadata set to
   Cory <cory.siebler@phitechsolutions.com>; AGENTS.md and repository map; Rovo guide.
   Preserve these changes. Their presence is not a passing runtime baseline.
+- Scope amendment (2026-09-20): remove AI Job Search at the user’s request.
+  Preserve completed-story evidence for the former seven-server inventory; future
+  release and final verification scope is the six retained servers above.
 - Scope: local code, tests, npm workspace packaging, Changesets release
   preparation, GitHub Actions workflow definitions, and accurate contributor/release docs.
 - Non-goals: restore removed servers, change global harness configuration, migrate
@@ -33,12 +36,12 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-013 verified. US-014 through US-016 pending. Missing upstream notices remain a publication prerequisite.
+- Current status: US-001 through US-013 verified. US-013A removal verified; US-014 through US-016 pending. Missing upstream notices remain a publication prerequisite.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
 
-Use npm workspaces for the seven server packages, Changesets for independent
+Use npm workspaces for the six server packages, Changesets for independent
 package versions and changelogs, and GitHub Actions for release PR preparation
 and separately gated publication. Keep the root package private. Reuse maintained
 tooling; do not implement a custom version calculator or release orchestrator.
@@ -261,11 +264,26 @@ Apply this workflow to each story:
 - [ ] Remove the orphan Jira fixture after proving no consumers; active docs describe exactly seven retained servers with accurate executable paths and credentials.
 - [ ] Keep author metadata consistent. Resolve missing license documentation only from verified provenance/owner intent; do not invent or relicense historical material.
 
+### US-013A - Remove AI Job Search
+
+- [x] Story complete
+- Priority: 13
+- Depends on: US-013
+- User benefit: maintain only the six requested integrations.
+- Scope: user-requested removal of servers/aijobsearch, its dedicated tests and
+  workspace lock entries; retain shared helpers and coverage used by other servers.
+- Verification: formatting, lint, typecheck, frozen offline install, full offline
+  tests, six-package build/catalog validation and native staged review.
+- [ ] Remove the server and its exclusive tests/dependencies without changing the
+  other six servers' behavior; build/release discovery excludes the removed package.
+- [ ] Regenerate the six-server catalog and update active setup/maps and remaining
+  plan scope. Preserve historical completion and provenance records.
+
 ### US-014 - Adopt Changesets and document contribution/release preparation
 
 - [ ] Story complete
 - Priority: 14
-- Depends on: US-013
+- Depends on: US-013A
 - User benefit: describe changes once and review accurate versions and release notes.
 - Relevant paths: package.json, root lockfile, new .changeset/ configuration, package CHANGELOG.md files, root CHANGELOG.md, releases/, scripts/deploy.js, scripts/publish.js, AGENTS.md, docs/server-development.md, new docs/releasing.md, README.md.
 - Verification: common formatting/lint/typecheck gates, offline Changesets fixture checks, documentation command/link checks.
@@ -300,7 +318,7 @@ Apply this workflow to each story:
 - User benefit: have a trustworthy release-readiness baseline.
 - Relevant paths: tests/, package output, docs/testing.md, README.md, repository map.
 - Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Initialize, list tools, call representative success/error fixture operations, and close each of seven actual built/package entry points using a real SDK client.
+- [ ] Initialize, list tools, call representative success/error fixture operations, and close each of six actual built/package entry points using a real SDK client.
 - [ ] Check protocol-only stdout, required credential failures using fake values, output schemas, resource cleanup and startup outside the source cwd. Mark live validation separately.
 - [ ] Run the configured formatter, lint, typecheck, all offline tests and all-server build; document precise commands, supported versions and any unresolved provider limitations.
 - [ ] Verify README.md, AGENTS.md, contribution/release guides and the map consistently describe the implemented workspace/Changesets/CI workflow, including commands, package changelogs and release approval/recovery. Documentation must already ship with US-002/014/015; this is the final consistency check. No global install, live mutation, deployment, or unsolicited publication.

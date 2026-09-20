@@ -18,7 +18,7 @@ all shared middleware.
 
 ## Workspace and package output
 
-The private root and root package-lock.json own seven npm workspaces. Package
+The private root and root package-lock.json own six npm workspaces. Package
 metadata is the shared discovery source in scripts/packages.cjs. The build wrapper
 uses argument arrays and an installed compiler, checking shared sources before
 selected package builds. Each package ships its nested dist/servers/<name>/src
@@ -66,23 +66,16 @@ minimal metadata because arbitrary private prose cannot be recognized reliably.
 
 ## Shared results and errors
 
-[AI Job Search dispatch](../servers/aijobsearch/src/tools/handler.ts) is the first
-consumer of the discriminated `ServerResponse` contract. Services validate unknown
-arguments, preserve original provider failures for metadata classification, and
-validate provider data against provisional local interfaces and apply request/response
-limits with a cancellable deadline. The tool boundary uses
-[error normalization](../shared/utils/errors.ts) and
-[MCP serialization](../shared/utils/result.ts) for both operations. Failures expose
-stable categories and safe messages, with bounded Retry-After advice where valid;
-no requests are retried by these helpers. Unknown tool names remain protocol errors.
+Shared helpers normalize failures into safe categories and serialize MCP results.
+Handlers choose their public success shapes; no suite-wide envelope is implied.
+Preserve provider metadata for classification, avoid returning raw failure bodies,
+and test the selected handler against the installed SDK schema. Shared helpers
+provide retry metadata but do not retry operations.
 
 The generic ErrorHandler had no production imports and was removed. Unused
 `shared/middleware/auth.ts` remains quarantined and unchanged under repository
-policy; do not adopt or remove it as part of unrelated error work. Other servers
-retain their existing response contracts until their focused migrations. See
-[response migration](../servers/aijobsearch/README.md#response-contract) for the
-client-visible ASU envelope change and unresolved provider-contract blocker. The ASU
-endpoint must be explicitly configured; its old POC default is no longer assumed.
+policy; do not adopt or remove it as part of unrelated error work. Retained servers
+use their documented response contracts.
 
 ## Source and generated ownership
 

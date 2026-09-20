@@ -35,8 +35,8 @@ Known source/documentation discrepancies and verification limits are recorded in
 the subject guides. Follow current source when old package examples, tool counts,
 or generated paths disagree; report the discrepancy instead of assuming parity.
 
-The active catalog now contains seven servers after the requested removal of
-ten vendor-overlapping integrations. Historical release notes describe earlier
+The active catalog now contains six servers after the requested removal of
+ten vendor-overlapping integrations and AI Job Search. Historical release notes describe earlier
 releases and are not the current catalog.
 
 

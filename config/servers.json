@@ -3,21 +3,6 @@
   "generatedFrom": "npm workspaces, package mcpSuite metadata and built tool exports",
   "servers": [
     {
-      "name": "aijobsearch",
-      "displayName": "AI Job Search",
-      "package": "@crsiebler/mcp-aijobsearch-server",
-      "version": "1.0.0",
-      "entry": "servers/aijobsearch/dist/servers/aijobsearch/src/index.js",
-      "binaries": ["mcp-aijobsearch"],
-      "toolCount": 2,
-      "tools": ["extract_skills", "match_jobs"],
-      "environment": {
-        "required": ["AIJOBSEARCH_API_URL", "AIJOBSEARCH_API_TOKEN"],
-        "optional": ["LOG_LEVEL"],
-        "notes": "Experimental: provider /skills, /jobs and taxonomy contracts remain unverified. Endpoint has no default; see the provider-readiness blocker in the server guide."
-      }
-    },
-    {
       "name": "canvas",
       "displayName": "Canvas",
       "package": "@crsiebler/mcp-canvas-server",
