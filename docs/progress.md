@@ -208,3 +208,69 @@ complete, finalization requires the following authorized commit to succeed.
 - Residual limits: synthetic fixtures do not establish accuracy or injection
   resistance; thresholds need separate calibration. Live access remains untested.
 - Required checks and review passed; provisional completion finalized by commit.
+
+## 2026-09-20 — US-005 release and setup candidate
+
+- US-004 committed26e539f after passing native review. Exact branch remains
+  codex/clean-slate; no advisors or live/provider/client configuration writes.
+- Reconciled seven-workspace inventory/maps, Jev entry path and environment
+  forwarding. Added OpenCode JSON and Codex TOML examples without approval rules.
+  Official docs fetched through Exa. Direct OpenCode schema retrieval returned
+  HTTP403; Exa's public schema content supplied the local-MCP subschema instead.
+  Codex schema fetched from official OpenAI source; TOML parsed with Python3.11.
+  Installed Ajv initially rejected custom numeric formats; explicit numeric format
+  validators resolved it. Full Codex schema/local OpenCode subschema pass. No
+  global config, credential store, or client startup was read or modified.
+- Existing behavior characterization: supplied release subsets now include Jev
+  (13 real packaged SDK checks), retaining PostgreSQL (4). Fixtures lack source
+  and build config, preserve tarball hashes and replace only provider I/O.
+  Actual Changesets3.0.1 fixture verifies new0.1.0 plus minor produces0.2.0 and
+  initial package changelog; root/unrelated versions and Git HEAD/tags untouched.
+  Scenario is self-contained so later release preparation can consume real notes.
+  No artificial failing test for existing behavior; no production release logic
+  changed. No real checkout version preparation/publication performed.
+- Full offline suite:826 tests/33 files pass on Node26.7.0 and22.14.0; typecheck
+  and lint pass on both. Explicit .mjs ESLint passed. All-package minimum-runtime
+  catalog build/check passed. US-002 engine-strict frozen install still applies:
+  no dependency changes since. Existing six manifests and migration Changeset
+  byte-identical to0c591a9; only pre-existing lock version change is hoisted Zod
+  3.25.64 to3.25.76. All other dependency additions belong to new Jev workspace.
+- Changeset from US-002 covers shipped Jev feature; this final docs/characterization
+  story needs no additional bump. Existing package versions remain unchanged.
+  Local Markdown target checks and git diff whitespace checks pass. No live key
+  or provider evaluation, publication, push, deployment or installation occurred.
+- Classification test-sensitive; standard mode requires native story-reviewer.
+  Intended commit: docs(US-005): complete Jev client and release workflow.
+
+### US-005 review and final audit
+
+- Native story-reviewer actual session /root/review_jev_us005, US-005 attempt1,
+  expanded-initial initial pass. Full protocol/schema embedded; candidate immutable
+  throughout review. Valid JSON verdict pass, no findings/resolutions/learnings;
+  no targeted pass needed. Reviewer did not rerun checks.
+- Residual limits remain client startup, live account/model quality, billing and
+  retention enforcement; no real release preparation or publication. No changes
+  to memory warranted. No blocked reviews or unresolved findings remain.
+- Final acceptance audit: US-001 contract/source comparison (9597440), US-002
+  packaged bounded SDK tool (6ad9071), US-003 failure/lifecycle/privacy coverage
+  (837c860), US-004 twelve synthetic cases and three workflow examples (26e539f)
+  delivered with required checks/reviews. US-005 seven-server docs, client schema
+  checks, new-package changelog characterization and supplied Jev artifact subset
+  pass; final commit below completes delivery. Preparation commit0c591a9 separately
+  preserved prior author/archive work. No task remains within approved scope.
+- Final verification after self-contained release-fixture adjustment:826 tests
+  in33 files pass on Node26.7.0 and22.14.0; all7 builds/catalog pass both.
+  Typecheck/lint, explicit fixture.mjs lint, scoped formatter and whitespace/link
+  validation passed. Six existing manifests/migration note unchanged. Native
+  reviews passed US002/004/005 initially; US003's accepted QA fix passed its
+  one targeted same-session review with mutation evidence. US001 self-review
+  followed the standard-mode documentation classification.
+- Delivery summary: one jev_evaluate tool via Vercel AI Gateway with bounded
+  state/questions/results, typed boolean/choice/score answers, cancellation and
+  safe errors. Setup: build Jev, forward AI_GATEWAY_API_KEY using documented
+  OpenCode/Codex fragments. No hosting deployment, Vercel CLI or Docker needed.
+  AI SDK evaluation is experimental; update pins only with renewed contract tests.
+- Key absent; no credentials accessed, live evaluations, avengers-initiative
+  edits, global installation, publication or pushes performed. Leave active plan,
+  journal and memory intact; archival needs separate approval. Final story
+  provisionally complete, contingent on successful authorized commit.

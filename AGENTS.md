@@ -63,7 +63,7 @@ entry points, commands, or ownership changes; no routine full-map regeneration.
 Use the installed Changesets CLI, not a custom version calculator. Add a Changeset
 for every affected published package when shipped behavior, dependencies, runtime
 requirements or public contracts change. Choose patch/minor/major by consumer
-impact; document breaking migrations. Shared modules are bundled into all six
+impact; document breaking migrations. Shared modules are bundled into all seven
 packages, so explicitly select affected consumers rather than relying on dependency
 inference. Repository-only docs/tests/tooling may have a justified no-release note.
 Conventional Commit messages remain required and do not replace Changesets.
@@ -88,7 +88,6 @@ reviewed separately; local tests do not prove hosted approval/OIDC enforcement.
 Publishing, tagging, pushing, hosted release PRs and registry configuration require
 separate authorization. Do not infer registry ownership, a remote release branch,
 or license clearance from local source metadata. Preserve original attribution.
-
 
 ## Server inventory and provenance
 

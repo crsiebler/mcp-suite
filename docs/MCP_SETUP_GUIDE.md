@@ -1,6 +1,6 @@
 # MCP setup
 
-Use the [generated catalog](server-catalog.md) for all six retained servers,
+Use the [generated catalog](server-catalog.md) for all seven retained servers,
 exact tool names, environment settings and repository-relative entry points.
 The catalog distinguishes startup requirements from conditional provider credentials.
 Server READMEs own provider-specific options and limitations. Canvas can expose
@@ -70,3 +70,63 @@ It is not launched from an mcp-suite package.
   with the intended build and any category-selection settings.
 - Request uncertainty: follow the server's timeout/partial-result guidance before
   retrying a mutation. Tool annotations do not grant permission to perform writes.
+
+## Jev in OpenCode and Codex
+
+Build with `npm run build -- --server=jev` from the repository root. Replace the
+absolute path placeholder below. Supply `AI_GATEWAY_API_KEY` through the environment
+of the process launching the harness; GUI apps may not inherit your shell. Do not
+paste a key into tracked configuration or tool arguments. No Vercel CLI, Docker,
+hosting deployment or separate TypeSafe key is required.
+
+OpenCode `opencode.json` fragment (merge with existing settings):
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "jev": {
+      "type": "local",
+      "command": [
+        "node",
+        "/absolute/path/to/mcp-suite/servers/jev/dist/servers/jev/src/index.js"
+      ],
+      "environment": {
+        "AI_GATEWAY_API_KEY": "{env:AI_GATEWAY_API_KEY}",
+        "JEV_TIMEOUT_MS": "30000"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+Codex `config.toml` fragment (project-scoped `.codex/config.toml` requires trust):
+
+```toml
+[mcp_servers.jev]
+command = "node"
+args = ["/absolute/path/to/mcp-suite/servers/jev/dist/servers/jev/src/index.js"]
+env_vars = ["AI_GATEWAY_API_KEY"]
+tool_timeout_sec = 60
+
+[mcp_servers.jev.env]
+JEV_TIMEOUT_MS = "30000"
+```
+
+Codex `env_vars` forwards the named variable; OpenCode expands `{env:...}`. These
+examples set no approval exceptions. Preserve the host's existing tool policy:
+`jev_evaluate` sends supplied text externally and can incur charges despite its
+read-only annotation. The 30-second server deadline is distinct from client tool
+timeouts; if raising it, configure the client's call timeout accordingly.
+Client MCP timeout settings do not change the server's evaluation deadline. Missing/blank keys fail startup; discovery does not evaluate anything.
+
+After separately authorized configuration, verify discovery of `jev_evaluate`.
+Use the [synthetic workflows](jev-workflows.md) only under the separate live
+evaluation data/spend approval described there. Offline fixtures passed; account
+access and real model quality remain unverified. No client configuration or global
+installation was performed by this implementation.
+
+Configuration fields follow official [OpenCode MCP documentation](https://opencode.ai/docs/mcp-servers/)
+and [Codex MCP documentation](https://developers.openai.com/codex/mcp), checked
+2026-09-20. This is an MCP tool integration, not a Jev chat-provider configuration.

@@ -5,7 +5,7 @@
 Server runtime requires Node.js 22.14.0 or newer. Development tooling supports
 Node 22.14+ (22.x), 24.x or 26+, and npm 10.9+; see [releasing](releasing.md).
 The private root owns installation, verification and orchestration. npm workspaces
-in root package.json discover the six packages under servers/. Install the root
+in root package.json discover the seven packages under servers/. Install the root
 lockfile with `npm ci`; do not create per-server lockfiles. Package versions remain
 independent. Adding a server means adding its manifest/source/configuration under
 the workspace pattern, not maintaining another handwritten build list.
@@ -54,7 +54,7 @@ Packing, including dry runs, can execute lifecycle hooks; it is not read-only.
 
 Inspect tarball contents and verify main/bin/start paths, rather than assuming
 `dist/index.js`. `tests/packaging/packages.test.ts` runs real prepack hooks, installs
-each of the six tarballs independently with production dependencies from the npm
+each of the seven tarballs independently with production dependencies from the npm
 cache. A real SDK client initializes, lists tools, calls success/error fixtures
 and closes each installed entry point from another working directory. Module
 resolution guards reject ancestor dependencies. Synthetic settings, provider I/O
@@ -109,8 +109,8 @@ truncation indicator before assuming the complete result set was returned.
 Shared TypeScript is copied into each package, not represented by a workspace
 dependency. Changesets cannot infer those consumers. Inspect imports and emitted
 contents, and explicitly include every affected package; with the current build,
-shared modules are shipped in all six packages. A common shared fix therefore
-normally needs all six selected. No-release changes (tests only, repository-only
+shared modules are shipped in all seven packages. A common shared fix therefore
+normally needs all seven selected. No-release changes (tests only, repository-only
 documentation or tooling without shipped impact) may use
 `npm run changeset -- --empty` with a written reason, or an explicit no-release
 explanation in review. An empty Changeset must not hide a shipped change.

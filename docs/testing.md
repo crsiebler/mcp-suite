@@ -1,7 +1,7 @@
 # Testing and verification
 
 Install locked root dependencies with `npm ci`. Run commands from the repository
-root. The root lockfile installs all six workspaces and their declared SDK versions.
+root. The root lockfile installs all seven workspaces and their declared SDK versions.
 No per-server lockfiles or installs are needed.
 
 | Command                                         | Purpose                                                                     |
@@ -91,7 +91,7 @@ stderr routing, filtering, synthetic-secret redaction, bounded output, hostile
 serialization and provider call-site privacy. Service tests replace only network
 or database boundaries; no live requests or database changes occur.
 
-Packaging checks run all six installed tarballs with `LOG_LEVEL=debug`, capture
+Packaging checks run all seven installed tarballs with `LOG_LEVEL=debug`, capture
 stderr to fixture-local files, and fail on SDK protocol parsing errors during
 initialization, discovery and representative success/error calls. A test adapter
 for the pinned SDK also captures raw stdout, validates all newline-delimited JSON-RPC
@@ -180,13 +180,13 @@ announcement failure. Git tags exist only in disposable fixture repositories.
 These tests never contact npm or GitHub to write state and cannot prove hosted
 environment approval, OIDC exchange or registry permissions.
 
-The `artifact-smoke` fixture supplies an actual PostgreSQL tarball to a checkout
+The `artifact-smoke` fixture supplies separate PostgreSQL and Jev tarball subsets to a checkout
 without source/build files, then runs the real SDK checks through the release
 artifact mode. `MCP_RELEASE_PACK_DIR=<absolute-directory> npm test --
 tests/packaging/packages.test.ts` validates and installs the selected tarballs;
 it skips source-only catalog validation and absent-server cases. CI runs the full
 source suite/catalog first. The ordinary packaging invocation still builds and
-tests all six packages. Both modes now use independent production-only installs
+tests all seven packages. Both modes now use independent production-only installs
 and module-resolution guards rather than relying on a combined six-server graph.
 
 CI uses Node 24 on GitHub-hosted Linux; publication checks npm >=11.5.1. The lock
@@ -203,9 +203,9 @@ workflow tests complement that check and do not replace hosted integration.
 
 `npm test -- tests/packaging/packages.test.ts tests/release/artifact-smoke.test.ts
 tests/unit/package-isolation.test.ts tests/unit/packaged-transport.test.ts` exercises
-the six independently installed entry points. Success cases cover Canvas courses,
-ClickUp teams, Duffel airlines, Elasticsearch search, PostgreSQL read-only query
-and Salesforce SOQL. Test-owned Axios adapters, Elastic transport, pg clients and
+the seven independently installed entry points. Success cases cover Canvas courses,
+ClickUp teams, Duffel airlines, Elasticsearch search, PostgreSQL read-only query,
+Salesforce SOQL and mixed Jev evaluations. Test-owned Axios adapters, Elastic transport, pg clients and
 fetch responses replace provider I/O inside each installation; schemas, dispatch,
 service mapping, serialization and SDK traffic remain real. PostgreSQL additionally
 records completed BEGIN/query/COMMIT and client release. Error cases retain the
@@ -215,7 +215,7 @@ connection-failure contract so pg can discard the failed client and drain its po
 All paths await child exit. This checks local process/resource cleanup, not remote
 query cancellation timing or live TLS, authentication, permissions, quotas or API
 compatibility. Release artifact mode runs the same contracts without rebuilding;
-the subset fixture verifies PostgreSQL from an existing tarball in a checkout
+the subset fixtures verify PostgreSQL and Jev from existing tarballs in a checkout
 without server sources. `.mjs` fixture guards also require an explicit ESLint check:
 `node_modules/.bin/eslint tests/fixtures/package-isolation.mjs
 tests/fixtures/package-provider-responses.mjs`.
@@ -240,3 +240,24 @@ and oversized-body cases assert safe results and captured stdout/stderr privacy.
 Provider event files contain only synthetic started/aborted booleans. These checks
 do not establish remote billing cancellation, live account access, model accuracy,
 privacy routing enforcement or exhaustive upstream API compatibility.
+
+## Jev delivery verification (2026-09-20)
+
+The complete offline suite passes 826 tests in 33 files on both Node 22.14.0 and
+26.7.0, including 45 independently installed package checks. Typecheck and lint
+pass on both runtimes. The minimum-runtime frozen engine-strict install passed
+during US-002; no dependency changes followed it. All seven builds and generated
+catalog checks pass. Supplied-artifact checks run PostgreSQL (4 checks) and Jev
+(13 checks) without sources or rebuilds and preserve each tarball hash.
+
+Jev pins AI SDK 7.0.105, Gateway 4.0.85, provider 4.0.17, MCP SDK 1.30.0,
+Zod 3.25.76 and zod-to-json-schema 3.25.1. Existing server manifests and SDK
+versions are unchanged; the existing hoisted Zod entry moved from 3.25.64 to
+3.25.76. The experimental evaluation API remains a future upgrade risk.
+
+The setup guide's Codex TOML was parsed and checked against the official config
+schema with numeric formats registered; OpenCode's local MCP block was checked
+against its official subschema and the wrapper against official documentation.
+These checks do not launch either harness or verify live model access. Twelve
+synthetic workflow fixtures and three documented requests pass offline schema/SDK
+checks. Real accuracy, billing, provider retention and account access remain untested.

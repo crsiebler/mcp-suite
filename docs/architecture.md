@@ -18,7 +18,7 @@ all shared middleware.
 
 ## Workspace and package output
 
-The private root and root package-lock.json own six npm workspaces. Package
+The private root and root package-lock.json own seven npm workspaces. Package
 metadata is the shared discovery source in scripts/packages.cjs. The build wrapper
 uses argument arrays and an installed compiler, checking shared sources before
 selected package builds. Each package ships its nested dist/servers/<name>/src
@@ -150,3 +150,18 @@ fresh registry-plan agreement; it never calculates versions or publishes.
 The packaging suite accepts `MCP_RELEASE_PACK_DIR` to test already-packed release
 subsets without prepack/build. GitHub announcement glue verifies the remote tag's
 commit and selects package changelog prose after confirmed npm publication.
+
+## Jev evaluation boundary
+
+`servers/jev/src/index.ts` registers one stdio tool with SDK 1.30.0. `input.ts`
+validates bounded JSON state/questions; `service.ts` calls AI SDK 7.0.105's
+experimental evaluation API with an explicit Gateway 4.0.85 evaluation model.
+`fetch.ts` bounds provider streaming and `output.ts` validates projected answers.
+Model/provider routing is fixed; tool arguments cannot override credentials, URLs
+or retention options. Cancellation, EOF and shutdown abort pending calls.
+
+Jev evaluates supplied alternatives; it does not fetch repository context or
+generate review findings/code. Its structured output and matching JSON text use
+a dedicated result contract, not the shared success envelope. See
+[design](jev-design.md) for SDK pins, limits and uncertainty, and
+[workflows](jev-workflows.md) for illustrative caller-owned decision policies.

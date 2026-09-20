@@ -19,6 +19,7 @@ mcp-suite/
 │   └── middleware/     # Unused authentication helper, retained unchanged
 ├── servers/            # Individual MCP servers
 │   ├── flight/        # Duffel flight search and booking
+│   ├── jev/           # TypeSafe AI evaluation through Vercel AI Gateway
 │   ├── canvas/        # Canvas LMS server for educational workflows
 │   ├── postgresql/    # PostgreSQL database management server
 │   ├── salesforce/    # Salesforce CRM server with OAuth authentication
@@ -69,9 +70,9 @@ declarations and historical release records are retained.
 
 ## Available servers
 
-The [generated server catalog](docs/server-catalog.md) lists all six npm
+The [generated server catalog](docs/server-catalog.md) lists all seven npm
 workspaces, exact tool names/counts, compiled entry points and credential settings:
-Canvas, ClickUp, Elasticsearch, Flight (Duffel), PostgreSQL and
+Canvas, ClickUp, Elasticsearch, Flight (Duffel), Jev, PostgreSQL and
 Salesforce. Its source is workspace manifest metadata plus actual built tool exports.
 Run `npm run catalog:check` to detect stale inventory; it builds current source first.
 
@@ -90,7 +91,7 @@ The ten removed vendor-overlapping servers and AI Job Search are not local packa
 
 Build one server with `npm run build -- --server=postgresql`, or all servers with
 `npm run build -- --server=all`. Without arguments, the build is non-interactive
-and builds all six npm workspaces. The private root and single root lockfile own
+and builds all seven npm workspaces. The private root and single root lockfile own
 installation; use `npm ci`. `npm pack --workspace=<package-name>` runs the package
 prepack build. See the server-development guide for artifact checks and paths.
 Building does not start a server.

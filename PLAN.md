@@ -240,38 +240,38 @@ No UI is planned; if UI is introduced, stop for scope revision and verify-interf
 
 ### US-005 - Complete seven-server release and client documentation
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 5
 - Depends on: US-004
 - User benefit: install/build/connect the verified package and maintain it through
   the existing workflow without manual release machinery.
 - Relevant paths: generated catalog, Jev package/README/changelog, `.changeset/`,
   README, AGENTS, docs maps/setup/testing/releasing and release artifact fixtures.
-- [ ] Reconcile seven-server inventory, commands, credentials, client examples and
+- [x] Reconcile seven-server inventory, commands, credentials, client examples and
       compiled paths. Include schema-valid OpenCode/Codex stdio examples with placeholders;
       no harness configuration edits or silent approval exceptions.
-- [ ] Add an appropriate package Changeset/initial changelog per the installed CLI's
+- [x] Add an appropriate package Changeset/initial changelog per the installed CLI's
       verified new-package behavior; root remains private. Preserve pending six-server
       migration changeset and existing package versions. No preparation/publication run
       in the real checkout merely to validate release behavior; use disposable fixtures.
-- [ ] Verify existing release artifact mode includes Jev in a supplied subset without
+- [x] Verify existing release artifact mode includes Jev in a supplied subset without
       rebuilding and runs a representative success/error call from its installed tarball.
       Preserve hashes, approval gates, license/ownership prerequisites and no-push scope.
-- [ ] Run full offline suite, all-server build/catalog, formatter/lint/typecheck and
+- [x] Run full offline suite, all-server build/catalog, formatter/lint/typecheck and
       package checks on the declared minimum runtime plus the normal development runtime.
       Compare scoped manifests/lock changes and document exact versions/results/limits.
-- [ ] Reconcile source, client and workflow docs; record actual live checks as unrun.
+- [x] Reconcile source, client and workflow docs; record actual live checks as unrun.
       Deliver source/configuration instructions and optional live-evaluation procedure,
       not an unverified claim of working account access or model review quality.
 
 ## Execution checklist for each story
 
-- [ ] Verify authorization, exact prepared branch and ownership of existing changes.
-- [ ] Establish failing regressions or appropriate documentation evidence.
-- [ ] Implement only the bounded story and run its required checks.
-- [ ] Stage the intended candidate and complete the shared mode-aware review gate.
-- [ ] Resolve findings and perform at most one targeted same-session review.
-- [ ] Update validated memory, append evidence, finalize completion and authorized commit.
+- [x] Verify authorization, exact prepared branch and ownership of existing changes.
+- [x] Establish failing regressions or appropriate documentation evidence.
+- [x] Implement only the bounded story and run its required checks.
+- [x] Stage the intended candidate and complete the shared mode-aware review gate.
+- [x] Resolve findings and perform at most one targeted same-session review.
+- [x] Update validated memory, append evidence, finalize completion and authorized commit.
 
 ## Resume and delivery
 
@@ -308,7 +308,7 @@ delivery requires its authorized commit to succeed. On failure restore only the
 provisional marker and preserve evidence. Report actual commits, verification,
 review outcomes and limitations. Never claim unexecuted or uncommitted work done.
 
-- [ ] Final report records actual commits, checks/review outcomes, delivered scope and gaps.
+- [x] Final report records actual commits, checks/review outcomes, delivered scope and gaps.
 
 Archive this run only with separate approval under the installed
 `references/completed-run-archive.md`; never replace/reset active state implicitly.

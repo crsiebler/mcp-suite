@@ -263,3 +263,52 @@ it("requires explicit changesets for copied shared-code consumers", () =>
       "@fixture/beta",
     ]);
   }));
+
+it("prepares an initial Jev changelog from a minor changeset", () =>
+  fixture((cwd) => {
+    // Keep the scenario stable after real release preparation consumes its note.
+    const manifest = { name: "@crsiebler/mcp-jev-server", version: "0.1.0" };
+    mkdirSync(resolve(cwd, "servers/jev"));
+    write(resolve(cwd, "servers/jev/package.json"), {
+      name: manifest.name,
+      version: manifest.version,
+    });
+    writeFileSync(
+      resolve(cwd, ".changeset/jev-evaluation.md"),
+      `---\n"${manifest.name}": minor\n---\n\nAdd the local jev_evaluate MCP tool through Vercel AI Gateway.\n`
+    );
+    expect(existsSync(resolve(cwd, "servers/jev/CHANGELOG.md"))).toBe(false);
+    const { plan } = prepare(cwd);
+    expect(plan.releases).toEqual([
+      expect.objectContaining({
+        name: manifest.name,
+        type: "minor",
+        oldVersion: "0.1.0",
+        newVersion: "0.2.0",
+      }),
+    ]);
+    expect(read(resolve(cwd, "servers/jev/package.json")).version).toBe(
+      "0.2.0"
+    );
+    expect(
+      read(resolve(cwd, "package-lock.json")).packages["servers/jev"].version
+    ).toBe("0.2.0");
+    const notes = readFileSync(
+      resolve(cwd, "servers/jev/CHANGELOG.md"),
+      "utf8"
+    );
+    expect(notes).toContain("## 0.2.0");
+    expect(notes).toContain("Minor Changes");
+    expect(notes).toContain("jev_evaluate");
+    expect(existsSync(resolve(cwd, ".changeset/jev-evaluation.md"))).toBe(
+      false
+    );
+    for (const name of ["alpha", "beta"]) {
+      expect(read(resolve(cwd, "servers", name, "package.json")).version).toBe(
+        "1.0.0"
+      );
+      expect(existsSync(resolve(cwd, "servers", name, "CHANGELOG.md"))).toBe(
+        false
+      );
+    }
+  }));

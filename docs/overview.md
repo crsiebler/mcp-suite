@@ -33,15 +33,21 @@ entry-point variations, and all current test-file categories. Other service
 implementations were inventoried rather than exhaustively reviewed. No live
 provider, deployment, package publication, or MCP-client connection was tested
 in that initial inspection. Current packaged SDK tests verify initialize/list/call/close
-for all six servers with offline provider fixtures; they do not establish live readiness.
+for all seven servers with offline provider fixtures; they do not establish live readiness.
 
 Known source/documentation discrepancies and verification limits are recorded in
 the subject guides. Follow current source when old package examples, tool counts,
 or generated paths disagree; report the discrepancy instead of assuming parity.
 
-The active catalog now contains six servers after the requested removal of
-ten vendor-overlapping integrations and AI Job Search. Historical release notes describe earlier
+The active catalog contains seven servers: the six retained integrations plus
+Jev evaluation through Vercel AI Gateway. Ten vendor-overlapping integrations
+and AI Job Search were removed. Historical release notes describe earlier
 releases and are not the current catalog.
+
+Jev contracts, workflow examples and live-verification limits are documented in
+[design](jev-design.md), [workflows](jev-workflows.md) and its
+[server guide](../servers/jev/README.md). The current [progress log](progress.md)
+records Jev implementation checks and reviews.
 
 Current inventory derives from npm workspaces and each manifest's `mcpSuite`
 metadata, validated against source environment readers and built tool exports.

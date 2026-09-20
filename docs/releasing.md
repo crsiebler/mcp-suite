@@ -160,7 +160,7 @@ uncertain; a denied job must not be rerun as an approval workaround. The workflo
 does not create the environment or configure its rules. Verify the branch policy
 and bypass settings during activation; the API preflight does not validate them.
 
-For **each of the six npm packages**, configure npm's GitHub Actions trusted
+For **each of the seven npm packages**, configure npm's GitHub Actions trusted
 publisher with owner `crsiebler`, repository `mcp-suite`, workflow file
 `release.yml`, and environment `npm-publish`. Verify ownership and the registry's
 first-publication setup process before enabling publication. Never bootstrap a
@@ -298,3 +298,20 @@ Hosted definitions use the released
 [Changesets Action v2.1.1](https://github.com/changesets/action/tree/v2.1.1),
 [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and
 [GitHub environment API](https://docs.github.com/en/rest/deployments/environments).
+
+## Adding Jev to the release workflow
+
+Jev's source manifest starts at `0.1.0`; `.changeset/jev-evaluation.md` requests a
+minor feature release. The installed Changesets 3.0.1 fixture verifies that version
+preparation produces `0.2.0` and creates `servers/jev/CHANGELOG.md` with the change
+summary. A missing changelog or unpublished package does not suppress that bump.
+The fixture synchronizes the root lock and leaves unrelated package versions,
+Git HEAD and tags unchanged. No version preparation ran in the real checkout.
+
+Keep the pending six-package migration Changeset and Jev's separate note. The
+implementation does not hand-author an already-released changelog or change the
+six existing package versions. During separately authorized preparation, review
+the actual generated initial notes and registry baseline before publication.
+Jev's inherited shared modules remain subject to the same license prerequisites.
+The supplied-artifact tests verify both PostgreSQL and Jev subsets without a
+rebuild; adding a workspace does not grant publishing or hosted activation approval.

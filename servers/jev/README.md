@@ -10,8 +10,8 @@ or hosting deployment is required. From the repository root, build with
 `node /absolute/path/to/mcp-suite/servers/jev/dist/servers/jev/src/index.js`.
 Supply `AI_GATEWAY_API_KEY` in the launch environment, never in tool arguments.
 Optional `JEV_TIMEOUT_MS` defaults to 30000 (100–120000); `LOG_LEVEL` defaults to info.
-No `.env` file is loaded. See [Fury/Mysterio examples](../../docs/jev-workflows.md). Client configuration
-examples are completed in the final documentation story.
+No `.env` file is loaded. See [Fury/Mysterio examples](../../docs/jev-workflows.md). See [OpenCode and Codex setup](../../docs/MCP_SETUP_GUIDE.md#jev-in-opencode-and-codex)
+for launcher examples and environment forwarding.
 
 Evaluations send supplied data externally and may incur charges. Discovery makes
 no provider requests. Calls request zero retention/no training routing, allow only
