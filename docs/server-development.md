@@ -145,3 +145,20 @@ and returns exact text. ASU extraction taxonomy/context and text-mode matching
 use it, preserving spaces, newlines and angle brackets. This does not HTML-escape
 text or validate the remote ASU taxonomy contract; callers must apply the rules
 of their own operation. The auth middleware's existing validators are unchanged.
+
+
+## Shared result migration
+
+`ServerResponse<T>` is a discriminated success-with-data or failure-with-error
+union; use `unknown` at unvalidated external boundaries. `McpTool`, `McpResource`
+and `McpPrompt` alias installed SDK types without changing SDK versions.
+AI Job Search is the first fully migrated dispatch consumer. Do not assume other
+servers already expose this envelope; see its [migration notes](../servers/aijobsearch/README.md#response-contract).
+
+Preserve original provider errors until `normalizeFailure` can classify metadata,
+then pass the safe result through `toMcpResult`. Do not interpolate error messages
+or attach raw response bodies. Use field-only `InputError` for validation failures.
+Retry-After is advisory; the helpers do not retry operations. Test both success and
+failure MCP results against the installed SDK schemas and preserve provider tests.
+The unused generic ErrorHandler has been removed; unused auth middleware remains
+unchanged and must not be enabled as a side effect of this workflow.

@@ -153,6 +153,30 @@ for (const pkg of packages) {
       expect(new Set(result.tools.map((tool) => tool.name)).size).toBe(
         result.tools.length
       );
+      if (pkg.server === "aijobsearch") {
+        for (const name of ["extract_skills", "match_jobs"]) {
+          for (const args of [
+            {},
+            { taxonomy: "fixture", context: "fixture", type: "text" },
+          ]) {
+            const response = CallToolResultSchema.parse(
+              await client.callTool({ name, arguments: args })
+            );
+            expect(response.isError).toBe(true);
+            const content = response.content[0];
+            if (content.type !== "text")
+              throw new Error("Expected text result");
+            expect(JSON.parse(content.text)).toMatchObject({
+              success: false,
+              error: {
+                code: "context" in args ? "internal_error" : "invalid_input",
+              },
+            });
+            expect(content.text).not.toContain("Network access blocked");
+            expect(content.text).not.toContain("fixture-token");
+          }
+        }
+      }
       // Invalid names exercise real dispatch/error handling without provider I/O.
       // SDKs differ between a tool-error result and a JSON-RPC error response.
       const outcome = await client
@@ -169,7 +193,7 @@ for (const pkg of packages) {
       } else {
         const failure = CallToolResultSchema.parse(outcome.result);
         if (pkg.server === "salesforce") {
-          // Preserve this existing envelope; response normalization is US-005.
+          // Salesforce retains its existing envelope; ASU is the first migrated caller.
           const content = failure.content[0];
           expect(content.type).toBe("text");
           if (content.type === "text")

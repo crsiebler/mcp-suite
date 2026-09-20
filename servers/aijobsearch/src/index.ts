@@ -3,9 +3,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
-  ErrorCode,
   ListToolsRequestSchema,
-  McpError,
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { Logger } from "../../../shared/utils/logger.js";
@@ -15,6 +13,7 @@ import {
   getHttpUrlEnvVar,
 } from "../../../shared/utils/config.js";
 import { AIJobSearchService } from "./services/aijobsearch-service.js";
+import { handleJobSearchTool } from "./tools/handler.js";
 import { aijobsearchTools } from "./tools/index.js";
 import { AIJobSearchConfig } from "./types/index.js";
 
@@ -57,46 +56,13 @@ class AIJobSearchServer {
       tools: aijobsearchTools,
     }));
 
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      try {
-        const result = await this.handleToolCall(
-          request.params.name,
-          request.params.arguments
-        );
-        return this.formatResponse(result);
-      } catch (error) {
-        this.logger.error("Tool call failed", error);
-        if (error instanceof McpError) {
-          throw error;
-        }
-        throw new McpError(
-          ErrorCode.InternalError,
-          `Tool execution failed: ${error}`
-        );
-      }
-    });
-  }
-
-  private async handleToolCall(toolName: string, args: any): Promise<any> {
-    switch (toolName) {
-      case "extract_skills":
-        return await this.aijobsearchService.extractSkills(args);
-      case "match_jobs":
-        return await this.aijobsearchService.matchJobs(args);
-      default:
-        throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${toolName}`);
-    }
-  }
-
-  private formatResponse(result: any): { content: any[] } {
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(result, null, 2),
-        },
-      ],
-    };
+    this.server.setRequestHandler(CallToolRequestSchema, async (request) =>
+      handleJobSearchTool(
+        this.aijobsearchService,
+        request.params.name,
+        request.params.arguments
+      )
+    );
   }
 
   private setupErrorHandling(): void {
@@ -117,7 +83,7 @@ class AIJobSearchServer {
       process.exit(1);
     });
 
-    process.on("unhandledRejection", (reason: any) => {
+    process.on("unhandledRejection", (reason: unknown) => {
       this.logger.error("Unhandled rejection", reason);
       process.exit(1);
     });

@@ -8,9 +8,9 @@
 | Server `tools/`               | Advertised names and JSON input schemas; most split servers export a tool array          |
 | Server `services/`            | Provider API calls and domain operations                                                 |
 | Server `types/` or `types.ts` | Provider-specific request and response types                                             |
-| `shared/types/`               | `ServerResponse`, configuration/logging types, and local MCP descriptions                |
-| `shared/utils/`               | Environment lookup, logging, and validation helpers                                      |
-| `shared/middleware/`          | Authentication/header and error helpers, used where explicitly imported                  |
+| `shared/types/`               | Discriminated `ServerResponse`, configuration/logging types, and installed SDK MCP aliases                |
+| `shared/utils/`               | Environment lookup, logging, validation, safe errors and MCP result serialization                                      |
+| `shared/middleware/`          | Unused authentication helper retained unchanged; generic error middleware removed                  |
 | `scripts/`                    | Build and release orchestration, separate from server runtime                            |
 
 These are conventions, not a shared server framework. ClickUp keeps its tool
@@ -53,17 +53,33 @@ are retained configuration/registry documents. Inspection found no references
 loading those filenames in the TypeScript/JavaScript runtime or scripts. Editing
 a registry entry alone does not implement or enable a server.
 
-[Logger](../shared/utils/logger.ts) writes debug/info through `console.debug`
-and `console.info`, and warning/error through `console.warn` and `console.error`.
-It serializes supplied data without redaction. This matters for stdio and private
-data: callers must not assume every level is protocol-safe or secret-safe.
+[Logger](../shared/utils/logger.ts) emits bounded JSON diagnostics exclusively to
+stderr and redacts known sensitive fields. Callers still use static messages and
+minimal metadata because arbitrary private prose cannot be recognized reliably.
+
+## Shared results and errors
+
+[AI Job Search dispatch](../servers/aijobsearch/src/tools/handler.ts) is the first
+consumer of the discriminated `ServerResponse` contract. Services validate unknown
+arguments, preserve original provider failures for metadata classification, and
+return unknown provider data. The tool boundary uses
+[error normalization](../shared/utils/errors.ts) and
+[MCP serialization](../shared/utils/result.ts) for both operations. Failures expose
+stable categories and safe messages, with bounded Retry-After advice where valid;
+no requests are retried by these helpers. Unknown tool names remain protocol errors.
+
+The generic ErrorHandler had no production imports and was removed. Unused
+`shared/middleware/auth.ts` remains quarantined and unchanged under repository
+policy; do not adopt or remove it as part of unrelated error work. Other servers
+retain their existing response contracts until their focused migrations. See
+[response migration](../servers/aijobsearch/README.md#response-contract) for the
+client-visible ASU envelope change and its provider-schema limits.
 
 ## Source and generated ownership
 
-TypeScript is the editable source. Tracked `.js`, `.d.ts`, and map files sit next
-to shared sources. [shared/tsconfig.json](../shared/tsconfig.json) emits into the
-shared directory, while the root config targets `dist/`. Server configs and the
-build script determine each server's local output layout. See
+TypeScript is the editable source. [shared/tsconfig.json](../shared/tsconfig.json)
+emits into root `dist/shared`; server builds bundle shared output inside each
+package's `dist/`. Generated siblings were removed from shared source. See
 [server development](server-development.md) before changing or invoking builds.
 
 Some servers also have a top-level `index.ts` re-export shim. Its existence does

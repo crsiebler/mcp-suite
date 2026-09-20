@@ -71,3 +71,35 @@ const jobsByText = await matchJobs({
 ## License
 
 MIT
+
+## Response contract
+
+Both tools now return MCP text containing a shared result envelope. Successful
+responses have `isError: false` and JSON `{ "success": true, "data": ... }`.
+Previously the provider object appeared directly in the text: clients must now
+read `data.skills_list` or `data.jobs_list` after checking `success`.
+
+Input/provider failures have `isError: true` and JSON such as:
+
+```json
+{"success":false,"error":{"code":"rate_limited","message":"Provider rate limit reached. Wait before retrying.","retryAfterSeconds":30}}
+```
+
+Errors no longer expose raw provider messages, bodies, URLs or credentials.
+Categories are `invalid_input`, `authentication`, `forbidden`, `not_found`,
+`rate_limited`, `timeout`, `unavailable`, `provider_error`, `invalid_response`,
+and `internal_error`. This is classification only; authentication and permissions
+are unchanged. Unknown tool names remain MCP protocol errors.
+
+`retryAfterSeconds` is optional advice for rate limits/unavailability, parsed from
+a numeric delay or canonical HTTP-date and bounded to 0–2147483647 seconds.
+Malformed values are omitted. There is no automatic retry; a timeout can have an
+unknown outcome. Check before repeating an operation.
+
+Arguments are validated at runtime. Required text must contain a non-whitespace
+character and is preserved exactly; skills mode requires an array with valid
+`title`, `description` and `taxonomy` text fields. Tool schemas describe these
+requirements. Extra skill fields are not forwarded. Provider responses remain
+`unknown` until the provider-specific contract is verified; this migration checks
+MCP output/envelope serialization, not the remote provider's complete data schema.
+The TypeScript provider interfaces alone are not runtime validation.

@@ -22,6 +22,17 @@
       "rejected_count": 0,
       "last_validated_story": "US-004",
       "status": "active"
+    },
+    {
+      "id": "validate-serialized-envelope-required-fields",
+      "lens": "correctness",
+      "scope": ["shared/utils/result.ts"],
+      "guidance": "When serializing unknown data into a required envelope field, verify that serialized output retains the field; JSON.stringify can silently omit functions, symbols and toJSON-returning-undefined values without throwing.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-005",
+      "status": "active"
     }
   ],
   "suppressions": []

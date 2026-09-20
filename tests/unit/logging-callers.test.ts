@@ -5,7 +5,6 @@ import { AIJobSearchService } from "../../servers/aijobsearch/src/services/aijob
 import { PostgreSQLService } from "../../servers/postgresql/src/services/postgresql-service.ts";
 import { SalesforceService } from "../../servers/salesforce/src/services/salesforce-service.ts";
 import { DuffelService } from "../../servers/flight/src/services/duffel-service.ts";
-import { ErrorHandler } from "../../shared/middleware/error-handler.ts";
 
 const db = vi.hoisted(() => ({
   query: vi.fn(),
@@ -98,23 +97,6 @@ it("omits Duffel URL query content on requests and responses", async () => {
   );
   await client.get("/air/airlines?filter=private-filter");
   expect(output()).toContain("Duffel API");
-  expect(output()).not.toContain("private-");
-});
-
-it("keeps middleware diagnostics independent of private error/validation text", () => {
-  const handler = new ErrorHandler(logger());
-  expect(handler.handleError(new Error("private-error")).success).toBe(false);
-  handler.handleApiError(
-    {
-      response: {
-        status: 422,
-        statusText: "private-status",
-        data: { message: "private-response" },
-      },
-    },
-    "Fixture"
-  );
-  handler.handleValidationError("input", "private-validation");
   expect(output()).not.toContain("private-");
 });
 

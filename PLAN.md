@@ -33,7 +33,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-004 verified; US-005 is next. Remaining stories pending.
+- Current status: US-001 through US-005 verified; US-006 is next. Remaining stories pending.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -152,7 +152,7 @@ Apply this workflow to each story:
 
 ### US-005 - Simplify shared types and error contracts
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 5
 - Depends on: US-003, US-004
 - User benefit: get consistent typed failures without duplicated abstractions.

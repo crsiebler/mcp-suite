@@ -101,3 +101,12 @@ boundaries, malformed URLs, zero retries and rejection before provider access.
 The packaged suite additionally launches invalid-setting fixtures with network
 access blocked, checking nonzero exit, empty stdout, named settings and no value
 leakage. Successful startup alone is not evidence of invalid-setting rejection.
+
+
+Shared result/error tests (`server-result`, `aijobsearch-errors` and
+`aijobsearch-handler`) verify SDK schema compatibility, both migrated tool success
+and failure envelopes, error privacy, input rejection, retry metadata and
+serialization failures. Packaged ASU checks call both actual tools with invalid
+arguments and blocked network operations, verifying safe tool-error results.
+Provider-specific response schemas and successful live provider operations are
+not established by these fixtures.

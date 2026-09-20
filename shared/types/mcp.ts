@@ -1,29 +1,13 @@
-export interface McpTool {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: string;
-    properties: Record<string, any>;
-    required?: string[];
-  };
-}
+import type {
+  Tool,
+  Resource,
+  Prompt,
+} from "@modelcontextprotocol/sdk/types.js";
 
-export interface McpResource {
-  uri: string;
-  name: string;
-  description?: string;
-  mimeType?: string;
-}
-
-export interface McpPrompt {
-  name: string;
-  description: string;
-  arguments?: {
-    name: string;
-    description: string;
-    required?: boolean;
-  }[];
-}
+// Reuse the installed SDK's contracts rather than permissive local copies.
+export type McpTool = Tool;
+export type McpResource = Resource;
+export type McpPrompt = Prompt;
 
 export interface McpServer {
   name: string;

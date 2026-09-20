@@ -14,12 +14,25 @@ export interface ApiCredentials {
   baseUrl?: string;
 }
 
-export interface ServerResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
+export type FailureCode =
+  | "invalid_input"
+  | "authentication"
+  | "forbidden"
+  | "not_found"
+  | "rate_limited"
+  | "timeout"
+  | "unavailable"
+  | "provider_error"
+  | "invalid_response"
+  | "internal_error";
+
+export interface ServerFailure {
+  success: false;
+  error: { code: FailureCode; message: string; retryAfterSeconds?: number };
 }
+
+export type ServerResponse<T = unknown> =
+  { success: true; data: T } | ServerFailure;
 
 export interface PaginationOptions {
   page?: number;
@@ -29,12 +42,12 @@ export interface PaginationOptions {
 
 export interface SearchOptions extends PaginationOptions {
   query?: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface LogContext {
   server: string;
