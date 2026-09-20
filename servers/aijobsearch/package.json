@@ -25,5 +25,22 @@
   "author": "Cory <cory.siebler@phitechsolutions.com>",
   "engines": {
     "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "AI Job Search",
+    "toolInventory": {
+      "module": "dist/servers/aijobsearch/src/tools/index.js",
+      "export": "aijobsearchTools"
+    },
+    "environment": {
+      "required": [
+        "AIJOBSEARCH_API_URL",
+        "AIJOBSEARCH_API_TOKEN"
+      ],
+      "optional": [
+        "LOG_LEVEL"
+      ],
+      "notes": "Experimental: provider /skills, /jobs and taxonomy contracts remain unverified. Endpoint has no default; see the provider-readiness blocker in the server guide."
+    }
   }
 }

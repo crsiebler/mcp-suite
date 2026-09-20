@@ -1,19 +1,14 @@
 #!/usr/bin/env node
-import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+const { execSync } = require("child_process");
+const { readFileSync, writeFileSync } = require("fs");
+const { join } = require("path");
 
-const ROOT_DIR = process.cwd();
-const SERVERS_DIR = join(ROOT_DIR, 'servers');
+const ROOT_DIR = join(__dirname, "..");
+const SERVERS_DIR = join(ROOT_DIR, "servers");
 
-function getServers() {
-  try {
-    const entries = execSync('ls -d servers/*/', { encoding: 'utf8' }).trim().split('\n');
-    return entries.map(entry => entry.replace('servers/', '').replace('/', ''));
-  } catch (error) {
-    console.log('No servers found');
-    return [];
-  }
+const { readPackages } = require("./packages.cjs");
+function getServers(root = ROOT_DIR) {
+  return readPackages(root).map((pkg) => pkg.server);
 }
 
 function bumpVersion(serverName, versionType = 'patch') {
@@ -128,4 +123,5 @@ function main() {
   console.log(`\n🎉 ${serverName} v${newVersion} deployed successfully!`);
 }
 
-main();
+if (require.main === module) main();
+module.exports = { getServers };

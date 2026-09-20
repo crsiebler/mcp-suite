@@ -317,4 +317,4 @@ This server exposes 29 selected ClickUp REST API v2 operations. For detailed par
 
 ## License
 
-MIT License - see LICENSE file for details.
+Existing metadata declares MIT; see [license provenance](../../docs/licensing.md).

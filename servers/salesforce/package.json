@@ -24,5 +24,28 @@
   "author": "Cory <cory.siebler@phitechsolutions.com>",
   "engines": {
     "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "Salesforce",
+    "toolInventory": {
+      "module": "dist/servers/salesforce/src/tools/index.js",
+      "export": "salesforceTools"
+    },
+    "environment": {
+      "required": [],
+      "optional": [
+        "SALESFORCE_INSTANCE_URL",
+        "SALESFORCE_ACCESS_TOKEN",
+        "SALESFORCE_API_VERSION",
+        "SALESFORCE_CLIENT_ID",
+        "SALESFORCE_CLIENT_SECRET",
+        "SALESFORCE_USERNAME",
+        "SALESFORCE_PASSWORD",
+        "SALESFORCE_GRANT_TYPE",
+        "SALESFORCE_LOGIN_URL",
+        "LOG_LEVEL"
+      ],
+      "notes": "Startup needs no credentials. Provider calls need an instance URL plus access token, or all four client ID/client secret/username/password variables for existing automatic authentication. Append a security token to password when required; there is no SALESFORCE_SECURITY_TOKEN environment reader. Authentication behavior is unchanged."
+    }
   }
 }

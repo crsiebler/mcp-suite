@@ -322,7 +322,7 @@ npm run type-check
 
 ## License
 
-MIT License - see the root LICENSE file for details.
+Existing metadata declares MIT; see [license provenance](../../docs/licensing.md).
 
 Configuration is validated before startup; see [configuration rules](../../docs/server-development.md#configuration-and-input-validation) for endpoint restrictions and blank/invalid-setting behavior.
 

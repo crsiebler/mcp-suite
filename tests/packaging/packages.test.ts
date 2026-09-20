@@ -19,7 +19,12 @@ const root = resolve(__dirname, "../..");
 const packages: Array<{
   path: string;
   server: string;
-  manifest: { name: string; main: string; bin: Record<string, string> };
+  manifest: {
+    name: string;
+    main: string;
+    bin: Record<string, string>;
+    mcpSuite: { environment: { required: string[] } };
+  };
 }> = require("../../scripts/packages.cjs").readPackages(root);
 mkdirSync(resolve(root, "dist/test-artifacts"), { recursive: true });
 const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/packages-"));
@@ -154,6 +159,15 @@ for (const pkg of packages) {
       expect(new Set(result.tools.map((tool) => tool.name)).size).toBe(
         result.tools.length
       );
+      const catalog = JSON.parse(
+        readFileSync(resolve(root, "config/servers.json"), "utf8")
+      );
+      const entry = catalog.servers.find(
+        (item: { name: string }) => item.name === pkg.server
+      );
+      expect(entry).toBeDefined();
+      expect(result.tools.map((tool) => tool.name).sort()).toEqual(entry.tools);
+      expect(entry.toolCount).toBe(result.tools.length);
       if (pkg.server === "canvas") expect(result.tools).toHaveLength(185);
       if (pkg.server === "aijobsearch") {
         for (const name of ["extract_skills", "match_jobs"]) {
@@ -353,6 +367,45 @@ for (const pkg of packages) {
     expect(diagnostics).not.toContain("fixture-token");
     expect(diagnostics).not.toContain("postgresql://");
   }, 15000);
+}
+
+it("generated catalog matches the current builds and environment readers", async () => {
+  await require("../../scripts/catalog.cjs").checkCatalog(root);
+});
+
+for (const pkg of packages) {
+  for (const key of pkg.manifest.mcpSuite.environment.required as string[]) {
+    it(`${pkg.server} metadata-required ${key} actually blocks startup when absent`, () => {
+      const environment: NodeJS.ProcessEnv = { ...env };
+      delete environment[key];
+      const entry = resolve(
+        scratch,
+        "node_modules",
+        pkg.manifest.name,
+        pkg.manifest.main
+      );
+      const result = spawnSync(
+        process.execPath,
+        [
+          "--require",
+          resolve(root, "tests/fixtures/offline-process.cjs"),
+          entry,
+        ],
+        {
+          cwd: scratch,
+          env: environment,
+          input: "",
+          encoding: "utf8",
+          timeout: 5000,
+        }
+      );
+      expect(result.error).toBeUndefined();
+      expect(result.status).toBe(1);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain(key);
+      expect(result.stderr).not.toContain("fixture-token");
+    });
+  }
 }
 
 const invalidSettings: Array<[string, string, string | undefined]> = [

@@ -4,13 +4,10 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const servers = [
-  "canvas",
-  "clickup",
-  "elasticsearch",
-  "postgresql",
-  "salesforce",
-];
+const { readPackages } = require("./packages.cjs");
+function getServers(root = path.join(__dirname, "..")) {
+  return readPackages(root).map((pkg) => pkg.server);
+}
 
 function publishPackage(serverName, versionBump) {
   const serverPath = path.join(__dirname, "..", "servers", serverName);
@@ -58,6 +55,7 @@ function publishPackage(serverName, versionBump) {
 }
 
 function main() {
+  const servers = getServers();
   const args = process.argv.slice(2);
 
   // Handle npm run publish -- server --version=patch
@@ -123,3 +121,5 @@ function main() {
 if (require.main === module) {
   main();
 }
+
+module.exports = { getServers };

@@ -678,7 +678,7 @@ The server provides comprehensive error handling:
 
 ## License
 
-MIT License - see LICENSE file for details.
+Existing metadata declares MIT; see [license provenance](../../docs/licensing.md).
 
 ## Changelog
 

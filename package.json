@@ -15,7 +15,9 @@
     "format": "prettier --write",
     "format:check": "prettier --check",
     "test:live": "vitest run --config vitest.live.config.ts",
-    "release:publish": "node scripts/publish.js"
+    "release:publish": "node scripts/publish.js",
+    "catalog:generate": "node scripts/catalog.cjs --write",
+    "catalog:check": "node scripts/catalog.cjs --check"
   },
   "keywords": [
     "api",

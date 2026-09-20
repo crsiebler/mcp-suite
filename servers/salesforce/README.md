@@ -18,11 +18,11 @@ npx @crsiebler/mcp-salesforce-server
 
 ```bash
 # From project root
-npm install
-npm run build
+npm ci
+npm run build -- --server=salesforce
 
 # The server will be available at:
-./dist/servers/salesforce/src/index.js
+./servers/salesforce/dist/servers/salesforce/src/index.js
 ```
 
 ## Cline MCP Configuration
@@ -44,13 +44,11 @@ To use this server with Cline (VS Code extension), add the following to your Cli
       "command": "npx",
       "args": ["@crsiebler/mcp-salesforce-server"],
       "env": {
-        "SALESFORCE_LOGIN_URL": "https://login.salesforce.com",
-        "SALESFORCE_USERNAME": "your-username",
-        "SALESFORCE_PASSWORD": "your-password",
-        "SALESFORCE_SECURITY_TOKEN": "your-security-token"
+        "SALESFORCE_INSTANCE_URL": "https://your-instance.my.salesforce.com",
+        "SALESFORCE_ACCESS_TOKEN": "your-access-token"
       },
       "disabled": false,
-      "alwaysAllow": ["query_records", "create_record", "update_record"]
+      "alwaysAllow": []
     }
   }
 }
@@ -70,7 +68,14 @@ To use this server with Cline (VS Code extension), add the following to your Cli
 
 ## Configuration
 
-### OAuth Authentication (Required)
+Startup itself requires no credentials. Provider operations need either
+`SALESFORCE_INSTANCE_URL` plus `SALESFORCE_ACCESS_TOKEN`, or the complete automatic
+authentication set below. No separate `SALESFORCE_SECURITY_TOKEN` variable is read;
+append it to `SALESFORCE_PASSWORD` when the provider requires it. These are existing
+runtime alternatives, not new authentication logic. The [catalog](../../docs/server-catalog.md)
+contains the eight advertised tools and complete environment inventory.
+
+### Automatic authentication (alternative)
 
 Set OAuth environment variables for automatic authentication:
 
@@ -95,7 +100,9 @@ export SALESFORCE_LOGIN_URL="https://login.salesforce.com"  # Optional, defaults
 
 ## Usage
 
-**Note**: All tools automatically handle authentication using the environment variables above. No manual authentication is required.
+**Note**: Automatic authentication requires all four credential variables above.
+An existing instance URL/access token pair can be used instead; renewal still
+requires the automatic authentication settings.
 
 ### Query Records
 

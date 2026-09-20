@@ -26,5 +26,26 @@
   "author": "Cory <cory.siebler@phitechsolutions.com>",
   "engines": {
     "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "PostgreSQL",
+    "toolInventory": {
+      "module": "dist/servers/postgresql/src/tools/index.js",
+      "export": "postgresqlTools"
+    },
+    "environment": {
+      "required": [
+        "POSTGRESQL_CONNECTION_STRING"
+      ],
+      "optional": [
+        "POSTGRESQL_ALLOW_DANGEROUS_OPERATIONS",
+        "POSTGRESQL_SSL_MODE",
+        "POSTGRESQL_SSL_CA",
+        "POSTGRESQL_QUERY_TIMEOUT_MS",
+        "POSTGRESQL_MAX_ROWS",
+        "LOG_LEVEL"
+      ],
+      "notes": "TLS defaults to verify-full; use trusted CA or explicit local disable as documented. Database roles enforce permissions. Dangerous-operation setting is not a security boundary."
+    }
   }
 }

@@ -25,5 +25,19 @@
   "author": "Cory <cory.siebler@phitechsolutions.com>",
   "engines": {
     "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "ClickUp",
+    "toolInventory": {
+      "module": "dist/servers/clickup/src/tools.js",
+      "export": "tools"
+    },
+    "environment": {
+      "required": [
+        "CLICKUP_API_TOKEN"
+      ],
+      "optional": [],
+      "notes": "Some tools require a Workspace ID or ClickUp Enterprise. See the documented input migrations."
+    }
   }
 }

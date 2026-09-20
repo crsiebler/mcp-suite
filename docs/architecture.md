@@ -52,10 +52,13 @@ Do not equate advertised read-only settings with a completed security audit.
 load `.env` files. The launching environment/client must supply credentials.
 Inspect each constructor for required variables and defaults.
 
-`config/development.json`, `config/production.json`, and `config/servers.json`
-are retained configuration/registry documents. Inspection found no references
-loading those filenames in the TypeScript/JavaScript runtime or scripts. Editing
-a registry entry alone does not implement or enable a server.
+`config/servers.json` is generated inventory, not runtime configuration.
+`npm run catalog:generate` builds the workspaces and derives it and
+[server-catalog.md](server-catalog.md) from package `mcpSuite` metadata and actual
+tool exports. Environment names are checked against literal source readers;
+packaged tests check required startup settings and discovered tool names.
+Unused development/production JSON was removed; no configuration loader was added.
+Environment variables remain the runtime configuration source.
 
 [Logger](../shared/utils/logger.ts) emits bounded JSON diagnostics exclusively to
 stderr and redacts known sensitive fields. Callers still use static messages and

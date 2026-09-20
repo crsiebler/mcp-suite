@@ -43,5 +43,22 @@
   "homepage": "https://github.com/crsiebler/mcp-suite/tree/main/servers/flight",
   "engines": {
     "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "Flight (Duffel)",
+    "toolInventory": {
+      "module": "dist/servers/flight/src/tools/index.js",
+      "export": "flightTools"
+    },
+    "environment": {
+      "required": [
+        "DUFFEL_API_KEY"
+      ],
+      "optional": [
+        "DUFFEL_ENVIRONMENT",
+        "LOG_LEVEL"
+      ],
+      "notes": "Environment is test by default; this does not verify token environment. Booking/payment/cancellation require scoped host approval. Cancellation uses separate quote and confirm tools."
+    }
   }
 }

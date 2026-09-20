@@ -66,8 +66,14 @@ with its required environment. Use the selected README and
 
 For a new server, add focused transport/dispatch, provider and schema modules as
 needed. Update the repository catalog and docs, add offline contract/package tests,
-and verify that the workspace inventory includes the package. Configuration in
-config/servers.json remains inactive legacy metadata until US-013 reconciles it.
+and verify that the workspace inventory includes the package. Package `mcpSuite` metadata declares the display name, pure built tool export and
+required/optional environment names. `npm run catalog:generate` compiles current
+source and updates config/servers.json plus docs/server-catalog.md;
+`npm run catalog:check` rebuilds and checks both without rewriting them.
+Keep environment readers literal so the inventory check can find them; extend
+the checker for a new reader form. Packaged tests compare actual discovery and
+verify each declared required startup setting. Conditional credentials belong in
+metadata notes and the server guide; they are not guessed from an optional read.
 
 ## Releases
 

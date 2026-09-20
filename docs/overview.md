@@ -12,10 +12,10 @@ assistant integration is client configuration, not a dependency on Claude Code.
 | Add a server or tool; build locally | [Server development](server-development.md) | `scripts/build.js`, server manifests and tool definitions |
 | Choose checks and understand coverage | [Testing](testing.md) | `package.json`, `tests/`, TypeScript configs |
 | Connect an MCP client | [MCP setup](MCP_SETUP_GUIDE.md) | Actual built entry point and server constructor environment reads |
-| Find service-specific options | [Server catalog](../README.md) and each server README | `servers/<name>/src/` |
+| Find service-specific options | [Generated server catalog](server-catalog.md) and each server README | `servers/<name>/src/` |
 | Agent obligations and approvals | [AGENTS.md](../AGENTS.md) | Canonical repository policy |
 
-The root README remains the human-facing service catalog. Individual server
+The root README links to the generated service catalog. Individual server
 READMEs own provider setup details. This map owns engineering navigation and
 observed relationships; it does not establish published-package availability.
 
@@ -38,3 +38,10 @@ or generated paths disagree; report the discrepancy instead of assuming parity.
 The active catalog now contains seven servers after the requested removal of
 ten vendor-overlapping integrations. Historical release notes describe earlier
 releases and are not the current catalog.
+
+
+Current inventory derives from npm workspaces and each manifest's `mcpSuite`
+metadata, validated against source environment readers and built tool exports.
+The unused environment JSON files and orphan Jira fixture were removed. Historical
+releases retain earlier inventories; they are not setup guidance. See
+[license provenance](licensing.md) for the unresolved original notice.

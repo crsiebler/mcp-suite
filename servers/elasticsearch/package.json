@@ -34,5 +34,24 @@
   },
   "engines": {
     "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "Elasticsearch",
+    "toolInventory": {
+      "module": "dist/servers/elasticsearch/src/tools/index.js",
+      "export": "tools"
+    },
+    "environment": {
+      "required": [],
+      "optional": [
+        "ELASTICSEARCH_NODE",
+        "ELASTICSEARCH_USERNAME",
+        "ELASTICSEARCH_PASSWORD",
+        "ELASTICSEARCH_API_KEY",
+        "ELASTICSEARCH_MAX_RETRIES",
+        "ELASTICSEARCH_REQUEST_TIMEOUT"
+      ],
+      "notes": "Node defaults to http://localhost:9200. Optional authentication: both username and password take precedence over an API key. Server credentials/permissions are provider requirements; startup alone does not establish access."
+    }
   }
 }

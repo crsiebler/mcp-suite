@@ -158,3 +158,11 @@ variants, provisional response validation, UTF-8/serialized request limits, dead
 timer cleanup and privacy. `aijobsearch-transport` uses loopback HTTP only to verify
 actual Axios response limits, redirect refusal and cancellation. Packaged startup
 requires an explicit endpoint. See the [ASU readiness blocker](../servers/aijobsearch/README.md#provider-readiness-unresolved): local checks do not prove provider support.
+
+
+Catalog validation uses `npm run catalog:check` (all-server build followed by a
+read-only inventory comparison). Unit fixtures check metadata/path constraints;
+packaged tests compare all discovered tool names to the generated catalog and
+verify each declared required environment variable prevents startup when absent.
+The source checker recognizes literal environment readers, not arbitrary data flow;
+conditional credential semantics remain explicit metadata/docs and existing runtime logic.

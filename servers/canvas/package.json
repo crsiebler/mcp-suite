@@ -25,5 +25,22 @@
   "author": "Cory <cory.siebler@phitechsolutions.com>",
   "engines": {
     "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "Canvas",
+    "toolInventory": {
+      "module": "dist/servers/canvas/src/catalog.js",
+      "export": "tools"
+    },
+    "environment": {
+      "required": [
+        "CANVAS_BASE_URL",
+        "CANVAS_API_TOKEN"
+      ],
+      "optional": [
+        "CANVAS_TOOL_CATEGORIES"
+      ],
+      "notes": "Catalog shows all default tools. CANVAS_TOOL_CATEGORIES can restrict exposure; see docs/canvas-tools.md."
+    }
   }
 }

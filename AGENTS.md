@@ -62,3 +62,15 @@ Deployment and publishing are not checks: the release scripts can change package
 versions, publish to npm, create commits/tags, and push tags. They require explicit
 scoped authorization. Preserve upstream attribution and package identity unless
 changes to them are separately requested.
+
+
+## Server inventory and provenance
+
+Npm workspaces own package discovery. Each server manifest's `mcpSuite` metadata
+owns its pure built tool export and environment inventory; actual tool definitions
+own names/counts. After changes, run `npm run catalog:generate` and verify
+`npm run catalog:check`. Both build current sources. Never edit generated
+config/servers.json or docs/server-catalog.md by hand. Keep literal environment
+readers discoverable or extend the source check; document conditional credentials
+without changing authentication logic. See docs/licensing.md before release work;
+do not invent missing upstream notices or infer relicensing from author metadata.
