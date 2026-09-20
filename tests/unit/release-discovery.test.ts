@@ -12,7 +12,7 @@ import { expect, it } from "vitest";
 
 const root = resolve(__dirname, "../..");
 const require = createRequire(import.meta.url);
-it("Changesets discovers the same six workspace packages as build and catalog", () => {
+it("Changesets discovers the same seven workspace packages as build and catalog", () => {
   mkdirSync(resolve(root, "dist/test-artifacts"), { recursive: true });
   const scratch = mkdtempSync(
     resolve(root, "dist/test-artifacts/release-discovery-")
@@ -38,6 +38,17 @@ it("Changesets discovers the same six workspace packages as build and catalog", 
         private: true,
         version: "1.0.0",
         workspaces: manifest.workspaces,
+      })
+    );
+    // Manypkg uses a lockfile to identify this npm workspace root. Without one
+    // it can select the parent checkout and accidentally inspect its Changesets.
+    writeFileSync(
+      resolve(scratch, "package-lock.json"),
+      JSON.stringify({
+        name: "fixture-root",
+        version: "1.0.0",
+        lockfileVersion: 3,
+        packages: {},
       })
     );
     mkdirSync(resolve(scratch, ".changeset"));
@@ -77,7 +88,10 @@ it("Changesets discovers the same six workspace packages as build and catalog", 
       output,
     ]);
     const plan = JSON.parse(readFileSync(output, "utf8"));
-    expect(packages).toHaveLength(6);
+    expect(plan.changesets.map((entry: { id: string }) => entry.id)).toEqual([
+      "bundled-consumers",
+    ]);
+    expect(packages).toHaveLength(7);
     const names = packages
       .map((pkg: { manifest: { name: string } }) => pkg.manifest.name)
       .sort();

@@ -31,6 +31,7 @@ it("lists workspace packages without building from an unrelated cwd", () => {
     "clickup",
     "elasticsearch",
     "flight",
+    "jev",
     "postgresql",
     "salesforce",
   ]);

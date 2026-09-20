@@ -7,6 +7,37 @@ export async function checkFailureContracts(
   client: Client,
   tools: Tool[]
 ) {
+  if (server === "jev") {
+    for (const [args, code] of [
+      [{}, "INVALID_INPUT"],
+      [
+        {
+          state: "fixture-private-state",
+          questions: {
+            q: {
+              type: "boolean",
+              instructions: "fixture-private-instructions",
+            },
+          },
+        },
+        "PROVIDER_UNAVAILABLE",
+      ],
+    ] as const) {
+      const result = CallToolResultSchema.parse(
+        await client.callTool({
+          name: "jev_evaluate",
+          arguments: args,
+        })
+      );
+      expect(result.isError).toBe(true);
+      const text = result.content[0];
+      if (text.type !== "text") throw new Error("Expected text");
+      expect(JSON.parse(text.text)).toMatchObject({ error: { code } });
+      expect(text.text).not.toMatch(
+        /fixture-private|fixture-token|Network access blocked/
+      );
+    }
+  }
   if (server === "canvas") expect(tools).toHaveLength(185);
   if (server === "postgresql") {
     expect(tools.map((tool) => tool.name).sort()).toEqual([

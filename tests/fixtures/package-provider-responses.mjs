@@ -22,6 +22,32 @@ if (["canvas", "clickup", "flight"].includes(server)) {
     else unexpected();
     return { data, status: 200, statusText: "OK", headers: {}, config };
   };
+} else if (server === "jev") {
+  globalThis.fetch = async (input, options) => {
+    const body = JSON.parse(options.body);
+    if (
+      String(input) !== "https://ai-gateway.vercel.sh/v4/ai/evaluation-model" ||
+      options.method !== "POST" ||
+      new Headers(options.headers).get("ai-model-id") !== "typesafe-ai/jev" ||
+      body.state !== "fixture-state" ||
+      body.questions.ready.instructions !== "fixture-instructions" ||
+      JSON.stringify(body.providerOptions) !==
+        JSON.stringify({
+          gateway: {
+            only: ["typesafe-ai"],
+            zeroDataRetention: true,
+            disallowPromptTraining: true,
+          },
+        })
+    )
+      unexpected();
+    return new Response(
+      JSON.stringify({
+        answers: { ready: { type: "boolean", probability: 0.9 } },
+      }),
+      { headers: { "content-type": "application/json" } }
+    );
+  };
 } else if (server === "salesforce") {
   globalThis.fetch = async (input, options) => {
     const url = new URL(input);

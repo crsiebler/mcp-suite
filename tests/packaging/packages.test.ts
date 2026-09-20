@@ -51,6 +51,7 @@ const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/packages-"));
 const installDirectory = (server: string) => resolve(scratch, server);
 const env = {
   LOG_LEVEL: "debug",
+  AI_GATEWAY_API_KEY: "fixture-token",
   CANVAS_API_TOKEN: "fixture-token",
   CANVAS_BASE_URL: "https://fixture.invalid",
   CLICKUP_API_TOKEN: "fixture-token",
@@ -96,7 +97,7 @@ beforeAll(() => {
         )
       );
   expect(packed).toHaveLength(packages.length);
-  if (!releases) expect(packages).toHaveLength(6);
+  if (!releases) expect(packages).toHaveLength(7);
   for (const tarball of packed) {
     const pkg = packages.find((item) => item.manifest.name === tarball.name)!;
     expect(pkg).toBeDefined();
@@ -283,6 +284,9 @@ for (const pkg of packages) {
 }
 
 const invalidSettings: Array<[string, string, string | undefined]> = [
+  ["jev", "AI_GATEWAY_API_KEY", "  "],
+  ["jev", "JEV_TIMEOUT_MS", "private-timeout"],
+  ["jev", "LOG_LEVEL", "private-level"],
   ["canvas", "CANVAS_API_TOKEN", "  "],
   ["canvas", "CANVAS_TOOL_CATEGORIES", "private-category"],
   ["clickup", "CLICKUP_API_TOKEN", "  "],

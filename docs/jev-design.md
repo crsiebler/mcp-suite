@@ -24,7 +24,12 @@ and implementation files were inspected. AI and Gateway both resolve provider-ut
 5.0.43. Gateway exports ESM `dist/index.js`; use an ESM workspace. MCP's optional
 `@cfworker/json-schema` peer is not required for this design. Root Zod 3.25.64 does
 not satisfy AI's peer; retain existing consumers and give Jev a compatible explicit
-pin. Prove the resolved lock, isolated installation and compiled imports in US-002.
+pin. npm hoists 3.25.76 to the root to satisfy the combined graph; this is the
+only changed pre-existing dependency version, and existing MCP SDK versions remain
+unchanged. `zod-to-json-schema` 3.25.1 is a direct Jev dependency to derive advertised
+schemas from validation definitions. Use `zod/v3` explicitly so root TypeScript's
+legacy Node resolution and the converter resolve the same declaration identity.
+Prove the resolved lock, isolated installation and compiled imports in US-002.
 The declared Node minimum remains 22.14.0; dependencies require no increase.
 The evaluation interface is experimental and may change in patch releases, hence
 exact pins and real SDK contract fixtures.

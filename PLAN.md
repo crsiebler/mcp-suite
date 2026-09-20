@@ -165,28 +165,28 @@ No UI is planned; if UI is introduced, stop for scope revision and verify-interf
 
 ### US-002 - Deliver one packaged evaluation tool through Gateway
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 2
 - Depends on: US-001
 - User benefit: any local MCP client can evaluate supplied state with Jev.
 - Relevant paths: `servers/jev/{package.json,tsconfig.json,src/,README.md}`,
   root lock, catalog output, shared packaging/discovery fixtures and Jev tests.
-- [ ] Add the independently versioned workspace with pinned compatible dependencies,
+- [x] Add the independently versioned workspace with pinned compatible dependencies,
       declared engines, main/bin/prepack/files and metadata. Keep existing server SDKs
       unchanged; use the root install/build system and literal environment readers.
-- [ ] Implement focused config, schemas, provider adapter, handler and stdio entry
+- [x] Implement focused config, schemas, provider adapter, handler and stdio entry
       modules. Wire the official SDK evaluation model explicitly; implement all three
       question types, mixed questions/shared state and validated result mapping.
-- [ ] Enforce the proposed input/output limits and baseline timeout/concurrency/
+- [x] Enforce the proposed input/output limits and baseline timeout/concurrency/
       retry policy immediately; discovery is offline and never sends an evaluation.
-- [ ] Add red-to-green runtime-schema, real SDK mocked-provider and real packaged
+- [x] Add red-to-green runtime-schema, real SDK mocked-provider and real packaged
       initialize/list/success/error/close fixtures. Replace only provider I/O, never the
       production handler, and include native structured output plus legacy text checks.
-- [ ] Update six-package assertions to seven deliberately, extend success/error
+- [x] Update six-package assertions to seven deliberately, extend success/error
       provider fixtures and metadata checks; no skipping Jev or weakening existing tests.
-- [ ] Verify isolated production install/ancestor dependency rejection, real prepack,
+- [x] Verify isolated production install/ancestor dependency rejection, real prepack,
       required-key failure, correct executable/shared output and unrelated cwd startup.
-- [ ] Run focused Jev/packaging/discovery tests, formatter/lint/typecheck, all-server
+- [x] Run focused Jev/packaging/discovery tests, formatter/lint/typecheck, all-server
       build/catalog and frozen install on the declared minimum engine. If the selected
       SDK needs a higher runtime, make that explicit before changing existing support.
 

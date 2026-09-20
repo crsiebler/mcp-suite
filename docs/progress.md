@@ -52,3 +52,57 @@ found TypeSafe-compatible API. No implementation or account-access claim is made
 
 No review-memory updates warranted. Required checks passed; US-001 provisionally
 complete, finalization requires the following authorized commit to succeed.
+
+## 2026-09-20 — US-002 packaged evaluation candidate
+
+- US-001 delivered as 9597440. Exact branch codex/clean-slate rechecked; only Jev
+  story paths changed. US-002 is external-integration/test-sensitive work requiring
+  native story-reviewer. No implementation advisors invoked; published SDK evidence
+  and established packaging patterns were sufficient. No live credentials accessed.
+- Added workspace 0.1.0 with pinned AI/Gateway/provider/MCP/Zod dependencies and
+  zod-to-json-schema 3.25.1 for derived advertised schemas. Added a minor Changeset;
+  CLI initial-release behavior is verified in US-005 before publication guidance.
+- Test-first: initial Jev test suite failed on missing implementation. Thirteen
+  initial contracts passed after implementation. Additional state-preservation
+  regression failed because Zod dropped an opaque **proto** state key; parser now
+  preserves the original validated state and rejects hidden accessors. Added
+  concurrency, deadline, cancellation and advertised-schema checks (16 total).
+- Core path uses actual AI SDK evaluation and Gateway; only fetch is mocked. Pure
+  catalog definitions, typed output projection, bounded body reader, safe errors,
+  lifecycle and stdio entry are separate focused modules. No existing auth changed.
+- Root typecheck caught incompatible Zod declaration identities; explicit zod/v3
+  imports fixed legacy Node module-resolution compatibility. Runtime schema tests
+  remain real. npm hoisted Zod 3.25.64 -> 3.25.76; comparison of every old lock entry
+  confirms this is the only pre-existing dependency version changed. All six MCP
+  SDK versions and package versions remain unchanged.
+- Seven-package fixtures exercise real prepack, isolated production installs with
+  ancestor-resolution guards, initialize/list/native structured output/legacy text,
+  provider success/error calls, required-key/invalid-setting startup and actual exit.
+- The new package exposed an existing discovery-test isolation defect: Changesets
+  chose the parent workspace when the fixture had no lockfile. Added the fixture's
+  npm root marker and assert its synthetic Changeset identity, retaining all package
+  assertions. Observed red (six parent releases), then green (seven fixture releases).
+- Node 22.14.0: frozen npm ci --ignore-scripts --offline --engine-strict passed;
+  typecheck and focused Jev/build/discovery/packaging checks passed (58 tests).
+  Added schema test afterward also passed on Node 22.14.0 (16 Jev tests).
+- Node 26.7.0: full offline suite passed (757 tests/31 files before the additional
+  schema test); final focused Jev suite passed (16). npm run catalog:generate built
+  all seven servers; packaged catalog:check rebuilt and verified current sources.
+- Final npm run type-check, npm run lint, explicit .mjs ESLint, scoped Prettier
+  checks passed. No live calls; exhaustive failure/privacy/lifecycle matrix remains
+  US-003, workflow cases US-004, final client/release documentation US-005.
+- Intended commit: feat(US-002): add packaged Jev evaluation server.
+
+### US-002 native review and finalization
+
+- Native role story-reviewer, actual returned session /root/review_jev_us002,
+  story US-002 attempt1, worktree /Users/corysiebler/Repositories/mcp-suite.
+  Review profile expanded-initial, pass initial. Complete installed protocol/schema
+  supplied verbatim with criteria, checks and staged paths; candidate immutable.
+- Returned valid JSON: verdict pass, pass_type initial; findings/resolutions/
+  learnings empty, feedback priorities/checks empty. Avoid live-enforcement claims
+  and premature US-003/005 scope. Residual risks: checks executor-reported, exhaustive
+  failure/lifecycle matrix remains US-003, live access/experimental API unverified.
+  Reviewer inspected staged implementation, tests and affected contracts read-only.
+- No findings or substantive remediation; targeted pass unnecessary, no memory
+  updates warranted. US-002 provisional completion awaits the authorized commit.
