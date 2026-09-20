@@ -1,4 +1,8 @@
 import { once } from "node:events";
+import { installPackage } from "../fixtures/install-package.ts";
+import { checkFailureContracts } from "../fixtures/package-failure-contracts.ts";
+import { checkSuccessContract } from "../fixtures/package-success-contracts.ts";
+import { VerifiedStdioTransport } from "../fixtures/packaged-transport.ts";
 import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -8,11 +12,9 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  writeFileSync,
 } from "node:fs";
 import { resolve } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { afterAll, beforeAll, expect, it } from "vitest";
 
 const root = resolve(__dirname, "../..");
@@ -46,6 +48,7 @@ const packages: Array<{
   );
 mkdirSync(resolve(root, "dist/test-artifacts"), { recursive: true });
 const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/packages-"));
+const installDirectory = (server: string) => resolve(scratch, server);
 const env = {
   LOG_LEVEL: "debug",
   CANVAS_API_TOKEN: "fixture-token",
@@ -94,19 +97,6 @@ beforeAll(() => {
       );
   expect(packed).toHaveLength(packages.length);
   if (!releases) expect(packages).toHaveLength(6);
-  const dependencies: Record<string, string> = {};
-  // Reuse the exact lock graph and tarball integrities. An unpinned npm install
-  // would require registry metadata even after npm ci cached all tarballs.
-  const lock = JSON.parse(
-    readFileSync(resolve(root, "package-lock.json"), "utf8")
-  );
-  const original = structuredClone(lock.packages);
-  if (releases) {
-    for (const [path, value] of Object.entries(original)) {
-      if (path.startsWith("servers/") || (value as { link?: boolean }).link)
-        delete lock.packages[path];
-    }
-  }
   for (const tarball of packed) {
     const pkg = packages.find((item) => item.manifest.name === tarball.name)!;
     expect(pkg).toBeDefined();
@@ -120,53 +110,45 @@ beforeAll(() => {
           path.startsWith("src/") || path.includes("node_modules/")
       )
     ).toBe(false);
-    dependencies[tarball.name] = `file:${resolve(scratch, tarball.filename)}`;
-    const workspacePath = `servers/${pkg.server}`;
-    const installedPath = `node_modules/${tarball.name}`;
-    lock.packages[installedPath] = {
-      ...original[workspacePath],
-      resolved: dependencies[tarball.name],
+    installPackage(root, installDirectory(pkg.server), pkg.server, {
+      name: tarball.name,
+      path: resolve(scratch, tarball.filename),
       integrity: tarball.integrity,
-    };
-    delete lock.packages[installedPath].devDependencies;
-    delete lock.packages[workspacePath];
-    for (const [path, value] of Object.entries(original)) {
-      if (path.startsWith(`${workspacePath}/node_modules/`)) {
-        lock.packages[installedPath + path.slice(workspacePath.length)] = value;
-        delete lock.packages[path];
-      }
-    }
+    });
   }
-  writeFileSync(
-    resolve(scratch, "package.json"),
-    JSON.stringify({
-      private: true,
-      name: "package-fixture",
-      version: "1.0.0",
-      dependencies,
-    })
-  );
-  lock.name = "package-fixture";
-  lock.version = "1.0.0";
-  lock.packages[""] = { name: lock.name, version: lock.version, dependencies };
-  writeFileSync(resolve(scratch, "package-lock.json"), JSON.stringify(lock));
-  // npm ci validates this graph and installs without any registry requests.
-  execFileSync(
-    "npm",
-    ["ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund"],
-    {
-      cwd: scratch,
-      timeout: 60000,
-      stdio: ["ignore", "pipe", "pipe"],
-    }
-  );
 }, 180000);
 
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
 for (const pkg of packages) {
+  it(`${pkg.server} returns a provider fixture success over packaged MCP`, async () => {
+    await checkSuccessContract(
+      root,
+      scratch,
+      installDirectory(pkg.server),
+      pkg.server,
+      resolve(
+        installDirectory(pkg.server),
+        "node_modules",
+        pkg.manifest.name,
+        pkg.manifest.main
+      ),
+      env
+    );
+  }, 15000);
+  it(`${pkg.server} installs without development tools or sibling servers`, () => {
+    const modules = resolve(installDirectory(pkg.server), "node_modules");
+    expect(existsSync(resolve(modules, "typescript"))).toBe(false);
+    expect(existsSync(resolve(modules, "eslint"))).toBe(false);
+    for (const other of packages.filter((other) => other.server !== pkg.server))
+      expect(existsSync(resolve(modules, other.manifest.name))).toBe(false);
+  });
   it(`${pkg.server} keeps debug diagnostics off packaged MCP traffic`, async () => {
-    const installed = resolve(scratch, "node_modules", pkg.manifest.name);
+    const installed = resolve(
+      installDirectory(pkg.server),
+      "node_modules",
+      pkg.manifest.name
+    );
     const manifest = JSON.parse(
       readFileSync(resolve(installed, "package.json"), "utf8")
     );
@@ -179,16 +161,18 @@ for (const pkg of packages) {
     const logPath = resolve(scratch, `${pkg.server}.stderr`);
     const stderr = createWriteStream(logPath);
     await once(stderr, "open");
-    const transport = new StdioClientTransport({
+    const transport = new VerifiedStdioTransport({
       command: process.execPath,
       args: [
         "--require",
         resolve(root, "tests/fixtures/offline-process.cjs"),
+        "--require",
+        resolve(root, "tests/fixtures/package-isolation.cjs"),
         resolve(root, "tests/fixtures/start-package.cjs"),
         scratch,
         entry,
       ],
-      env,
+      env: { ...env, PACKAGE_FIXTURE_ROOT: installDirectory(pkg.server) },
       stderr,
     });
     const protocolErrors: Error[] = [];
@@ -209,145 +193,7 @@ for (const pkg of packages) {
       expect(entry).toBeDefined();
       expect(result.tools.map((tool) => tool.name).sort()).toEqual(entry.tools);
       expect(entry.toolCount).toBe(result.tools.length);
-      if (pkg.server === "canvas") expect(result.tools).toHaveLength(185);
-      if (pkg.server === "postgresql") {
-        expect(result.tools.map((tool) => tool.name).sort()).toEqual([
-          "check_dangerous_operations_allowed",
-          "execute_query",
-        ]);
-        const policy = CallToolResultSchema.parse(
-          await client.callTool({
-            name: "check_dangerous_operations_allowed",
-            arguments: {},
-          })
-        );
-        const policyText = policy.content[0];
-        if (policyText.type !== "text") throw new Error("Expected text result");
-        expect(JSON.parse(policyText.text)).toMatchObject({ allowed: false });
-        for (const args of [{}, { query: "SELECT 1" }]) {
-          const failure = CallToolResultSchema.parse(
-            await client.callTool({ name: "execute_query", arguments: args })
-          );
-          expect(failure.isError).toBe(true);
-          const text = failure.content[0];
-          if (text.type !== "text") throw new Error("Expected text result");
-          expect(text.text).not.toContain("Network access blocked");
-          expect(text.text).not.toContain("postgresql://");
-        }
-      }
-      if (pkg.server === "flight") {
-        const names = result.tools.map((tool) => tool.name);
-        expect(names).not.toContain("duffel_cancel_order");
-        for (const name of [
-          "duffel_quote_order_cancellation",
-          "duffel_confirm_order_cancellation",
-        ]) {
-          expect(names).toContain(name);
-          const tool = result.tools.find((tool) => tool.name === name)!;
-          expect(tool.annotations).toMatchObject({
-            readOnlyHint: false,
-            idempotentHint: false,
-          });
-          for (const args of [
-            {},
-            { order_id: "ord_fixture", cancellation_id: "ore_fixture" },
-          ]) {
-            const response = CallToolResultSchema.parse(
-              await client.callTool({ name, arguments: args })
-            );
-            expect(response.isError).toBe(true);
-            const content = response.content[0];
-            if (content.type !== "text")
-              throw new Error("Expected text result");
-            const body = JSON.parse(content.text);
-            expect(body.success).toBe(false);
-            expect(body.error.code).toBe(
-              "order_id" in args ? "internal_error" : "invalid_input"
-            );
-            expect(content.text).not.toContain("Network access blocked");
-            expect(content.text).not.toContain("synthetic-test-key");
-          }
-        }
-        await expect(
-          client.callTool({
-            name: "duffel_cancel_order",
-            arguments: { order_id: "ord_fixture" },
-          })
-        ).rejects.toMatchObject({ code: -32601 });
-      }
-      if (pkg.server === "salesforce") {
-        const result = CallToolResultSchema.parse(
-          await client.callTool({
-            name: "salesforce_bulk_delete",
-            arguments: { sobject_type: "Account", ids: [] },
-          })
-        );
-        expect(result.isError).toBe(true);
-        const content = result.content[0];
-        if (content.type !== "text") throw new Error("Expected text result");
-        expect(JSON.parse(content.text)).toMatchObject({ success: false });
-      }
-      if (pkg.server === "elasticsearch") {
-        expect(result.tools).toHaveLength(18);
-        for (const tool of result.tools) {
-          expect(tool.annotations).toMatchObject({
-            readOnlyHint: expect.any(Boolean),
-          });
-          const response = CallToolResultSchema.parse(
-            await client.callTool({ name: tool.name, arguments: {} })
-          );
-          expect(response.isError).toBe(true);
-          const content = response.content[0];
-          if (content.type !== "text") throw new Error("Expected text result");
-          const data = JSON.parse(content.text);
-          expect(data).toMatchObject({ success: false });
-          if (
-            Array.isArray(tool.inputSchema.required) &&
-            tool.inputSchema.required.length > 0
-          )
-            expect(data.error.code).toBe("invalid_input");
-          expect(content.text).not.toContain("Network access blocked");
-          expect(content.text).not.toContain("fixture-token");
-        }
-        const search = CallToolResultSchema.parse(
-          await client.callTool({
-            name: "elasticsearch_search",
-            arguments: { index: "fixture", size: 0 },
-          })
-        );
-        expect(search.isError).toBe(true);
-      }
-      if (pkg.server === "clickup") {
-        expect(result.tools).toHaveLength(29);
-        for (const tool of result.tools) {
-          expect(tool.annotations).toMatchObject({
-            readOnlyHint: tool.name.startsWith("get_"),
-          });
-          const response = CallToolResultSchema.parse(
-            await client.callTool({ name: tool.name, arguments: {} })
-          );
-          expect(response.isError).toBe(true);
-          const content = response.content[0];
-          if (content.type !== "text") throw new Error("Expected text result");
-          expect(JSON.parse(content.text)).toMatchObject({
-            success: false,
-            error: {
-              code:
-                tool.name === "get_teams" ? "internal_error" : "invalid_input",
-            },
-          });
-          expect(content.text).not.toMatch(
-            /Network access blocked|fixture-token/
-          );
-        }
-        const response = CallToolResultSchema.parse(
-          await client.callTool({
-            name: "get_task",
-            arguments: { task_id: "fixture" },
-          })
-        );
-        expect(response.isError).toBe(true);
-      }
+      await checkFailureContracts(pkg.server, client, result.tools);
       // Invalid names exercise real dispatch/error handling without provider I/O.
       // SDKs differ between a tool-error result and a JSON-RPC error response.
       const outcome = await client
@@ -379,6 +225,7 @@ for (const pkg of packages) {
       await new Promise<void>((resolve) => stderr.end(resolve));
     }
     const diagnostics = readFileSync(logPath, "utf8");
+    transport.assertProtocolAndExit();
     expect(protocolErrors).toEqual([]);
     expect(diagnostics.length).toBeGreaterThan(0);
     expect(diagnostics).not.toContain("fixture-token");
@@ -398,10 +245,13 @@ it.runIf(!releases)(
 for (const pkg of packages) {
   for (const key of pkg.manifest.mcpSuite.environment.required as string[]) {
     it(`${pkg.server} metadata-required ${key} actually blocks startup when absent`, () => {
-      const environment: NodeJS.ProcessEnv = { ...env };
+      const environment: NodeJS.ProcessEnv = {
+        ...env,
+        PACKAGE_FIXTURE_ROOT: installDirectory(pkg.server),
+      };
       delete environment[key];
       const entry = resolve(
-        scratch,
+        installDirectory(pkg.server),
         "node_modules",
         pkg.manifest.name,
         pkg.manifest.main
@@ -411,6 +261,8 @@ for (const pkg of packages) {
         [
           "--require",
           resolve(root, "tests/fixtures/offline-process.cjs"),
+          "--require",
+          resolve(root, "tests/fixtures/package-isolation.cjs"),
           entry,
         ],
         {
@@ -445,17 +297,27 @@ for (const [server, key, value] of invalidSettings.filter(([server]) =>
   it(`${server} rejects invalid ${key} before starting MCP`, () => {
     const pkg = packages.find((item) => item.server === server)!;
     const entry = resolve(
-      scratch,
+      installDirectory(pkg.server),
       "node_modules",
       pkg.manifest.name,
       pkg.manifest.main
     );
     const result = spawnSync(
       process.execPath,
-      ["--require", resolve(root, "tests/fixtures/offline-process.cjs"), entry],
+      [
+        "--require",
+        resolve(root, "tests/fixtures/offline-process.cjs"),
+        "--require",
+        resolve(root, "tests/fixtures/package-isolation.cjs"),
+        entry,
+      ],
       {
         cwd: scratch,
-        env: { ...env, [key]: value },
+        env: {
+          ...env,
+          [key]: value,
+          PACKAGE_FIXTURE_ROOT: installDirectory(pkg.server),
+        },
         input: "",
         encoding: "utf8",
         timeout: 5000,
@@ -474,7 +336,7 @@ it.runIf(packages.some((pkg) => pkg.server === "canvas"))(
   async () => {
     const pkg = packages.find((item) => item.server === "canvas")!;
     const entry = resolve(
-      scratch,
+      installDirectory(pkg.server),
       "node_modules",
       pkg.manifest.name,
       pkg.manifest.main
@@ -483,16 +345,22 @@ it.runIf(packages.some((pkg) => pkg.server === "canvas"))(
       resolve(scratch, "canvas-categories.stderr")
     );
     await once(stderr, "open");
-    const transport = new StdioClientTransport({
+    const transport = new VerifiedStdioTransport({
       command: process.execPath,
       args: [
         "--require",
         resolve(root, "tests/fixtures/offline-process.cjs"),
+        "--require",
+        resolve(root, "tests/fixtures/package-isolation.cjs"),
         resolve(root, "tests/fixtures/start-package.cjs"),
         scratch,
         entry,
       ],
-      env: { ...env, CANVAS_TOOL_CATEGORIES: "courses,pages" },
+      env: {
+        ...env,
+        CANVAS_TOOL_CATEGORIES: "courses,pages",
+        PACKAGE_FIXTURE_ROOT: installDirectory(pkg.server),
+      },
       stderr,
     });
     const client = new Client(
@@ -532,6 +400,7 @@ it.runIf(packages.some((pkg) => pkg.server === "canvas"))(
       await transport.close();
       await new Promise<void>((resolve) => stderr.end(resolve));
     }
+    transport.assertProtocolAndExit();
   },
   15000
 );

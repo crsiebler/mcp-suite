@@ -77,8 +77,9 @@ installation, SDK discovery/calls and cleanup with provider access blocked.
 `npm pack` executes prepack and produces review artifacts; it does not publish.
 Inspect each tarball's files/main/bin and match it to the selected package/version.
 The publication job consumes the exact artifacts it verifies, without
-an unchecked rebuild. The current test suite has the dependency-closure limitations
-recorded in [testing](testing.md); offline checks do not prove live permissions.
+an unchecked rebuild. Each selected tarball is tested in an independent production
+installation with ancestor dependency resolution blocked. See [testing](testing.md)
+for fixture scope; offline checks do not prove live permissions.
 
 `npm ci --ignore-scripts --offline --no-audit --no-fund` validates the frozen
 lockfile against an already populated cache without package lifecycle execution.

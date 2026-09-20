@@ -36,7 +36,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-015 and US-013A verified. US-016 pending. Missing upstream notices remain a publication prerequisite.
+- Current status: US-001 through US-016 and US-013A verified. Missing upstream notices remain a publication prerequisite.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -312,7 +312,7 @@ Apply this workflow to each story:
 
 ### US-016 - Verify all retained server packages end to end offline
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 16
 - Depends on: US-006, US-007, US-008, US-009, US-010, US-011, US-012, US-015
 - User benefit: have a trustworthy release-readiness baseline.

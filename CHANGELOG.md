@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configuration validation and documented provider-specific contract corrections.
 - Adopt AGENTS.md, source-backed documentation and a generated server catalog.
 - Prepare independent package versions and changelogs with Changesets; retire
-  custom deploy/publish scripts. Hosted publication wiring remains pending.
+  custom deploy/publish scripts. Manual verification and gated publication workflows
+  are defined; authorized activation and hosted approval/OIDC verification remain pending.
 
 Package histories: [Canvas](servers/canvas/CHANGELOG.md),
 [ClickUp](servers/clickup/CHANGELOG.md),

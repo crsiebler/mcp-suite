@@ -31,8 +31,9 @@ mcp-suite/
 
 ## 🚀 Quick Start
 
-Requires Node.js 22.14.0 or newer. The locked workspace dependency graph is
-verified against this minimum.
+Declared runtimes are Node.js 22.14+ within 22.x, 24.x, or 26+; npm 10.9+ is
+required. Package checks run locally on Node 22.14 and 26.7. CI is configured for
+Node 24; hosted execution remains unverified. See [testing](docs/testing.md).
 
 1. **Clone and install dependencies:**
 

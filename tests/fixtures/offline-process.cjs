@@ -4,7 +4,14 @@ const { syncBuiltinESMExports } = require("node:module");
 function blocked() {
   throw new Error("Network access blocked by offline test");
 }
-require("node:net").Socket.prototype.connect = blocked;
+// Socket connection failures are asynchronous in Node. Preserve that contract
+// so pg can remove failed clients from its pool and complete pool.end().
+require("node:net").Socket.prototype.connect = function () {
+  queueMicrotask(() =>
+    this.destroy(new Error("Network access blocked by offline test"))
+  );
+  return this;
+};
 require("node:tls").connect = blocked;
 require("node:http").request = blocked;
 require("node:https").request = blocked;

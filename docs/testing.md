@@ -52,9 +52,10 @@ Source tests can explicitly import local `.ts` implementations under the root
 no-emit compiler configuration. Shared generated siblings have been removed;
 package builds keep emitted code under dist/. The packaging suite runs real
 prepack hooks, installs tarballs using only the npm cache, and uses a real SDK
-client to initialize/list tools with synthetic environment values and a process
-network guard. It cleans up its own fixtures under dist/test-artifacts. No provider
-requests are permitted. Successful discovery is not full tool-call coverage.
+client to initialize/list/call/close each server with synthetic environment values
+and a process network guard. It cleans up its own fixtures under dist/test-artifacts. No provider
+requests are permitted. Representative success/error calls are not exhaustive
+provider-contract coverage.
 
 Keep provider-backed tests out of the default test configuration. Add ordinary
 fixture integration tests under tests/ with `.test.ts` names. If another live
@@ -75,9 +76,13 @@ check results and the limitations of this initial verification story.
 US-002 additionally verifies the frozen workspace install with engine-strict on
 Node 22.14.0/npm 10.9.2, plus all seven builds, typecheck, lint and all 19 offline
 tests. Node 22.14.0 is now the declared minimum for the root and all six
-packages. The test fixture validates all packages together using the locked graph;
-it does not independently prove each package's production-only dependency closure.
-
+packages. That initial fixture validated all packages together using the locked
+graph. The US-016 candidate now installs each tarball independently with
+`npm ci --omit=dev --offline --ignore-scripts`, followed by `npm ls --omit=dev --all`.
+Each install has exactly one root package dependency; tests assert development
+tools and sibling servers are absent. Test-only CommonJS/ES module resolution
+guards reject fallback to dependencies in the ancestor repository. These guards
+are fixture checks, not a security sandbox for untrusted code.
 
 ## Diagnostic safety
 
@@ -88,12 +93,13 @@ or database boundaries; no live requests or database changes occur.
 
 Packaging checks run all six installed tarballs with `LOG_LEVEL=debug`, capture
 stderr to fixture-local files, and fail on SDK protocol parsing errors during
-initialization, discovery and an unknown-tool call. They preserve the current
+initialization, discovery and representative success/error calls. A test adapter
+for the pinned SDK also captures raw stdout, validates all newline-delimited JSON-RPC
+frames (including trailing output), and waits for the child close event. They preserve the current
 Salesforce failure envelope pending response normalization. This proves those
 paths are protocol-safe, not every provider-backed operation; full tool coverage
 remains separate. The root SDK 0.5 transport accepts a file stream for stderr,
 not the newer SDK's `stderr` pipe accessor.
-
 
 Configuration regressions live in `tests/unit/config.test.ts`,
 `tests/unit/elasticsearch-config.test.ts`.
@@ -103,12 +109,10 @@ The packaged suite additionally launches invalid-setting fixtures with network
 access blocked, checking nonzero exit, empty stdout, named settings and no value
 leakage. Successful startup alone is not evidence of invalid-setting rejection.
 
-
 Shared result/error tests (`server-result`) verify SDK schema compatibility,
 success/failure serialization, safe error classification and retry metadata.
 Provider-specific fixtures verify retained handlers; no removed server is required
 by shared utility tests.
-
 
 PostgreSQL `postgresql-config` tests construct real pg objects without connecting;
 `postgresql-service` tests use fake clients/clocks for SQL preservation, result
@@ -116,7 +120,6 @@ truncation, transaction selection, failures, deadlines and late acquisitions.
 Packaged PostgreSQL checks also call both advertised tools, including invalid
 input and a guarded connection failure. These do not establish live certificate
 validation, database permissions or server-side cancellation timing.
-
 
 Duffel cancellation fixtures (`duffel-cancellation.test.ts`) exercise pending quote
 creation, exact quote/order checks, nullable refunds/expiry, already-confirmed
@@ -142,14 +145,12 @@ The inventory smoke test does not prove every argument's provider semantics.
 an Axios adapter; no live student, grading, login or SSO operations occur.
 Packaged checks cover default/selected exposure and unknown-category startup.
 
-
 ClickUp fixtures cover all 29 names, actual Axios request mappings and provider
 error paths. Boundary cases cover required arguments, numeric payload encoding,
 page zero, comment cursor pairs, Workspace filtering/member projection, mutation
 hints and unknown timeout outcomes without retries. Packaged checks exercise all
 29 invalid-input/guarded-read paths through the actual SDK. No task, hierarchy,
 time entry or goal is changed remotely; live account capabilities remain unverified.
-
 
 Catalog validation uses `npm run catalog:check` (all-server build followed by a
 read-only inventory comparison). Unit fixtures check metadata/path constraints;
@@ -185,8 +186,8 @@ artifact mode. `MCP_RELEASE_PACK_DIR=<absolute-directory> npm test --
 tests/packaging/packages.test.ts` validates and installs the selected tarballs;
 it skips source-only catalog validation and absent-server cases. CI runs the full
 source suite/catalog first. The ordinary packaging invocation still builds and
-tests all six packages. The existing locked-graph dependency-closure limitation
-above remains until final package verification is completed.
+tests all six packages. Both modes now use independent production-only installs
+and module-resolution guards rather than relying on a combined six-server graph.
 
 CI uses Node 24 on GitHub-hosted Linux; publication checks npm >=11.5.1. The lock
 uses public npm tarball URLs with unchanged pinned versions and integrity hashes,
@@ -197,3 +198,24 @@ Workflow syntax/expressions were checked with project-local Actionlint 1.7.12
 against both `.github/workflows/*.yml` files. Its release binary was verified
 against the upstream asset SHA256; no global installation is required. Parsed
 workflow tests complement that check and do not replace hosted integration.
+
+## Packaged success fixtures
+
+`npm test -- tests/packaging/packages.test.ts tests/release/artifact-smoke.test.ts
+tests/unit/package-isolation.test.ts tests/unit/packaged-transport.test.ts` exercises
+the six independently installed entry points. Success cases cover Canvas courses,
+ClickUp teams, Duffel airlines, Elasticsearch search, PostgreSQL read-only query
+and Salesforce SOQL. Test-owned Axios adapters, Elastic transport, pg clients and
+fetch responses replace provider I/O inside each installation; schemas, dispatch,
+service mapping, serialization and SDK traffic remain real. PostgreSQL additionally
+records completed BEGIN/query/COMMIT and client release. Error cases retain the
+network guard. Its socket refusal emits an asynchronous error, matching Node's
+connection-failure contract so pg can discard the failed client and drain its pool.
+
+All paths await child exit. This checks local process/resource cleanup, not remote
+query cancellation timing or live TLS, authentication, permissions, quotas or API
+compatibility. Release artifact mode runs the same contracts without rebuilding;
+the subset fixture verifies PostgreSQL from an existing tarball in a checkout
+without server sources. `.mjs` fixture guards also require an explicit ESLint check:
+`node_modules/.bin/eslint tests/fixtures/package-isolation.mjs
+tests/fixtures/package-provider-responses.mjs`.

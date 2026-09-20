@@ -41,6 +41,13 @@ it("runs the actual packaged MCP checks for a supplied release subset without re
       "tests/packaging/packages.test.ts",
       "tests/fixtures/offline-process.cjs",
       "tests/fixtures/start-package.cjs",
+      "tests/fixtures/install-package.ts",
+      "tests/fixtures/packaged-transport.ts",
+      "tests/fixtures/package-success-contracts.ts",
+      "tests/fixtures/package-provider-responses.mjs",
+      "tests/fixtures/package-failure-contracts.ts",
+      "tests/fixtures/package-isolation.cjs",
+      "tests/fixtures/package-isolation.mjs",
     ]) {
       mkdirSync(dirname(resolve(fixture, file)), { recursive: true });
       copyFileSync(resolve(project, file), resolve(fixture, file));
@@ -119,7 +126,7 @@ it("runs the actual packaged MCP checks for a supplied release subset without re
       fixture,
       { ...process.env, MCP_RELEASE_PACK_DIR: bundle }
     );
-    expect(output).toMatch(/2 passed/);
+    expect(output).toMatch(/4 passed/);
     expect(
       createHash("sha256").update(readFileSync(tarball)).digest("base64")
     ).toBe(digest);

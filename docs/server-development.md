@@ -54,10 +54,13 @@ Packing, including dry runs, can execute lifecycle hooks; it is not read-only.
 
 Inspect tarball contents and verify main/bin/start paths, rather than assuming
 `dist/index.js`. `tests/packaging/packages.test.ts` runs real prepack hooks, installs
-all six tarballs offline from the npm cache, and initializes/lists tools through
-an SDK client from another working directory. Synthetic settings and a child
-network guard prevent provider access. Debug-level stderr is captured separately;
-initialization, discovery and unknown-tool calls must produce no protocol errors.
+each of the six tarballs independently with production dependencies from the npm
+cache. A real SDK client initializes, lists tools, calls success/error fixtures
+and closes each installed entry point from another working directory. Module
+resolution guards reject ancestor dependencies. Synthetic settings, provider I/O
+fixtures and a network guard prevent live access. Checks capture debug stderr,
+validate every stdout frame and await actual child exit. These fixtures verify
+local contracts, not live provider compatibility.
 
 ## Running and extending
 
@@ -137,7 +140,6 @@ large details/context are replaced with truncation markers. Synchronous diagnost
 failures are swallowed so they do not replace the operation result. Logs are
 best-effort diagnostics, not an audit record or a durable sink.
 
-
 ## Configuration and input validation
 
 Required settings use `getEnvVar`: missing, empty and whitespace-only values fail
@@ -146,14 +148,14 @@ credential whitespace. Defaults apply only when a variable is absent; unset an
 optional setting to use its default. `getOptionalEnvVar` preserves an explicitly
 empty string. Environment names are unchanged.
 
-| Setting | Accepted value / default |
-| --- | --- |
-| `CANVAS_BASE_URL` | Required HTTP(S) base endpoint |
-| `ELASTICSEARCH_NODE` | HTTP(S) base endpoint; default `http://localhost:9200` |
-| `ELASTICSEARCH_MAX_RETRIES` | Decimal integer 0–10; default 3; zero disables retries |
-| `ELASTICSEARCH_REQUEST_TIMEOUT` | Decimal integer 1–300000 milliseconds; default 30000 |
-| `DUFFEL_ENVIRONMENT` | Exactly `test` or `live`; default `test` |
-| `LOG_LEVEL` | `debug`, `info`, `warn`, `error` (case-insensitive); default `info` |
+| Setting                         | Accepted value / default                                            |
+| ------------------------------- | ------------------------------------------------------------------- |
+| `CANVAS_BASE_URL`               | Required HTTP(S) base endpoint                                      |
+| `ELASTICSEARCH_NODE`            | HTTP(S) base endpoint; default `http://localhost:9200`              |
+| `ELASTICSEARCH_MAX_RETRIES`     | Decimal integer 0–10; default 3; zero disables retries              |
+| `ELASTICSEARCH_REQUEST_TIMEOUT` | Decimal integer 1–300000 milliseconds; default 30000                |
+| `DUFFEL_ENVIRONMENT`            | Exactly `test` or `live`; default `test`                            |
+| `LOG_LEVEL`                     | `debug`, `info`, `warn`, `error` (case-insensitive); default `info` |
 
 Base endpoints reject embedded credentials, whitespace, backslashes, query
 strings, fragments and non-HTTP schemes. Explicit local HTTP hosts and path
@@ -177,7 +179,6 @@ actual operation rather than inventing generic string cleanup. The unused
 `sanitizeString` export was removed; `requireText` rejects non-string/blank input
 and returns exact text. Callers must apply the rules of their own operation. The auth middleware's existing validators are unchanged.
 
-
 ## Shared result migration
 
 `ServerResponse<T>` is a discriminated success-with-data or failure-with-error
@@ -193,7 +194,6 @@ Retry-After is advisory; the helpers do not retry operations. Test both success 
 failure MCP results against the installed SDK schemas and preserve provider tests.
 The unused generic ErrorHandler has been removed; unused auth middleware remains
 unchanged and must not be enabled as a side effect of this workflow.
-
 
 Canvas category registration is centralized in `servers/canvas/src/registry.ts`.
 Add a service/tool pair there instead of duplicating lists in the entry point.
