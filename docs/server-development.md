@@ -80,3 +80,24 @@ them during verification: they can change versions, publish, commit and push tag
 See [testing](testing.md) for required checks. Shared source changes affect every
 package that bundles them and will require matching release notes/version choices
 when the Changesets contribution workflow is introduced.
+
+
+## Server diagnostics
+
+Use `Logger` from `shared/utils/logger.ts`; stdout is reserved for MCP messages.
+Every enabled level emits one JSON line to stderr (at most 8192 UTF-8 bytes
+including the newline). Context, static operation messages, numeric counts/status
+and conventional machine error codes are useful diagnostics.
+
+Never interpolate SQL, provider errors, URLs, user input or private payloads into
+messages. Do not attach complete request/response objects. Known credential and
+payload fields are redacted recursively, URL/auth text is scrubbed, and errors
+are reduced to machine code/status without messages, stacks or attached bodies.
+These protections cannot recognize arbitrary private prose; minimal call-site
+metadata is required. Error arguments may be unknown rejection values.
+
+Serialization handles cycles, BigInt and inaccessible properties without calling
+custom getters or `toJSON`. Depth, field count, traversal and output are bounded;
+large details/context are replaced with truncation markers. Synchronous diagnostic
+failures are swallowed so they do not replace the operation result. Logs are
+best-effort diagnostics, not an audit record or a durable sink.

@@ -39,10 +39,8 @@ export class DuffelService {
   private setupInterceptors(): void {
     this.client.interceptors.request.use(
       (config) => {
-        this.logger.debug('Making request to Duffel API', {
+        this.logger.debug("Making request to Duffel API", {
           method: config.method,
-          url: config.url,
-          data: config.data,
         });
         return config;
       },
@@ -54,17 +52,14 @@ export class DuffelService {
 
     this.client.interceptors.response.use(
       (response) => {
-        this.logger.debug('Received response from Duffel API', {
+        this.logger.debug("Received response from Duffel API", {
           status: response.status,
-          url: response.config.url,
         });
         return response;
       },
       (error) => {
-        this.logger.error('Response interceptor error', {
+        this.logger.error("Response interceptor error", {
           status: error.response?.status,
-          message: error.message,
-          data: error.response?.data,
         });
         return Promise.reject(error);
       }

@@ -72,7 +72,7 @@ export class SalesforceService {
     }
 
     try {
-      this.logger.debug(`Making ${method} request to: ${url}`);
+      this.logger.debug("Making Salesforce API request", { method });
 
       const response = await fetch(url, options);
 
@@ -121,7 +121,7 @@ export class SalesforceService {
 
       return await response.json();
     } catch (error) {
-      this.logger.error(`Salesforce API request failed: ${error}`);
+      this.logger.error("Salesforce API request failed", error);
       throw error;
     }
   }
@@ -367,7 +367,7 @@ export class SalesforceService {
         password: oauthConfig.password,
       });
 
-      this.logger.debug(`Authenticating with Salesforce OAuth at: ${tokenUrl}`);
+      this.logger.debug("Authenticating with Salesforce OAuth");
 
       const response = await fetch(tokenUrl, {
         method: "POST",

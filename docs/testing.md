@@ -76,3 +76,19 @@ Node 22.14.0/npm 10.9.2, plus all seven builds, typecheck, lint and all 19 offli
 tests. Node 22.14.0 is now the declared minimum for the root and all seven
 packages. The test fixture validates all packages together using the locked graph;
 it does not independently prove each package's production-only dependency closure.
+
+
+## Diagnostic safety
+
+`npm test -- tests/unit/logger.test.ts tests/unit/logging-callers.test.ts` checks
+stderr routing, filtering, synthetic-secret redaction, bounded output, hostile
+serialization and provider call-site privacy. Service tests replace only network
+or database boundaries; no live requests or database changes occur.
+
+Packaging checks run all seven installed tarballs with `LOG_LEVEL=debug`, capture
+stderr to fixture-local files, and fail on SDK protocol parsing errors during
+initialization, discovery and an unknown-tool call. They preserve the current
+Salesforce failure envelope pending response normalization. This proves those
+paths are protocol-safe, not every provider-backed operation; full tool coverage
+remains separate. The root SDK 0.5 transport accepts a file stream for stderr,
+not the newer SDK's `stderr` pipe accessor.

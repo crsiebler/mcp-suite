@@ -1,3 +1,4 @@
+import { Logger } from "../../../../shared/utils/logger.js";
 import { AxiosInstance } from "axios";
 import {
   Enrollment,
@@ -13,6 +14,11 @@ import {
 } from "../types/enrollment.js";
 
 export class EnrollmentService {
+  private logger = new Logger("info", {
+    server: "canvas",
+    action: "enrollment",
+  });
+
   constructor(private canvasClient: AxiosInstance) {}
 
   /**
@@ -237,10 +243,7 @@ export class EnrollmentService {
         results.push(result);
       } catch (error) {
         // Continue with other enrollments even if one fails
-        console.error(
-          `Failed to create enrollment for user ${enrollment.user_id}:`,
-          error
-        );
+        this.logger.error("Failed to create enrollment", error);
       }
     }
 
@@ -345,7 +348,7 @@ export class EnrollmentService {
         });
         results.push(result);
       } catch (error) {
-        console.error(`Failed to remove enrollment ${enrollmentId}:`, error);
+        this.logger.error("Failed to remove enrollment", error);
       }
     }
 

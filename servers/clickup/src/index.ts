@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { Logger } from "../../../shared/utils/logger.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -43,7 +44,11 @@ class ClickUpServer {
     this.setupToolHandlers();
 
     // Error handling
-    this.server.onerror = (error: any) => console.error("[MCP Error]", error);
+    this.server.onerror = (error: any) =>
+      new Logger("error", { server: "clickup" }).error(
+        "MCP transport error",
+        error
+      );
     process.on("SIGINT", async () => {
       await this.server.close();
       process.exit(0);
@@ -1757,9 +1762,18 @@ class ClickUpServer {
   async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error("ClickUp MCP server running on stdio");
+    new Logger("info", { server: "clickup" }).info(
+      "ClickUp MCP server running on stdio"
+    );
   }
 }
 
 const server = new ClickUpServer();
-server.run().catch(console.error);
+server
+  .run()
+  .catch((error) =>
+    new Logger("error", { server: "clickup" }).error(
+      "Server startup failed",
+      error
+    )
+  );

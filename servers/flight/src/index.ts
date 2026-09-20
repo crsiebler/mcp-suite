@@ -171,6 +171,9 @@ class FlightServer {
 
 const server = new FlightServer();
 server.run().catch((error) => {
-  console.error("Failed to start Flight MCP server:", error);
+  new Logger("error", { server: "flight" }).error(
+    "Server startup failed",
+    error
+  );
   process.exit(1);
 });

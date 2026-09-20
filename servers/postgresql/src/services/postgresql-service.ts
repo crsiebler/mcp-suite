@@ -36,7 +36,7 @@ export class PostgreSQLService {
     const client = await this.pool.connect();
 
     try {
-      this.logger.info(`Executing query: ${query}`);
+      this.logger.info("Executing database query");
 
       // Validate query for safety (block potentially dangerous operations)
       const trimmedQuery = query.trim();

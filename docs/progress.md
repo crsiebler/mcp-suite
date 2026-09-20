@@ -70,3 +70,34 @@
 - Finalization: provisionally mark only US-002 story complete; append-only journal/memory only after passing review. No implementation changes after review.
 - Intended commit: feat(US-002): make workspace builds and packages consistent. Commit status: pending (not yet delivered); Git and response establish success.
 - Next: US-003 protocol-safe shared logging.
+
+## 2026-09-19 - US-003: logger regression and implementation checkpoint
+
+- Previous delivery verified: US-002 is commit 53fdbcd; branch codex/clean-slate initially clean. Previous goal turn restated verified delivery; this turn changes source/tests toward US-003. Standing all-story implementation/commit authorization remains active.
+- Runtime: Codex desktop, GPT-6 family (exact model unavailable), standard mode; no advisors. Memory version1 valid, one locked-engines-baseline pattern, no suppressions.
+- Red evidence: new logger tests initially failed six of seven cases: stdout contamination/context loss, credential/payload disclosure, unsafe text, throwing custom serialization, unsafe error attachments and hostile object/sink failures. Filtering characterization passed.
+- Implemented so far: all shared logger levels use stderr; bounded JSON records preserve context; separate safe data serializer redacts known credential/payload keys, avoids custom getters/toJSON, summarizes Error code without message/stack/provider attachments, handles cycles/BigInt/proxy failures, and bounds line size. Text scrubs URLs/auth/credential assignments and control characters. Logging sink failures do not replace operation outcomes.
+- Checks: seven focused logger tests PASS; npm run type-check PASS; npm run lint PASS; configured formatter applied; git diff --check PASS. Initial test-hook return type and control-regex lint failures fixed and checks rerun. Full package suite not yet run for this story.
+- Remaining required work: add meaningful sensitive-caller regressions, remove PostgreSQL raw SQL / Salesforce request and error interpolation / ASU arguments / Duffel URL and provider-body logging, inspect direct console error paths, verify actual packaged protocol traffic at debug level during startup/tool/error, document logging contract, then run complete relevant checks and native staged review.
+- Known limitation: arbitrary private prose cannot be recognized reliably by generic redaction. Callers must supply static messages and minimal safe metadata; those caller changes remain pending. No authentication logic changed.
+- Review: not started; initial and targeted budgets unused. Story remains pending, nothing staged or committed. Intended commit: feat(US-003): make shared logging protocol-safe.
+
+## 2026-09-19 - US-003: candidate verification
+
+- Prior turn was progress: logger implementation and seven regression tests changed authoritative state. This turn completed caller cleanup and packaged protocol checks; branch and existing story-owned changes revalidated.
+- Additional red evidence: five real-service/middleware privacy regressions failed for ASU inputs, SQL, Salesforce provider errors, Duffel URLs and middleware messages. Two more regressions then failed for arbitrary rejection data and Canvas bulk failures. Fixed with static messages/minimal metadata and error-specific summaries.
+- All retained explicit console diagnostics now use shared Logger. No authentication/authorization, provider operations or public tool-result contracts changed; Salesforce auth-adjacent edits only replace diagnostic messages.
+- Packaging now enables debug logs, captures actual stderr through a file stream supported by SDK0.5, asserts no client protocol errors and exercises unknown-tool dispatch for all seven installed tarballs. Initial fixture used unsupported newer-SDK pipe access and assumed all failure envelopes were identical; corrected to installed SDK API and characterized existing Salesforce success:false content. No SDK change or provider access.
+- Checks: npm run type-check PASS; npm run lint PASS; npm test PASS33 including seven real prepack/build/install/startup/discovery/error checks. Configured formatter applied to new/helper/test files and changed ranges of legacy server files; git diff --check PASS. Unit coverage eight logger and six caller cases, plus existing suites.
+- Documentation: AGENTS and server-development define stderr/static-message/minimal-metadata contract and redaction limits; testing documents actual packaged verification and remaining limits.
+- Review preparation: native story-reviewer required for sensitive logging and cross-server test changes; attempt1 expanded-initial/initial. No prior US-003 reviewer; no advisors. No UI. Complete protocol loaded; candidate will stay immutable during review.
+- Intended commit: feat(US-003): make shared logging protocol-safe. Commit/review pending. Remaining broader provider tool execution and production-only package closure remain US-016; diagnostic tests use synthetic data and mocks.
+
+## 2026-09-19 - US-003: passing review and delivery preparation
+
+- Native story-reviewer /root/review_us003, attempt1 expanded-initial/initial, returned valid pass JSON with no findings or resolutions. Initial pass consumed; no targeted pass needed. Staged evidence inspected; reviewer did not rerun checks.
+- Residual limits: packaged traffic checks cover startup/discovery/unknown-tool handling, not every provider operation; arbitrary private prose still requires static-message/minimal-metadata discipline. Accepted as accurate scope limits, not deferred unmet criteria.
+- Learning candidate logging-arbitrary-rejection-summary is useful guidance already documented, but no accepted_fixed review finding exists; do not promote or increment memory without required evidence event. Existing memory preserved.
+- Only completion/status and append-only journal finalization changed after review. US-003 completion is provisional until successful commit. Authorization unchanged; no publication, push, live writes or global configuration.
+- Intended commit: feat(US-003): make shared logging protocol-safe. Commit status: pending (not yet delivered); Git and final response establish outcome.
+- Next: US-004 shared configuration/validation. Read-only preparation found getEnvVar accepts empty values; generic sanitization has no retained server consumer, only utility tests; auth middleware validation consumers must remain within no-auth-change boundary. No US-004 edits performed.

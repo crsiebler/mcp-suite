@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { Logger } from "../../../shared/utils/logger.js";
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -32,7 +33,11 @@ class ElasticsearchServer {
   }
 
   private setupErrorHandling(): void {
-    this.server.onerror = (error) => console.error("[MCP Error]", error);
+    this.server.onerror = (error) =>
+      new Logger("error", { server: "elasticsearch" }).error(
+        "MCP transport error",
+        error
+      );
     process.on("SIGINT", async () => {
       await this.server.close();
       process.exit(0);
@@ -404,9 +409,18 @@ class ElasticsearchServer {
 
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error("Elasticsearch MCP server running on stdio");
+    new Logger("info", { server: "elasticsearch" }).info(
+      "Elasticsearch MCP server running on stdio"
+    );
   }
 }
 
 const server = new ElasticsearchServer();
-server.run().catch(console.error);
+server
+  .run()
+  .catch((error) =>
+    new Logger("error", { server: "elasticsearch" }).error(
+      "Server startup failed",
+      error
+    )
+  );

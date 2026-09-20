@@ -130,6 +130,9 @@ class AIJobSearchServer {
 
 const server = new AIJobSearchServer();
 server.start().catch((error) => {
-  console.error("Failed to start server:", error);
+  new Logger("error", { server: "aijobsearch" }).error(
+    "Server startup failed",
+    error
+  );
   process.exit(1);
 });

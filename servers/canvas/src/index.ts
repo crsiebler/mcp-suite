@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { Logger } from "../../../shared/utils/logger.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -158,7 +159,11 @@ class CanvasServer {
     this.setupToolHandlers();
 
     // Error handling
-    this.server.onerror = (error) => console.error("[MCP Error]", error);
+    this.server.onerror = (error) =>
+      new Logger("error", { server: "canvas" }).error(
+        "MCP transport error",
+        error
+      );
     process.on("SIGINT", async () => {
       await this.server.close();
       process.exit(0);
@@ -351,9 +356,18 @@ class CanvasServer {
   async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error("Canvas MCP server running on stdio");
+    new Logger("info", { server: "canvas" }).info(
+      "Canvas MCP server running on stdio"
+    );
   }
 }
 
 const server = new CanvasServer();
-server.run().catch(console.error);
+server
+  .run()
+  .catch((error) =>
+    new Logger("error", { server: "canvas" }).error(
+      "Server startup failed",
+      error
+    )
+  );

@@ -35,10 +35,12 @@ current source before editing.
   server or changing tool schemas, dispatch, client configuration, or packaging.
 - Maintain agreement between advertised tool names/input schemas, dispatch cases,
   service methods, and response/error shapes. Preserve existing public contracts.
-- Reserve stdout for MCP protocol messages; send diagnostics to stderr. Never
-  assume the shared logger redacts sensitive data or uses stderr for every level.
+- Reserve stdout for MCP protocol messages; send diagnostics to stderr. Use the shared logger
+  with static messages and minimal metadata. It redacts known fields and summarizes
+  errors, but cannot recognize arbitrary private prose. Do not log SQL, URLs,
+  request/response bodies, or credentials.
 - Edit TypeScript source, not generated JavaScript, declarations, or source maps.
-  Inspect build output changes explicitly; generated files also exist in `shared/`.
+  Generated output belongs in `dist/`, including shared compilation.
 - Add meaningful failing tests for new behavior or bug fixes; retain regression
   coverage for refactors. Documentation changes need link/source validation rather
   than artificial behavior tests.

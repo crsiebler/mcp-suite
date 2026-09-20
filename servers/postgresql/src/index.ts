@@ -151,6 +151,9 @@ class PostgreSQLServer {
 
 const server = new PostgreSQLServer();
 server.run().catch((error) => {
-  console.error("Failed to start PostgreSQL MCP server:", error);
+  new Logger("error", { server: "postgresql" }).error(
+    "Server startup failed",
+    error
+  );
   process.exit(1);
 });

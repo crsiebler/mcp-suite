@@ -1,5 +1,8 @@
+import { once } from "node:events";
+import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import { execFileSync } from "node:child_process";
 import {
+  createWriteStream,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -21,7 +24,7 @@ const packages: Array<{
 mkdirSync(resolve(root, "dist/test-artifacts"), { recursive: true });
 const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/packages-"));
 const env = {
-  LOG_LEVEL: "error",
+  LOG_LEVEL: "debug",
   AIJOBSEARCH_API_TOKEN: "fixture-token",
   AIJOBSEARCH_API_URL: "https://fixture.invalid",
   CANVAS_API_TOKEN: "fixture-token",
@@ -115,7 +118,7 @@ beforeAll(() => {
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
 for (const pkg of packages) {
-  it(`${pkg.server} initializes and lists tools from its installed tarball`, async () => {
+  it(`${pkg.server} keeps debug diagnostics off packaged MCP traffic`, async () => {
     const installed = resolve(scratch, "node_modules", pkg.manifest.name);
     const manifest = JSON.parse(
       readFileSync(resolve(installed, "package.json"), "utf8")
@@ -126,6 +129,9 @@ for (const pkg of packages) {
       { name: "package-fixture", version: "1.0.0" },
       { capabilities: {} }
     );
+    const logPath = resolve(scratch, `${pkg.server}.stderr`);
+    const stderr = createWriteStream(logPath);
+    await once(stderr, "open");
     const transport = new StdioClientTransport({
       command: process.execPath,
       args: [
@@ -136,8 +142,10 @@ for (const pkg of packages) {
         entry,
       ],
       env,
-      stderr: "ignore",
+      stderr,
     });
+    const protocolErrors: Error[] = [];
+    client.onerror = (error) => protocolErrors.push(error);
     try {
       await client.connect(transport);
       const result = await client.listTools();
@@ -145,9 +153,40 @@ for (const pkg of packages) {
       expect(new Set(result.tools.map((tool) => tool.name)).size).toBe(
         result.tools.length
       );
+      // Invalid names exercise real dispatch/error handling without provider I/O.
+      // SDKs differ between a tool-error result and a JSON-RPC error response.
+      const outcome = await client
+        .callTool({ name: "fixture_unknown_tool", arguments: {} })
+        .then(
+          (result) => ({ result, error: undefined }),
+          (error: unknown) => ({ result: undefined, error })
+        );
+      if (outcome.error) {
+        expect(outcome.error).toHaveProperty("code");
+        expect([-32601, -32602, -32603]).toContain(
+          (outcome.error as { code: number }).code
+        );
+      } else {
+        const failure = CallToolResultSchema.parse(outcome.result);
+        if (pkg.server === "salesforce") {
+          // Preserve this existing envelope; response normalization is US-005.
+          const content = failure.content[0];
+          expect(content.type).toBe("text");
+          if (content.type === "text")
+            expect(JSON.parse(content.text)).toMatchObject({ success: false });
+        } else {
+          expect(failure.isError).toBe(true);
+        }
+      }
     } finally {
       await client.close();
       await transport.close();
+      await new Promise<void>((resolve) => stderr.end(resolve));
     }
+    const diagnostics = readFileSync(logPath, "utf8");
+    expect(protocolErrors).toEqual([]);
+    expect(diagnostics.length).toBeGreaterThan(0);
+    expect(diagnostics).not.toContain("fixture-token");
+    expect(diagnostics).not.toContain("postgresql://");
   }, 15000);
 }

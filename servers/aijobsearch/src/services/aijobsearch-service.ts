@@ -21,7 +21,7 @@ export class AIJobSearchService {
     context: string;
   }): Promise<SkillsExtractionResponse> {
     try {
-      this.logger.debug("Extracting skills", args);
+      this.logger.debug("Extracting skills");
 
       const response = await axios.post(
         `${this.config.apiUrl}/skills`,
@@ -50,7 +50,7 @@ export class AIJobSearchService {
     context?: string;
   }): Promise<JobMatchingResponse> {
     try {
-      this.logger.debug("Matching jobs", args);
+      this.logger.debug("Matching jobs");
 
       let requestBody: any;
       

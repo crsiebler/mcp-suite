@@ -193,6 +193,9 @@ Original error: ${errorMessage}`,
 
 const server = new SalesforceServer();
 server.run().catch((error) => {
-  console.error("Server failed:", error);
+  new Logger("error", { server: "salesforce" }).error(
+    "Server startup failed",
+    error
+  );
   process.exit(1);
 });
