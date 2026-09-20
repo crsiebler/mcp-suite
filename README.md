@@ -112,9 +112,11 @@ attribution and review package identity separately from code changes.
 Describe shipped changes with `npm run changeset`; preview with
 `npm run release:status`. Package changelogs own release notes, and package versions
 are independent. See [contribution guidance](docs/server-development.md#releases)
-and [release preparation](docs/releasing.md) for bump choices, migration notes,
+and [release workflow](docs/releasing.md) for bump choices, migration notes,
 lockfile/artifact verification and initial-release prerequisites. The root is
-private. Hosted publication wiring is pending; nothing publishes automatically.
+private. Manual GitHub workflows prepare version PRs and verify exact tarballs;
+publication requires activation, trusted publishing and environment approval.
+Nothing publishes on push. Hosted/OIDC operation remains unverified locally.
 
 ## 📝 License
 

@@ -1,0 +1,204 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Prepare a version PR or publish an approved version commit
+        required: true
+        type: choice
+        options: [prepare, publish]
+permissions:
+  contents: read
+concurrency:
+  group: mcp-suite-release
+  cancel-in-progress: false
+env:
+  RELEASE_WORKFLOW_ENABLED: ${{ vars.RELEASE_WORKFLOW_ENABLED }}
+  RELEASE_BRANCH: ${{ vars.RELEASE_BRANCH }}
+  NPM_PUBLISHING_ENABLED: ${{ vars.NPM_PUBLISHING_ENABLED }}
+  TRUSTED_PUBLISHERS_READY: ${{ vars.TRUSTED_PUBLISHERS_READY }}
+  LICENSE_REVIEWED: ${{ vars.LICENSE_REVIEWED }}
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Validate activation and publication protection
+        id: activation
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const env = process.env;
+            if (context.eventName !== 'workflow_dispatch' || env.RELEASE_WORKFLOW_ENABLED !== 'true')
+              throw new Error('Release workflow is not activated for manual dispatch.');
+            if (!env.RELEASE_BRANCH || context.ref !== `refs/heads/${env.RELEASE_BRANCH}`)
+              throw new Error('Select the configured remote release branch.');
+            const config = require('./.changeset/config.json');
+            if (config.baseBranch !== env.RELEASE_BRANCH)
+              throw new Error('Changesets baseBranch must match RELEASE_BRANCH.');
+            if (!['prepare', 'publish'].includes(context.payload.inputs.operation))
+              throw new Error('Unknown release operation.');
+            if (context.payload.inputs.operation === 'publish') {
+              for (const key of ['NPM_PUBLISHING_ENABLED', 'TRUSTED_PUBLISHERS_READY', 'LICENSE_REVIEWED'])
+                if (env[key] !== 'true') throw new Error(`Publication prerequisite missing: ${key}`);
+              const { data } = await github.rest.repos.getEnvironment({
+                ...context.repo, environment_name: 'npm-publish'
+              });
+              const rule = data.protection_rules?.find(rule => rule.type === 'required_reviewers');
+              if (!rule?.reviewers?.length || rule.prevent_self_review !== true)
+                throw new Error('npm-publish requires reviewers and prevention of self-approval.');
+            }
+  prepare:
+    needs: preflight
+    if: inputs.operation == 'prepare'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: changesets/action/version@v2.1.1
+        with:
+          script: npm run release:version:ci
+          pr-base-branch: ${{ vars.RELEASE_BRANCH }}
+          commit-message: "chore(release): prepare package versions"
+          pr-title: "chore(release): prepare package versions"
+          pr-draft: always
+  candidate:
+    needs: preflight
+    if: inputs.operation == 'publish'
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run type-check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run catalog:check
+      - name: Prepare immutable release artifacts
+        run: |
+          mkdir -p dist/release
+          node node_modules/@changesets/cli/bin.js publish-plan --output dist/publish-plan.json
+          npm_config_ignore_scripts=true node node_modules/@changesets/cli/bin.js pack --from-publish-plan dist/publish-plan.json --out-dir dist/release
+          node scripts/release-artifacts.cjs inspect dist/release
+      - name: Verify exact release tarballs over MCP
+        run: npm test -- tests/packaging/packages.test.ts
+        env:
+          MCP_RELEASE_PACK_DIR: ${{ github.workspace }}/dist/release
+      - name: Seal checked candidate
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+          node scripts/release-artifacts.cjs seal dist/release "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        id: artifact
+        with:
+          name: release-${{ github.sha }}-${{ github.run_attempt }}
+          path: dist/release/
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: [preflight, candidate]
+    if: inputs.operation == 'publish' && needs.candidate.result == 'success'
+    environment: npm-publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      npm_config_ignore_scripts: "true"
+      npm_config_registry: https://registry.npmjs.org
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Require supported npm and OIDC without token fallback
+        run: |
+          node -e 'const [major,minor,patch]=require("node:child_process").execFileSync("npm",["--version"],{encoding:"utf8"}).trim().split(".").map(Number); if(major<11||(major===11&&(minor<5||(minor===5&&patch<1))))throw Error("npm >=11.5.1 required"); for(const key of ["ACTIONS_ID_TOKEN_REQUEST_URL","ACTIONS_ID_TOKEN_REQUEST_TOKEN"])if(!process.env[key])throw Error("OIDC unavailable"); for(const key of ["NPM_TOKEN","NODE_AUTH_TOKEN"])if(process.env[key])throw Error("Token fallback is not permitted");'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/download-artifact@v5
+        with:
+          artifact-ids: ${{ needs.candidate.outputs.artifact-id }}
+          merge-multiple: true
+          path: dist/release
+      - name: Verify approved bytes and source
+        id: verified
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+          node scripts/release-artifacts.cjs verify dist/release "$GITHUB_SHA"
+          node node_modules/@changesets/cli/bin.js publish-plan --output dist/current-publish-plan.json
+          node -e 'require("./scripts/release-artifacts.cjs").verifyRegistryPlan(process.cwd(), "dist/release", "dist/current-publish-plan.json")'
+      - uses: changesets/action/publish@v2.1.1
+        id: publication
+        with:
+          script: node node_modules/@changesets/cli/bin.js publish --from-pack-dir dist/release
+          create-github-releases: false
+          push-git-tags: true
+      - name: Announce only confirmed publications at verified tags
+        id: announce
+        if: ${{ !cancelled() && steps.verified.outcome == 'success' && steps.publication.outputs.published == 'true' }}
+        uses: actions/github-script@v8
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.publication.outputs.published-packages }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const root = process.cwd();
+            const plan = require('./scripts/release-artifacts.cjs').verifyBundle(root, path.join(root, 'dist/release'), context.sha);
+            const workspaces = require('./scripts/packages.cjs').readPackages(root);
+            const published = JSON.parse(process.env.PUBLISHED_PACKAGES);
+            if (!Array.isArray(published) || !published.length) throw new Error('No confirmed publications.');
+            const seen = new Set();
+            for (const item of published) {
+              const release = plan.find(entry => entry.name === item.name && entry.version === item.version);
+              if (!release || seen.has(item.name)) throw new Error('Unexpected publication result.');
+              seen.add(item.name);
+              const tag = `${item.name}@${item.version}`;
+              const { data: ref } = await github.rest.git.getRef({ ...context.repo, ref: `tags/${tag}` });
+              let object = ref.object;
+              for (let depth = 0; object.type === 'tag' && depth < 4; depth++) {
+                const { data } = await github.rest.git.getTag({ ...context.repo, tag_sha: object.sha });
+                object = data.object;
+              }
+              if (object.type !== 'commit' || object.sha !== context.sha)
+                throw new Error('Remote tag does not identify the verified source commit.');
+              const pkg = workspaces.find(pkg => pkg.manifest.name === item.name);
+              const lines = fs.readFileSync(path.join(pkg.path, 'CHANGELOG.md'), 'utf8').split(/\r?\n/);
+              const start = lines.indexOf(`## ${item.version}`);
+              const next = lines.findIndex((line, index) => index > start && /^## /.test(line));
+              const body = lines.slice(start + 1, next < 0 ? undefined : next).join('\n').trim();
+              if (start < 0 || !body) throw new Error('Release changelog section missing.');
+              await github.rest.repos.createRelease({
+                ...context.repo, tag_name: tag, target_commitish: context.sha,
+                name: tag, body, prerelease: item.version.includes('-')
+              });
+            }

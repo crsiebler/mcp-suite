@@ -18,7 +18,8 @@
     "catalog:check": "node scripts/catalog.cjs --check",
     "changeset": "changeset",
     "release:status": "changeset status",
-    "release:version": "changeset version && npm install --package-lock-only --ignore-scripts --offline --no-audit --no-fund && npm run catalog:generate"
+    "release:version": "changeset version && npm install --package-lock-only --ignore-scripts --offline --no-audit --no-fund && npm run catalog:generate",
+    "release:version:ci": "npm run release:version && npm run type-check && npm run lint && npm test && npm run catalog:check"
   },
   "keywords": [
     "api",

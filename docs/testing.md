@@ -166,3 +166,34 @@ offline and package lifecycle hooks disabled. It checks independent/combined/maj
 bumps, internal dependency updates, no-release changes, explicit shared consumers,
 lock synchronization and preservation of Git HEAD/index/tags. No registry writes
 or hosted workflows run. Read [releasing](releasing.md) before version preparation.
+
+## Release workflow verification
+
+`npm test -- tests/release` additionally exercises artifact receipts, membership,
+manifests, tags and hashes; actual CLI packing with prepack disabled; actual CLI
+publication against a fake npm executable; and parsed workflow contracts plus the
+actual inline activation/announcement scripts with fake GitHub responses. Failure
+cases include missing reviewers/setup, failed candidate checks, stale registry
+plans, registry rejection/partial success, missing or wrong-target tags, and
+announcement failure. Git tags exist only in disposable fixture repositories.
+These tests never contact npm or GitHub to write state and cannot prove hosted
+environment approval, OIDC exchange or registry permissions.
+
+The `artifact-smoke` fixture supplies an actual PostgreSQL tarball to a checkout
+without source/build files, then runs the real SDK checks through the release
+artifact mode. `MCP_RELEASE_PACK_DIR=<absolute-directory> npm test --
+tests/packaging/packages.test.ts` validates and installs the selected tarballs;
+it skips source-only catalog validation and absent-server cases. CI runs the full
+source suite/catalog first. The ordinary packaging invocation still builds and
+tests all six packages. The existing locked-graph dependency-closure limitation
+above remains until final package verification is completed.
+
+CI uses Node 24 on GitHub-hosted Linux; publication checks npm >=11.5.1. The lock
+uses public npm tarball URLs with unchanged pinned versions and integrity hashes,
+so a hosted install does not require the former private mirror. A successful local
+offline cached install is not evidence of a fresh hosted network install.
+
+Workflow syntax/expressions were checked with project-local Actionlint 1.7.12
+against both `.github/workflows/*.yml` files. Its release binary was verified
+against the upstream asset SHA256; no global installation is required. Parsed
+workflow tests complement that check and do not replace hosted integration.

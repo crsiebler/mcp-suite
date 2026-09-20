@@ -16,6 +16,18 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { afterAll, beforeAll, expect, it } from "vitest";
 
 const root = resolve(__dirname, "../..");
+const bundle = process.env.MCP_RELEASE_PACK_DIR;
+const releases:
+  | Array<{
+      name: string;
+      tarball: { path: string; integrity: string };
+    }>
+  | undefined = bundle
+  ? require("../../scripts/release-artifacts.cjs").readPackedReleases(
+      root,
+      bundle
+    )
+  : undefined;
 const packages: Array<{
   path: string;
   server: string;
@@ -25,7 +37,13 @@ const packages: Array<{
     bin: Record<string, string>;
     mcpSuite: { environment: { required: string[] } };
   };
-}> = require("../../scripts/packages.cjs").readPackages(root);
+}> = require("../../scripts/packages.cjs")
+  .readPackages(root)
+  .filter(
+    (pkg: { manifest: { name: string } }) =>
+      !releases ||
+      releases.some((release) => release.name === pkg.manifest.name)
+  );
 mkdirSync(resolve(root, "dist/test-artifacts"), { recursive: true });
 const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/packages-"));
 const env = {
@@ -43,20 +61,39 @@ const env = {
 };
 
 beforeAll(() => {
-  // Real prepack hooks build current source. No publish/version/tag commands.
-  const packed = JSON.parse(
-    execFileSync(
-      "npm",
-      ["pack", "--workspaces", "--json", "--pack-destination", scratch],
-      {
-        cwd: root,
-        encoding: "utf8",
-        timeout: 120000,
-        stdio: ["ignore", "pipe", "pipe"],
-      }
-    )
-  );
-  expect(packed).toHaveLength(6);
+  // CI release mode installs the supplied, already-verified tarballs. Default
+  // mode still exercises every real prepack hook against current source.
+  const packed = releases
+    ? releases.map((release) => ({
+        name: release.name,
+        filename: resolve(bundle!, release.tarball.path),
+        integrity: release.tarball.integrity,
+        files: execFileSync(
+          "tar",
+          ["-tzf", resolve(bundle!, release.tarball.path)],
+          {
+            encoding: "utf8",
+            timeout: 10000,
+          }
+        )
+          .trim()
+          .split("\n")
+          .map((path) => ({ path: path.replace(/^package\//, "") })),
+      }))
+    : JSON.parse(
+        execFileSync(
+          "npm",
+          ["pack", "--workspaces", "--json", "--pack-destination", scratch],
+          {
+            cwd: root,
+            encoding: "utf8",
+            timeout: 120000,
+            stdio: ["ignore", "pipe", "pipe"],
+          }
+        )
+      );
+  expect(packed).toHaveLength(packages.length);
+  if (!releases) expect(packages).toHaveLength(6);
   const dependencies: Record<string, string> = {};
   // Reuse the exact lock graph and tarball integrities. An unpinned npm install
   // would require registry metadata even after npm ci cached all tarballs.
@@ -64,6 +101,12 @@ beforeAll(() => {
     readFileSync(resolve(root, "package-lock.json"), "utf8")
   );
   const original = structuredClone(lock.packages);
+  if (releases) {
+    for (const [path, value] of Object.entries(original)) {
+      if (path.startsWith("servers/") || (value as { link?: boolean }).link)
+        delete lock.packages[path];
+    }
+  }
   for (const tarball of packed) {
     const pkg = packages.find((item) => item.manifest.name === tarball.name)!;
     expect(pkg).toBeDefined();
@@ -343,9 +386,14 @@ for (const pkg of packages) {
   }, 15000);
 }
 
-it("generated catalog matches the current builds and environment readers", async () => {
-  await require("../../scripts/catalog.cjs").checkCatalog(root);
-});
+// Source/catalog checks run before release packing; the artifact pass needs
+// only the catalog data to compare with the installed server's actual tools.
+it.runIf(!releases)(
+  "generated catalog matches the current builds and environment readers",
+  async () => {
+    await require("../../scripts/catalog.cjs").checkCatalog(root);
+  }
+);
 
 for (const pkg of packages) {
   for (const key of pkg.manifest.mcpSuite.environment.required as string[]) {
@@ -391,7 +439,9 @@ const invalidSettings: Array<[string, string, string | undefined]> = [
   ["elasticsearch", "ELASTICSEARCH_MAX_RETRIES", "private-retry"],
   ["elasticsearch", "ELASTICSEARCH_REQUEST_TIMEOUT", "0"],
 ];
-for (const [server, key, value] of invalidSettings) {
+for (const [server, key, value] of invalidSettings.filter(([server]) =>
+  packages.some((pkg) => pkg.server === server)
+)) {
   it(`${server} rejects invalid ${key} before starting MCP`, () => {
     const pkg = packages.find((item) => item.server === server)!;
     const entry = resolve(
@@ -419,63 +469,69 @@ for (const [server, key, value] of invalidSettings) {
   });
 }
 
-it("packaged Canvas restricts both discovery and dispatch to selected categories", async () => {
-  const pkg = packages.find((item) => item.server === "canvas")!;
-  const entry = resolve(
-    scratch,
-    "node_modules",
-    pkg.manifest.name,
-    pkg.manifest.main
-  );
-  const stderr = createWriteStream(
-    resolve(scratch, "canvas-categories.stderr")
-  );
-  await once(stderr, "open");
-  const transport = new StdioClientTransport({
-    command: process.execPath,
-    args: [
-      "--require",
-      resolve(root, "tests/fixtures/offline-process.cjs"),
-      resolve(root, "tests/fixtures/start-package.cjs"),
+it.runIf(packages.some((pkg) => pkg.server === "canvas"))(
+  "packaged Canvas restricts both discovery and dispatch to selected categories",
+  async () => {
+    const pkg = packages.find((item) => item.server === "canvas")!;
+    const entry = resolve(
       scratch,
-      entry,
-    ],
-    env: { ...env, CANVAS_TOOL_CATEGORIES: "courses,pages" },
-    stderr,
-  });
-  const client = new Client(
-    { name: "canvas-category-fixture", version: "1.0.0" },
-    { capabilities: {} }
-  );
-  const errors: Error[] = [];
-  client.onerror = (error) => errors.push(error);
-  try {
-    await client.connect(transport);
-    const listed = await client.listTools();
-    expect(listed.tools).toHaveLength(31);
-    expect(listed.tools.map((tool) => tool.name)).toContain("list_courses");
-    expect(listed.tools.map((tool) => tool.name)).toContain("get_course_page");
-    expect(listed.tools.map((tool) => tool.name)).not.toContain("get_user");
-    for (const [name, args, code] of [
-      ["get_user", { user_id: "1" }, "invalid_input"],
-      ["list_courses", {}, "internal_error"],
-    ] as const) {
-      const result = CallToolResultSchema.parse(
-        await client.callTool({ name, arguments: args })
+      "node_modules",
+      pkg.manifest.name,
+      pkg.manifest.main
+    );
+    const stderr = createWriteStream(
+      resolve(scratch, "canvas-categories.stderr")
+    );
+    await once(stderr, "open");
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [
+        "--require",
+        resolve(root, "tests/fixtures/offline-process.cjs"),
+        resolve(root, "tests/fixtures/start-package.cjs"),
+        scratch,
+        entry,
+      ],
+      env: { ...env, CANVAS_TOOL_CATEGORIES: "courses,pages" },
+      stderr,
+    });
+    const client = new Client(
+      { name: "canvas-category-fixture", version: "1.0.0" },
+      { capabilities: {} }
+    );
+    const errors: Error[] = [];
+    client.onerror = (error) => errors.push(error);
+    try {
+      await client.connect(transport);
+      const listed = await client.listTools();
+      expect(listed.tools).toHaveLength(31);
+      expect(listed.tools.map((tool) => tool.name)).toContain("list_courses");
+      expect(listed.tools.map((tool) => tool.name)).toContain(
+        "get_course_page"
       );
-      expect(result.isError).toBe(true);
-      const content = result.content[0];
-      if (content.type !== "text") throw new Error("Expected text");
-      expect(JSON.parse(content.text)).toMatchObject({
-        success: false,
-        error: { code },
-      });
-      expect(content.text).not.toContain("Network access blocked");
+      expect(listed.tools.map((tool) => tool.name)).not.toContain("get_user");
+      for (const [name, args, code] of [
+        ["get_user", { user_id: "1" }, "invalid_input"],
+        ["list_courses", {}, "internal_error"],
+      ] as const) {
+        const result = CallToolResultSchema.parse(
+          await client.callTool({ name, arguments: args })
+        );
+        expect(result.isError).toBe(true);
+        const content = result.content[0];
+        if (content.type !== "text") throw new Error("Expected text");
+        expect(JSON.parse(content.text)).toMatchObject({
+          success: false,
+          error: { code },
+        });
+        expect(content.text).not.toContain("Network access blocked");
+      }
+      expect(errors).toEqual([]);
+    } finally {
+      await client.close();
+      await transport.close();
+      await new Promise<void>((resolve) => stderr.end(resolve));
     }
-    expect(errors).toEqual([]);
-  } finally {
-    await client.close();
-    await transport.close();
-    await new Promise<void>((resolve) => stderr.end(resolve));
-  }
-}, 15000);
+  },
+  15000
+);

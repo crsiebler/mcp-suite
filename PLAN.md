@@ -36,7 +36,7 @@ and maintainable before adding a model-backed integration.
 - Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
   Preserve the baseline and any subsequent unrelated changes; do not absorb
   unrelated changes into story commits without authorization.
-- Current status: US-001 through US-014 and US-013A verified. US-015 and US-016 pending. Missing upstream notices remain a publication prerequisite.
+- Current status: US-001 through US-015 and US-013A verified. US-016 pending. Missing upstream notices remain a publication prerequisite.
   Verification and execution evidence are recorded in docs/progress.md.
 
 ## Release workflow decision
@@ -296,7 +296,7 @@ Apply this workflow to each story:
 
 ### US-015 - Define gated CI publication and document recovery
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 15
 - Depends on: US-014
 - User benefit: release verified packages through a documented and recoverable process.

@@ -143,3 +143,13 @@ and regenerate catalog versions after preparation. Shared code is copied, so
 contributors must select affected consumers explicitly. Package changelogs own
 future release statements; releases/ preserves historical records. See
 [releasing](releasing.md) for the local branch boundary and pending hosted activation.
+
+`.github/workflows/verify.yml` owns pull-request checks. The manual-only
+`release.yml` uses pinned Changesets version/publish sub-actions, a separate
+candidate artifact job and the protected `npm-publish` environment. Only that
+publication job receives OIDC permission. `scripts/release-artifacts.cjs` validates
+workspace membership, manifests, version notes, tarball hashes/source receipts and
+fresh registry-plan agreement; it never calculates versions or publishes.
+The packaging suite accepts `MCP_RELEASE_PACK_DIR` to test already-packed release
+subsets without prepack/build. GitHub announcement glue verifies the remote tag's
+commit and selects package changelog prose after confirmed npm publication.

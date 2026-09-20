@@ -75,6 +75,16 @@ partial-preparation recovery. Keep the root private. Package changelogs own futu
 release notes; releases/ is historical only. Do not recreate retired deploy/publish
 scripts or generate duplicate release payloads.
 
+The manual release workflow separates version PRs, verified artifacts and
+environment-approved publication. Use its maintained Changesets commands; never
+rebuild or change versions after artifact verification. Preserve the exact source
+SHA, artifact ID, checksum receipt, fresh registry-plan check and explicit remote
+tag-target verification before announcements. Partial npm/GitHub failure is not
+atomic: reconcile registry bytes and source before any separately approved retry.
+Do not reuse a stale publish plan or republish an existing name/version. Activation
+variables, environment protection, notices and trusted-publisher settings must be
+reviewed separately; local tests do not prove hosted approval/OIDC enforcement.
+
 Publishing, tagging, pushing, hosted release PRs and registry configuration require
 separate authorization. Do not infer registry ownership, a remote release branch,
 or license clearance from local source metadata. Preserve original attribution.
