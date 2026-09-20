@@ -15,7 +15,9 @@ it.each(["", "  ", null, 1, {}])(
   "rejects invalid required skill-extraction text %s before provider access",
   async (value) => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const post = vi.spyOn(axios, "post").mockResolvedValue({ data: {} });
+    const post = vi
+      .spyOn(axios, "post")
+      .mockResolvedValue({ data: { skills_list: [], jobs_list: [] } });
     await expect(
       service().extractSkills({ taxonomy: "fixture", context: value as string })
     ).rejects.toThrow("context");
@@ -23,7 +25,9 @@ it.each(["", "  ", null, 1, {}])(
   }
 );
 it("preserves exact text and punctuation rather than stripping markup", async () => {
-  const post = vi.spyOn(axios, "post").mockResolvedValue({ data: {} });
+  const post = vi
+    .spyOn(axios, "post")
+    .mockResolvedValue({ data: { skills_list: [], jobs_list: [] } });
   const context = "  TypeScript generics: Map<string, number>\n  ";
   await service().extractSkills({ taxonomy: "fixture", context });
   await service().matchJobs({ type: "text", context });
@@ -32,7 +36,9 @@ it("preserves exact text and punctuation rather than stripping markup", async ()
 });
 it("rejects invalid text-mode job context before provider access", async () => {
   vi.spyOn(console, "error").mockImplementation(() => undefined);
-  const post = vi.spyOn(axios, "post").mockResolvedValue({ data: {} });
+  const post = vi
+    .spyOn(axios, "post")
+    .mockResolvedValue({ data: { skills_list: [], jobs_list: [] } });
   await expect(
     service().matchJobs({ type: "text", context: "  " })
   ).rejects.toThrow("context");

@@ -321,3 +321,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Create an issue for bug reports or feature requests
 - Check existing documentation in individual server README files
 - Review the shared utilities documentation for development guidance
+
+
+AIJobSearch remains experimental: its `/skills` and `/jobs` provider contract and
+taxonomy support are unverified. Configure its endpoint explicitly and resolve the
+[documented live-readiness blocker](servers/aijobsearch/README.md#provider-readiness-unresolved)
+before sending private content. Offline verification is not provider certification.

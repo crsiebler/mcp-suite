@@ -66,7 +66,8 @@ minimal metadata because arbitrary private prose cannot be recognized reliably.
 [AI Job Search dispatch](../servers/aijobsearch/src/tools/handler.ts) is the first
 consumer of the discriminated `ServerResponse` contract. Services validate unknown
 arguments, preserve original provider failures for metadata classification, and
-return unknown provider data. The tool boundary uses
+validate provider data against provisional local interfaces and apply request/response
+limits with a cancellable deadline. The tool boundary uses
 [error normalization](../shared/utils/errors.ts) and
 [MCP serialization](../shared/utils/result.ts) for both operations. Failures expose
 stable categories and safe messages, with bounded Retry-After advice where valid;
@@ -77,7 +78,8 @@ The generic ErrorHandler had no production imports and was removed. Unused
 policy; do not adopt or remove it as part of unrelated error work. Other servers
 retain their existing response contracts until their focused migrations. See
 [response migration](../servers/aijobsearch/README.md#response-contract) for the
-client-visible ASU envelope change and its provider-schema limits.
+client-visible ASU envelope change and unresolved provider-contract blocker. The ASU
+endpoint must be explicitly configured; its old POC default is no longer assumed.
 
 ## Source and generated ownership
 

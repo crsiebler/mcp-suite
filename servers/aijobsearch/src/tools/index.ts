@@ -1,3 +1,4 @@
+import { limits } from "../services/contract.js";
 import { McpTool } from "../../../../shared/types/mcp.js";
 
 export const aijobsearchTools: McpTool[] = [
@@ -12,11 +13,12 @@ export const aijobsearchTools: McpTool[] = [
           type: "string",
           minLength: 1,
           pattern: "\\S",
-          description: 'Skills taxonomy to use (recommended: "lightcast")',
-          default: "lightcast",
+          description: "Taxonomy identifier confirmed by your API provider",
+          maxLength: limits.taxonomyBytes,
         },
         context: {
           type: "string",
+          maxLength: limits.contextBytes,
           minLength: 1,
           pattern: "\\S",
           description:
@@ -44,6 +46,8 @@ export const aijobsearchTools: McpTool[] = [
         skills_list: {
           type: "array",
           description: "Array of skills (required when type='skills')",
+          minItems: 1,
+          maxItems: limits.skills,
           items: {
             type: "object",
             properties: {
@@ -52,19 +56,22 @@ export const aijobsearchTools: McpTool[] = [
                 minLength: 1,
                 pattern: "\\S",
                 description: "Skill title",
+                maxLength: limits.titleBytes,
               },
               description: {
                 type: "string",
                 minLength: 1,
                 pattern: "\\S",
                 description: "Skill description",
+                maxLength: limits.descriptionBytes,
               },
               taxonomy: {
                 type: "string",
                 minLength: 1,
                 pattern: "\\S",
-                description: "Taxonomy name",
-                default: "lightcast",
+                description:
+                  "Taxonomy identifier confirmed by your API provider",
+                maxLength: limits.taxonomyBytes,
               },
             },
             required: ["title", "description", "taxonomy"],
@@ -72,6 +79,7 @@ export const aijobsearchTools: McpTool[] = [
         },
         context: {
           type: "string",
+          maxLength: limits.contextBytes,
           minLength: 1,
           pattern: "\\S",
           description: "Resume or text block (required when type='text')",

@@ -113,7 +113,7 @@ empty string. Environment names are unchanged.
 
 | Setting | Accepted value / default |
 | --- | --- |
-| `AIJOBSEARCH_API_URL` | HTTP(S) base endpoint; default `https://api-main-poc.aiml.asu.edu` |
+| `AIJOBSEARCH_API_URL` | Required HTTP(S) base endpoint; no default (ASU provider contract unverified) |
 | `CANVAS_BASE_URL` | Required HTTP(S) base endpoint |
 | `ELASTICSEARCH_NODE` | HTTP(S) base endpoint; default `http://localhost:9200` |
 | `ELASTICSEARCH_MAX_RETRIES` | Decimal integer 0–10; default 3; zero disables retries |

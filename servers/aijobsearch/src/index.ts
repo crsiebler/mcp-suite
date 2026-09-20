@@ -26,10 +26,7 @@ class AIJobSearchServer {
     this.logger = new Logger(getLogLevel(), { server: "aijobsearch" });
 
     const config: AIJobSearchConfig = {
-      apiUrl: getHttpUrlEnvVar(
-        "AIJOBSEARCH_API_URL",
-        "https://api-main-poc.aiml.asu.edu"
-      ),
+      apiUrl: getHttpUrlEnvVar("AIJOBSEARCH_API_URL"),
       apiToken: getEnvVar("AIJOBSEARCH_API_TOKEN"),
     };
 

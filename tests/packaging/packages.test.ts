@@ -355,11 +355,12 @@ for (const pkg of packages) {
   }, 15000);
 }
 
-const invalidSettings = [
+const invalidSettings: Array<[string, string, string | undefined]> = [
   ["canvas", "CANVAS_API_TOKEN", "  "],
   ["canvas", "CANVAS_TOOL_CATEGORIES", "private-category"],
   ["clickup", "CLICKUP_API_TOKEN", "  "],
   ["aijobsearch", "AIJOBSEARCH_API_TOKEN", ""],
+  ["aijobsearch", "AIJOBSEARCH_API_URL", undefined],
   ["aijobsearch", "AIJOBSEARCH_API_URL", "file:///private-endpoint"],
   ["flight", "DUFFEL_ENVIRONMENT", "private-environment"],
   ["flight", "LOG_LEVEL", "private-log-level"],

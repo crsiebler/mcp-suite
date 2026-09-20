@@ -4,7 +4,8 @@ import {
   type CallToolResult,
 } from "@modelcontextprotocol/sdk/types.js";
 import type { AIJobSearchService } from "../services/aijobsearch-service.js";
-import { normalizeFailure } from "../../../../shared/utils/errors.js";
+import { JobSearchResponseError } from "../services/contract.js";
+import { failure, normalizeFailure } from "../../../../shared/utils/errors.js";
 import { toMcpResult } from "../../../../shared/utils/result.js";
 
 export async function handleJobSearchTool(
@@ -23,6 +24,8 @@ export async function handleJobSearchTool(
         : await service.matchJobs(args);
     return toMcpResult({ success: true, data });
   } catch (error: unknown) {
+    if (error instanceof JobSearchResponseError)
+      return toMcpResult(failure("invalid_response"));
     return toMcpResult(normalizeFailure(error));
   }
 }

@@ -3,6 +3,7 @@ export interface AIJobSearchConfig {
   apiToken: string;
 }
 
+// Provisional repository shapes; authoritative provider schemas remain unverified.
 export interface Skill {
   title: string;
   description: string;

@@ -151,3 +151,10 @@ page zero, comment cursor pairs, Workspace filtering/member projection, mutation
 hints and unknown timeout outcomes without retries. Packaged checks exercise all
 29 invalid-input/guarded-read paths through the actual SDK. No task, hierarchy,
 time entry or goal is changed remotely; live account capabilities remain unverified.
+
+
+ASU `aijobsearch-contracts` fixtures cover skills extraction and both job-matching
+variants, provisional response validation, UTF-8/serialized request limits, deadlines,
+timer cleanup and privacy. `aijobsearch-transport` uses loopback HTTP only to verify
+actual Axios response limits, redirect refusal and cancellation. Packaged startup
+requires an explicit endpoint. See the [ASU readiness blocker](../servers/aijobsearch/README.md#provider-readiness-unresolved): local checks do not prove provider support.

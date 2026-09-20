@@ -31,7 +31,9 @@ afterEach(() => {
 });
 
 it("omits private job-search context and skill inputs from debug logs", async () => {
-  vi.spyOn(axios, "post").mockResolvedValue({ data: {} });
+  vi.spyOn(axios, "post").mockResolvedValue({
+    data: { skills_list: [], jobs_list: [] },
+  });
   const service = new AIJobSearchService(
     { apiUrl: "https://fixture.invalid", apiToken: "synthetic-token" },
     logger()
