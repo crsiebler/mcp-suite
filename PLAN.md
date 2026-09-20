@@ -192,25 +192,25 @@ No UI is planned; if UI is introduced, stop for scope revision and verify-interf
 
 ### US-003 - Prove failure, cancellation and privacy boundaries
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 3
 - Depends on: US-002
 - User benefit: malformed data, unavailable providers or cancellation cannot produce
   misleading decisions, leaked payloads or hanging processes.
 - Relevant paths: Jev adapter/handler/lifecycle and focused unit/SDK/packaging tests.
-- [ ] Reproduce and cover 401/403, missing model, 429, 5xx, timeout, network failure,
+- [x] Reproduce and cover 401/403, missing model, 429, 5xx, timeout, network failure,
       malformed/oversize responses, missing/extra answers, bad distributions, fractional
       score semantics, absent confidence/usage and documented rounding boundaries.
-- [ ] Bound response streaming even without Content-Length; abort and clean up on
+- [x] Bound response streaming even without Content-Length; abort and clean up on
       overflow. Bound total call time and ensure concurrency slots release on all paths.
-- [ ] Propagate MCP cancellation, EOF and shutdown to in-flight provider requests;
+- [x] Propagate MCP cancellation, EOF and shutdown to in-flight provider requests;
       prove child exit, cleared timers and no new work after shutdown with SDK fixtures.
-- [ ] Set SDK retries to zero explicitly; no retry after timeout/disconnect and no
+- [x] Set SDK retries to zero explicitly; no retry after timeout/disconnect and no
       automatic provider/model fallback. Expose safe retry hints only when trustworthy.
-- [ ] Capture stdout/stderr during success and failure; no keys, supplied state,
+- [x] Capture stdout/stderr during success and failure; no keys, supplied state,
       instructions, raw provider warnings/headers/bodies or private errors escape.
       Input validation fails before I/O. Preserve SDK-supported credential handling and TLS.
-- [ ] Run focused failure/lifecycle/privacy and packaged tests plus formatter,
+- [x] Run focused failure/lifecycle/privacy and packaged tests plus formatter,
       lint, typecheck; do not contact a live provider.
 
 ### US-004 - Add Fury and Mysterio decision examples and evaluation cases

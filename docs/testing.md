@@ -219,3 +219,24 @@ the subset fixture verifies PostgreSQL from an existing tarball in a checkout
 without server sources. `.mjs` fixture guards also require an explicit ESLint check:
 `node_modules/.bin/eslint tests/fixtures/package-isolation.mjs
 tests/fixtures/package-provider-responses.mjs`.
+
+## Jev evaluation and lifecycle fixtures
+
+`npm test -- tests/unit/jev.test.ts tests/unit/jev-failures.test.ts` calls the real
+pinned evaluation/Gateway SDK with fake fetch responses. It covers mixed questions,
+exact JSON preservation, byte/depth/identifier bounds, fractional scores, declared
+rounding, metadata validation, HTTP/network failures, warning suppression, streaming
+limits, deadlines, overload and slot release. No live model is called.
+
+Packaged Jev additionally uses its independently installed SDK 1.30 client for
+cancellation and output-schema validation. The root SDK 0.5 client sends an obsolete
+bare `cancelled` notification; it remains useful for legacy text-result checks,
+but cannot prove current protocol cancellation. The native client initializes,
+lists and calls the real package, with only provider fetch replaced. Cancellation
+must reach fetch within one second despite a 120-second server deadline; a follow-up
+call must succeed. EOF and SIGTERM must abort fetch and naturally exit zero within
+three seconds before client close can terminate the child. Warning, unauthorized
+and oversized-body cases assert safe results and captured stdout/stderr privacy.
+Provider event files contain only synthetic started/aborted booleans. These checks
+do not establish remote billing cancellation, live account access, model accuracy,
+privacy routing enforcement or exhaustive upstream API compatibility.

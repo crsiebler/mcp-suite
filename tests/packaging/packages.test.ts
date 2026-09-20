@@ -1,3 +1,4 @@
+import { checkJevLifecycle } from "../fixtures/jev-lifecycle-contracts.ts";
 import { once } from "node:events";
 import { installPackage } from "../fixtures/install-package.ts";
 import { checkFailureContracts } from "../fixtures/package-failure-contracts.ts";
@@ -408,3 +409,33 @@ it.runIf(packages.some((pkg) => pkg.server === "canvas"))(
   },
   15000
 );
+
+for (const mode of [
+  "cancel",
+  "eof",
+  "sigterm",
+  "warning",
+  "unauthorized",
+  "oversize",
+]) {
+  it.runIf(packages.some((pkg) => pkg.server === "jev"))(
+    `packaged Jev handles ${mode} without leakage or hanging`,
+    async () => {
+      const pkg = packages.find((pkg) => pkg.server === "jev")!;
+      await checkJevLifecycle(
+        root,
+        scratch,
+        installDirectory("jev"),
+        resolve(
+          installDirectory("jev"),
+          "node_modules",
+          pkg.manifest.name,
+          pkg.manifest.main
+        ),
+        env,
+        mode
+      );
+    },
+    10000
+  );
+}

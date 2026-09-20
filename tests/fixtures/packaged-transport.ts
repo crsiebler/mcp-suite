@@ -43,9 +43,10 @@ export class VerifiedStdioTransport extends StdioClientTransport {
     }
   }
 
-  assertProtocolAndExit() {
+  assertProtocolAndExit(forbidden?: RegExp) {
     expect(this.exited).toBe(true);
     const stdout = Buffer.concat(this.stdout).toString("utf8");
+    if (forbidden) expect(stdout).not.toMatch(forbidden);
     expect(stdout.length).toBeGreaterThan(0);
     expect(stdout.endsWith("\n")).toBe(true);
     for (const line of stdout.split("\n").filter(Boolean))

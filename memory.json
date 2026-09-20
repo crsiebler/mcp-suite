@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "patterns": [
+    {
+      "id": "prove-full-capacity-after-release",
+      "lens": "qa",
+      "scope": ["tests/unit/jev*.test.ts"],
+      "guidance": "To prove concurrency-slot cleanup, hold the full configured capacity pending after completion and verify every request reaches the provider; one follow-up can miss a leaked slot.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-003",
+      "status": "active"
+    }
+  ],
+  "suppressions": []
+}

@@ -46,6 +46,7 @@ it("runs the actual packaged MCP checks for a supplied release subset without re
       "tests/fixtures/package-success-contracts.ts",
       "tests/fixtures/package-provider-responses.mjs",
       "tests/fixtures/package-failure-contracts.ts",
+      "tests/fixtures/jev-lifecycle-contracts.ts",
       "tests/fixtures/package-isolation.cjs",
       "tests/fixtures/package-isolation.mjs",
     ]) {

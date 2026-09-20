@@ -106,3 +106,69 @@ complete, finalization requires the following authorized commit to succeed.
   Reviewer inspected staged implementation, tests and affected contracts read-only.
 - No findings or substantive remediation; targeted pass unnecessary, no memory
   updates warranted. US-002 provisional completion awaits the authorized commit.
+
+## 2026-09-20 — US-003 failure/lifecycle verification candidate
+
+- US-002 committed as 6ad9071. Exact branch codex/clean-slate confirmed, no unrelated
+  changes. US-003 test-sensitive: native staged review required, no advisors used.
+- Added 37 real-SDK/fake-fetch tests covering HTTP401/403/404/429/500/503, network,
+  malformed JSON, missing/extra/wrong answer types, distributions/weighted scores,
+  invalid/absent metadata, rounding bounds, warning suppression, streamed overflow
+  with/without length, stalled-body timeout/cancel, shutdown, input bytes/depth and
+  aggregate limits. Existing implementation satisfied these new characterization
+  cases without production edits; no artificial red implementation was introduced.
+- Added six packaged current-SDK checks: cancellation, EOF, SIGTERM, private warning,
+  unauthorized and oversized body. A first cancellation run failed (84/85 focused
+  tests passed): root SDK0.5 emits obsolete method `cancelled`, while current SDK
+  requires `notifications/cancelled`. Verified both published installed protocol
+  sources. Resolved fixture to import Client from the isolated Jev package's actual
+  SDK1.30 graph; kept legacy success/error clients unchanged. Current-client output
+  schema validation now also executes. No obsolete-method production shim added.
+- Cancellation must reach synthetic fetch within1s with120s deadline and permits
+  next success. EOF/SIGTERM assert natural exit0 and fetch abort before client.close,
+  so forced SDK cleanup cannot disguise a hanging process. Captured stdout/stderr
+  exclude key, state, instructions and private provider text; all frames parse.
+- Final checks: 82 tests pass (37 failure +45 packaged), typecheck/lint and explicit
+  fixture.mjs ESLint pass. Earlier artifact subset + transport tests passed; final
+  artifact/transport rerun below verifies the final helper import. No live calls.
+- Source behavior unchanged: no new release note needed for this test/docs story.
+  Complete synthetic fixtures are evidence of local contracts only, not live account
+  or model quality. Intended commit: test(US-003): verify Jev failure and shutdown boundaries.
+
+### US-003 initial review and remediation
+
+- Native role story-reviewer, actual session /root/review_jev_us003, US-003 attempt1,
+  expanded-initial profile, initial pass. Complete protocol/schema and scoped packet
+  supplied verbatim; candidate unchanged during review. Valid JSON verdict
+  changes_requested; one medium QA finding jev-failures-slot-release-proof at
+  tests/unit/jev-failures.test.ts:208. No resolutions/learnings initially proposed.
+- Finding: one follow-up call succeeds even if the completed call leaks one of two
+  slots; fresh services per error case also hide leaks. Required proof is full
+  capacity restoration after representative success/failure/deadline/cancellation.
+- Disposition accepted_fixed: eight same-service cases complete success, HTTP,
+  network, malformed response, warning, oversize, cancellation or timeout, then hold
+  two new provider calls pending and require both to reach fetch. Packaged native
+  cancellation now requires two concurrent follow-ups to succeed.
+- Mutation verification: temporarily omitted only active.delete(controller), ran
+  targeted capacity tests; all8 failed (37 other tests deliberately filtered).
+  Restored original service.ts in a Python finally block; git diff confirms zero
+  production changes. Ignored evidence dist/test-artifacts/jev-slot-mutation.log.
+- After restoration:90 tests pass (45failure+45packaged); typecheck/lint/explicit.mjs
+  lint pass. No runtime changes or weakened assertions. Targeted review must reuse
+  /root/review_jev_us003 for this exact US-003 attempt1, only this root cause and
+  remediation regressions. No other findings or review-memory updates yet.
+
+### US-003 targeted review and finalization
+
+- Same actual native session /root/review_jev_us003, US-003 attempt1, expanded-initial
+  targeted pass; complete protocol/schema re-embedded, immutable candidate and
+  prior-root-cause scope. Valid JSON verdict pass, no findings; resolution
+  jev-failures-slot-release-proof confirms both pending follow-ups reach fetch for
+  all8 completion paths and packaged cancellation requires two follow-up successes.
+- Residual risks: checks/mutation executor-reported; live provider/billing/privacy
+  enforcement unverified. No more review passes needed or permitted for this attempt.
+- Accepted reusable learning prove-full-capacity-after-release in new version1
+  memory, evidence event Jev-plan|US-003|prove-full-capacity-after-release|
+  jev-failures-slot-release-proof|accepted_fixed. Evidence1/accepted1/rejected0;
+  no archived knowledge imported or other counters modified.
+- Required checks/review passed; US-003 provisionally complete, commit must succeed.
