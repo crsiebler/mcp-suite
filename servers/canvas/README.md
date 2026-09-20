@@ -1,6 +1,9 @@
-# Canvas MCP Server v2.0.0
+# Canvas MCP Server
 
 A comprehensive Model Context Protocol (MCP) server for interacting with Canvas LMS API. This server provides a modular architecture with extensive enrollment management utilities and course operations.
+
+See [tool categories, pagination and result contracts](../../docs/canvas-tools.md)
+for the verified 185-tool inventory and current configuration.
 
 ## Features
 
@@ -61,11 +64,11 @@ npx @crsiebler/mcp-canvas-server
 1. Clone this repository
 2. Install dependencies:
    ```bash
-   npm install
+   npm ci
    ```
 3. Build the project:
    ```bash
-   npm run build
+   npm run build -- --server=canvas
    ```
 
 ## Configuration
@@ -132,7 +135,7 @@ The server follows a modular architecture:
 1. Define types in the appropriate `src/types/*.ts` file
 2. Implement service logic in `src/services/*-service.ts`
 3. Create tool definitions in `src/tools/*-tools.ts`
-4. Update the main server class to register new tools
+4. Register the category in `src/registry.ts` and add offline contract fixtures
 5. Add documentation and examples to this README
 
 ### Testing
@@ -170,7 +173,7 @@ Add to your MCP client configuration:
   "mcpServers": {
     "canvas": {
       "command": "node",
-      "args": ["/path/to/canvas-server/build/index.js"],
+      "args": ["/path/to/mcp-suite/servers/canvas/dist/servers/canvas/src/index.js"],
       "env": {
         "CANVAS_BASE_URL": "https://your-canvas-instance.instructure.com",
         "CANVAS_API_TOKEN": "your_canvas_api_token"

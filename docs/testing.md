@@ -136,3 +136,10 @@ provider request mappings, empty results, partial bulk/query outcomes and actual
 Elastic error classes. Packaged SDK tests exercise every tool's invalid-input or
 guarded read failure. No cluster is created or mutated. These are local contract
 checks, not live provider/permission or exhaustive response-schema validation.
+
+Canvas tests cover category selection/hidden dispatch, all185actual handler/service
+routes with synthetic inputs, and explicit read/write/error fixtures per category.
+The inventory smoke test does not prove every argument's provider semantics.
+`canvas-pagination.test.ts` exercises real course service/registry pagination with
+an Axios adapter; no live student, grading, login or SSO operations occur.
+Packaged checks cover default/selected exposure and unknown-category startup.

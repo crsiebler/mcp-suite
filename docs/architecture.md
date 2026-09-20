@@ -115,3 +115,14 @@ service calls. The service owns Elasticsearch request/response mappings, with
 `services/outcomes.ts` reducing provider failure details to machine types.
 Successful data shapes remain provider-specific; shared code does not own index
 administration. See the server README for result migration and limit semantics.
+
+
+## Canvas category registry
+
+`servers/canvas/src/registry.ts` registers the 15 existing service/tool groups,
+derives the 185-tool inventory, and uses one selected map for discovery and
+execution. `CANVAS_TOOL_CATEGORIES` is optional; unset preserves all tools.
+The entry point retains client/authentication configuration and stdio lifecycle.
+Course-only opt-in pagination lives in `services/course-pagination.ts`; other
+service contracts remain unchanged. See [Canvas tools](canvas-tools.md) for
+categories, pagination and error-output migration.

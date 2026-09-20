@@ -154,6 +154,7 @@ for (const pkg of packages) {
       expect(new Set(result.tools.map((tool) => tool.name)).size).toBe(
         result.tools.length
       );
+      if (pkg.server === "canvas") expect(result.tools).toHaveLength(185);
       if (pkg.server === "aijobsearch") {
         for (const name of ["extract_skills", "match_jobs"]) {
           for (const args of [
@@ -325,6 +326,7 @@ for (const pkg of packages) {
 
 const invalidSettings = [
   ["canvas", "CANVAS_API_TOKEN", "  "],
+  ["canvas", "CANVAS_TOOL_CATEGORIES", "private-category"],
   ["clickup", "CLICKUP_API_TOKEN", "  "],
   ["aijobsearch", "AIJOBSEARCH_API_TOKEN", ""],
   ["aijobsearch", "AIJOBSEARCH_API_URL", "file:///private-endpoint"],
@@ -360,3 +362,64 @@ for (const [server, key, value] of invalidSettings) {
     expect(result.stderr).not.toContain("private-");
   });
 }
+
+it("packaged Canvas restricts both discovery and dispatch to selected categories", async () => {
+  const pkg = packages.find((item) => item.server === "canvas")!;
+  const entry = resolve(
+    scratch,
+    "node_modules",
+    pkg.manifest.name,
+    pkg.manifest.main
+  );
+  const stderr = createWriteStream(
+    resolve(scratch, "canvas-categories.stderr")
+  );
+  await once(stderr, "open");
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [
+      "--require",
+      resolve(root, "tests/fixtures/offline-process.cjs"),
+      resolve(root, "tests/fixtures/start-package.cjs"),
+      scratch,
+      entry,
+    ],
+    env: { ...env, CANVAS_TOOL_CATEGORIES: "courses,pages" },
+    stderr,
+  });
+  const client = new Client(
+    { name: "canvas-category-fixture", version: "1.0.0" },
+    { capabilities: {} }
+  );
+  const errors: Error[] = [];
+  client.onerror = (error) => errors.push(error);
+  try {
+    await client.connect(transport);
+    const listed = await client.listTools();
+    expect(listed.tools).toHaveLength(31);
+    expect(listed.tools.map((tool) => tool.name)).toContain("list_courses");
+    expect(listed.tools.map((tool) => tool.name)).toContain("get_course_page");
+    expect(listed.tools.map((tool) => tool.name)).not.toContain("get_user");
+    for (const [name, args, code] of [
+      ["get_user", { user_id: "1" }, "invalid_input"],
+      ["list_courses", {}, "internal_error"],
+    ] as const) {
+      const result = CallToolResultSchema.parse(
+        await client.callTool({ name, arguments: args })
+      );
+      expect(result.isError).toBe(true);
+      const content = result.content[0];
+      if (content.type !== "text") throw new Error("Expected text");
+      expect(JSON.parse(content.text)).toMatchObject({
+        success: false,
+        error: { code },
+      });
+      expect(content.text).not.toContain("Network access blocked");
+    }
+    expect(errors).toEqual([]);
+  } finally {
+    await client.close();
+    await transport.close();
+    await new Promise<void>((resolve) => stderr.end(resolve));
+  }
+}, 15000);

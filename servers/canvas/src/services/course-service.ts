@@ -1,3 +1,4 @@
+import { readCoursePage, type CoursePage } from "./course-pagination.js";
 import { AxiosInstance } from "axios";
 import {
   Course,
@@ -16,7 +17,9 @@ import {
 export class CourseService {
   constructor(private canvasClient: AxiosInstance) {}
 
-  async listCourses(params: CourseListParams = {}): Promise<Course[]> {
+  async listCourses(
+    params: CourseListParams = {}
+  ): Promise<Course[] | CoursePage<Course>> {
     const queryParams: any = {};
 
     if (params.enrollment_type) {
@@ -32,10 +35,7 @@ export class CourseService {
       queryParams["include[]"] = params.include;
     }
 
-    const response = await this.canvasClient.get("/courses", {
-      params: queryParams,
-    });
-    return response.data;
+    return readCoursePage<Course>(this.canvasClient, queryParams, params);
   }
 
   async getCourse(courseId: string, include?: string[]): Promise<Course> {

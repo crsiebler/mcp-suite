@@ -1,3 +1,4 @@
+import type { CoursePaginationOptions } from "../services/course-pagination.js";
 import { CanvasEntity, CourseIncludeOptions } from "./index.js";
 
 export interface Course extends CanvasEntity {
@@ -94,7 +95,7 @@ export interface CourseUpdateParams {
   course_format?: "on_campus" | "online" | "blended";
 }
 
-export interface CourseListParams {
+export interface CourseListParams extends CoursePaginationOptions {
   enrollment_type?: "teacher" | "student" | "ta" | "observer" | "designer";
   enrollment_state?: "active" | "invited_or_pending" | "completed";
   state?: Array<"unpublished" | "available" | "completed" | "deleted">;

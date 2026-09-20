@@ -162,3 +162,11 @@ Retry-After is advisory; the helpers do not retry operations. Test both success 
 failure MCP results against the installed SDK schemas and preserve provider tests.
 The unused generic ErrorHandler has been removed; unused auth middleware remains
 unchanged and must not be enabled as a side effect of this workflow.
+
+
+Canvas category registration is centralized in `servers/canvas/src/registry.ts`.
+Add a service/tool pair there instead of duplicating lists in the entry point.
+Keep advertised and callable exposure identical for `CANVAS_TOOL_CATEGORIES`,
+update the source-derived [category inventory](canvas-tools.md), and add offline
+read/write fixtures. New list operations must state their pagination behavior;
+returning one provider page does not establish a complete inventory.

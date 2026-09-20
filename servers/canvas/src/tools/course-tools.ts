@@ -11,6 +11,23 @@ export class CourseTools {
         inputSchema: {
           type: "object",
           properties: {
+            include_pagination: {
+              type: "boolean",
+              description:
+                "Return items and next_page_url instead of the legacy array (default false).",
+            },
+            per_page: {
+              type: "integer",
+              minimum: 1,
+              maximum: 100,
+              description:
+                "Requested first-page size; Canvas may return fewer. Local maximum 100.",
+            },
+            page_url: {
+              type: "string",
+              description:
+                "Opaque next_page_url returned by this tool. Requires include_pagination=true; omit other filters/per_page.",
+            },
             enrollment_type: {
               type: "string",
               description: "Filter by enrollment type",
