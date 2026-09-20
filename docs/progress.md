@@ -172,3 +172,39 @@ complete, finalization requires the following authorized commit to succeed.
   jev-failures-slot-release-proof|accepted_fixed. Evidence1/accepted1/rejected0;
   no archived knowledge imported or other counters modified.
 - Required checks/review passed; US-003 provisionally complete, commit must succeed.
+
+## 2026-09-20 — US-004 workflow examples candidate
+
+- US-003 committed837c860, including resolved review finding and bounded version1
+  memory. Highest eligible story US-004; branch codex/clean-slate and clean initial
+  status confirmed. No advisors, no live access or avengers-initiative changes.
+- Added12 assistant-authored synthetic labeled cases: six Fury next-step cases,
+  three supplied-finding cases and three supplied-merge-candidate cases. Includes
+  clear/ambiguous/insufficient/conflicting and embedded hostile instructions. Every
+  request mixes boolean/choice/score and passes the real public schema/SDK adapter.
+- Example caller policy requires selected probability>=0.8, choice confidence>=0.6
+  and evidence-support probability>=0.8, otherwise asks/reviews. Thresholds expressly
+  uncalibrated. No actions/merges/approval are executed; rubric scores stay fractional.
+- Test-first missing-policy import failed; implementation plus15 focused checks now
+  pass. A test collection nesting error was corrected before verification. Tests
+  validate all three fenced JSON documentation requests and all12 real-SDK fixture
+  mappings/labels plus threshold/absent metadata branches. Labels/fixture answers
+  establish local branching only, never actual Jev quality or injection resistance.
+- Documented optional separately approved live procedure: synthetic data only,
+  maximum12 sequential requests/no retries, account/spend checks, actual usage and
+  latency coverage, agreement/false acceptance/abstention/error denominators and
+  separate calibration/held-out datasets. No live runner added or run.
+- Checks:15 focused tests, typecheck/lint, configured formatting and local Markdown
+  link validation pass. No new shipped runtime behavior, existing Jev minor note
+  remains appropriate; final client/release documentation is US-005.
+- Staged review classification test-sensitive (example policy/tests), standard mode
+  native story-reviewer required. Intended commit: docs(US-004): add Jev workflow examples and evaluation cases.
+
+### US-004 review and finalization
+
+- Native story-reviewer /root/review_jev_us004, attempt1, expanded-initial initial
+  pass returned valid JSON: pass, no findings, no learning candidates. Candidate
+  remained unchanged during review; no targeted pass needed.
+- Residual limits: synthetic fixtures do not establish accuracy or injection
+  resistance; thresholds need separate calibration. Live access remains untested.
+- Required checks and review passed; provisional completion finalized by commit.

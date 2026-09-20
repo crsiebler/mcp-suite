@@ -215,28 +215,28 @@ No UI is planned; if UI is introduced, stop for scope revision and verify-interf
 
 ### US-004 - Add Fury and Mysterio decision examples and evaluation cases
 
-- [ ] Story complete
+- [x] Story complete
 - Priority: 4
 - Depends on: US-003
 - User benefit: adopt concrete decision workflows without mistaking scoring for
   generated review findings or a permission to merge.
 - Relevant paths: Jev README, `docs/jev-workflows.md`, synthetic evaluation fixtures/tests.
-- [ ] Provide valid mixed-question examples for Fury next-agent/continue/ask/stop,
+- [x] Provide valid mixed-question examples for Fury next-agent/continue/ask/stop,
       Mysterio supplied-finding severity/evidence scoring, and ranking supplied merge
       candidates with a manual-review option. No edits in avengers-initiative.
-- [ ] Validate every example against the real public schema and show interpretation
+- [x] Validate every example against the real public schema and show interpretation
       of probabilities, fractional rubric scores, missing confidence and uncertain input.
       Never label a model probability as a verified fact or approval.
-- [ ] Create at least 12 labeled synthetic task cases spanning clear, ambiguous,
+- [x] Create at least 12 labeled synthetic task cases spanning clear, ambiguous,
       insufficient and conflicting evidence, including misleading instructions inside
       state. Deterministic fixtures prove request/mapping/threshold behavior only.
-- [ ] Define optional live evaluation measurements (agreement, false acceptance,
+- [x] Define optional live evaluation measurements (agreement, false acceptance,
       abstention, usage, latency) and a review rubric without fabricated accuracy claims.
       Proposed thresholds require held-out calibration before downstream automation.
-- [ ] Keep any live runner separate and explicitly opt-in with caller-supplied key,
+- [x] Keep any live runner separate and explicitly opt-in with caller-supplied key,
       bounded request count and accepted spend/data scope. Ordinary tests must neither
       invoke it nor read local repositories/credential stores. Live execution is deferred.
-- [ ] Run fixture/example validation, configured formatting/lint and typecheck.
+- [x] Run fixture/example validation, configured formatting/lint and typecheck.
 
 ### US-005 - Complete seven-server release and client documentation
 
