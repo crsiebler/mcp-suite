@@ -23,7 +23,7 @@
   "files": [
     "dist"
   ],
-  "author": "Cory <cory.siebler@phitechsolutions.com>",
+  "author": "Cory Siebler <cory.siebler@phitechsolutions.com>",
   "engines": {
     "node": ">=22.14.0"
   },

@@ -22,6 +22,71 @@ if (["canvas", "clickup", "flight"].includes(server)) {
     else unexpected();
     return { data, status: 200, statusText: "OK", headers: {}, config };
   };
+} else if (server === "jev") {
+  let calls = 0;
+  globalThis.fetch = async (input, options) => {
+    const body = JSON.parse(options.body);
+    if (
+      String(input) !== "https://ai-gateway.vercel.sh/v4/ai/evaluation-model" ||
+      options.method !== "POST" ||
+      new Headers(options.headers).get("ai-model-id") !== "typesafe-ai/jev" ||
+      body.state !== "fixture-state" ||
+      body.questions.ready.instructions !== "fixture-instructions" ||
+      JSON.stringify(body.providerOptions) !==
+        JSON.stringify({
+          gateway: {
+            only: ["typesafe-ai"],
+            zeroDataRetention: true,
+            disallowPromptTraining: true,
+          },
+        })
+    )
+      unexpected();
+    const mode = process.env.PACKAGE_FIXTURE_JEV_MODE;
+    if (["cancel", "eof", "sigterm"].includes(mode) && ++calls === 1) {
+      const file = new URL(`./jev-${mode}.json`, import.meta.url);
+      writeFileSync(file, JSON.stringify({ started: true, aborted: false }));
+      return new Promise((_resolve, reject) =>
+        options.signal.addEventListener(
+          "abort",
+          () => {
+            writeFileSync(
+              file,
+              JSON.stringify({ started: true, aborted: true })
+            );
+            reject(new Error("private-provider-abort"));
+          },
+          { once: true }
+        )
+      );
+    }
+    if (mode === "unauthorized")
+      return new Response("private-provider-body", {
+        status: 401,
+        headers: { "private-provider-header": "private-provider-value" },
+      });
+    if (mode === "oversize")
+      return new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new Uint8Array(1048577));
+          },
+        })
+      );
+    return new Response(
+      JSON.stringify({
+        answers: { ready: { type: "boolean", probability: 0.9 } },
+        ...(mode === "warning"
+          ? {
+              warnings: [
+                { type: "other", message: "private-provider-warning" },
+              ],
+            }
+          : {}),
+      }),
+      { headers: { "content-type": "application/json" } }
+    );
+  };
 } else if (server === "salesforce") {
   globalThis.fetch = async (input, options) => {
     const url = new URL(input);

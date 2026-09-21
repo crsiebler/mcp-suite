@@ -1,3 +1,4 @@
+import { checkJevLifecycle } from "../fixtures/jev-lifecycle-contracts.ts";
 import { once } from "node:events";
 import { installPackage } from "../fixtures/install-package.ts";
 import { checkFailureContracts } from "../fixtures/package-failure-contracts.ts";
@@ -51,6 +52,7 @@ const scratch = mkdtempSync(resolve(root, "dist/test-artifacts/packages-"));
 const installDirectory = (server: string) => resolve(scratch, server);
 const env = {
   LOG_LEVEL: "debug",
+  AI_GATEWAY_API_KEY: "fixture-token",
   CANVAS_API_TOKEN: "fixture-token",
   CANVAS_BASE_URL: "https://fixture.invalid",
   CLICKUP_API_TOKEN: "fixture-token",
@@ -96,7 +98,7 @@ beforeAll(() => {
         )
       );
   expect(packed).toHaveLength(packages.length);
-  if (!releases) expect(packages).toHaveLength(6);
+  if (!releases) expect(packages).toHaveLength(7);
   for (const tarball of packed) {
     const pkg = packages.find((item) => item.manifest.name === tarball.name)!;
     expect(pkg).toBeDefined();
@@ -283,6 +285,9 @@ for (const pkg of packages) {
 }
 
 const invalidSettings: Array<[string, string, string | undefined]> = [
+  ["jev", "AI_GATEWAY_API_KEY", "  "],
+  ["jev", "JEV_TIMEOUT_MS", "private-timeout"],
+  ["jev", "LOG_LEVEL", "private-level"],
   ["canvas", "CANVAS_API_TOKEN", "  "],
   ["canvas", "CANVAS_TOOL_CATEGORIES", "private-category"],
   ["clickup", "CLICKUP_API_TOKEN", "  "],
@@ -404,3 +409,33 @@ it.runIf(packages.some((pkg) => pkg.server === "canvas"))(
   },
   15000
 );
+
+for (const mode of [
+  "cancel",
+  "eof",
+  "sigterm",
+  "warning",
+  "unauthorized",
+  "oversize",
+]) {
+  it.runIf(packages.some((pkg) => pkg.server === "jev"))(
+    `packaged Jev handles ${mode} without leakage or hanging`,
+    async () => {
+      const pkg = packages.find((pkg) => pkg.server === "jev")!;
+      await checkJevLifecycle(
+        root,
+        scratch,
+        installDirectory("jev"),
+        resolve(
+          installDirectory("jev"),
+          "node_modules",
+          pkg.manifest.name,
+          pkg.manifest.main
+        ),
+        env,
+        mode
+      );
+    },
+    10000
+  );
+}

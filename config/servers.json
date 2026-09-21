@@ -319,6 +319,21 @@
       }
     },
     {
+      "name": "jev",
+      "displayName": "Jev (Vercel AI Gateway)",
+      "package": "@crsiebler/mcp-jev-server",
+      "version": "0.1.0",
+      "entry": "servers/jev/dist/servers/jev/src/index.js",
+      "binaries": ["mcp-jev"],
+      "toolCount": 1,
+      "tools": ["jev_evaluate"],
+      "environment": {
+        "required": ["AI_GATEWAY_API_KEY"],
+        "optional": ["LOG_LEVEL", "JEV_TIMEOUT_MS"],
+        "notes": "Evaluations send caller-supplied data to Gateway and may incur charges. Privacy routing filters do not disable Gateway logs. No live calls during discovery."
+      }
+    },
+    {
       "name": "postgresql",
       "displayName": "PostgreSQL",
       "package": "@crsiebler/mcp-postgresql-server",

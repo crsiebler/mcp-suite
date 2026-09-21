@@ -22,7 +22,7 @@
     "search",
     "analytics"
   ],
-  "author": "Cory <cory.siebler@phitechsolutions.com>",
+  "author": "Cory Siebler <cory.siebler@phitechsolutions.com>",
   "license": "MIT",
   "dependencies": {
     "@elastic/elasticsearch": "^8.13.4",

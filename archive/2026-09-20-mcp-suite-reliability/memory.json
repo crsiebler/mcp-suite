@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "patterns": [
+    {
+      "id": "locked-engines-baseline",
+      "lens": "correctness",
+      "scope": ["package.json", "package-lock.json", "servers/*/package.json"],
+      "guidance": "When workspace dependency resolution changes, align declared Node engines with required transitive engines and verify engine-strict frozen installation plus builds/tests on the declared minimum runtime.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-002",
+      "status": "active"
+    },
+    {
+      "id": "base-url-empty-delimiters",
+      "lens": "correctness",
+      "scope": ["shared/utils/config.ts", "tests/unit/config.test.ts"],
+      "guidance": "When base endpoints forbid query/fragment components, reject literal delimiters before inspecting parsed URL.search/hash; empty components normalize to empty strings. Preserve percent-encoded path punctuation and test both cases.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-004",
+      "status": "active"
+    },
+    {
+      "id": "validate-serialized-envelope-required-fields",
+      "lens": "correctness",
+      "scope": ["shared/utils/result.ts"],
+      "guidance": "When serializing unknown data into a required envelope field, verify that serialized output retains the field; JSON.stringify can silently omit functions, symbols and toJSON-returning-undefined values without throwing.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-005",
+      "status": "active"
+    },
+    {
+      "id": "elasticsearch-http-success-can-contain-shard-failures",
+      "lens": "correctness",
+      "scope": ["servers/elasticsearch/src/**"],
+      "guidance": "Preserve and classify shard outcome metadata before projecting Elasticsearch read responses; HTTP success and an unset timeout flag do not establish a complete result.",
+      "evidence_count": 1,
+      "accepted_count": 1,
+      "rejected_count": 0,
+      "last_validated_story": "US-009",
+      "status": "active"
+    }
+  ],
+  "suppressions": []
+}

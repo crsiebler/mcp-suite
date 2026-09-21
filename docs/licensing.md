@@ -2,7 +2,7 @@
 
 The root package manifest declares MIT. The retained original history at commit
 `2a2881a` also declares MIT and identifies Azharuddin as package author. Current
-package author metadata is Cory <cory.siebler@phitechsolutions.com>, as requested;
+package author metadata is Cory Siebler <cory.siebler@phitechsolutions.com>, as requested;
 this is maintainer metadata, not a replacement copyright notice.
 
 No LICENSE/COPYING/NOTICE file exists in this checkout or in the retained original

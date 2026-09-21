@@ -11,6 +11,19 @@ const scenarios: Record<
   string,
   { name: string; arguments: Record<string, unknown>; expected: object }
 > = {
+  jev: {
+    name: "jev_evaluate",
+    arguments: {
+      state: "fixture-state",
+      questions: {
+        ready: { type: "boolean", instructions: "fixture-instructions" },
+      },
+    },
+    expected: {
+      requestedModel: "typesafe-ai/jev",
+      answers: { ready: { type: "boolean", probability: 0.9 } },
+    },
+  },
   canvas: {
     name: "list_courses",
     arguments: {},
@@ -104,12 +117,13 @@ export async function checkSuccessContract(
     expect((await client.listTools()).tools.map((tool) => tool.name)).toContain(
       scenario.name
     );
-    const result = CallToolResultSchema.parse(
-      await client.callTool({
-        name: scenario.name,
-        arguments: scenario.arguments,
-      })
-    );
+    const raw = await client.callTool({
+      name: scenario.name,
+      arguments: scenario.arguments,
+    });
+    const result = CallToolResultSchema.parse(raw);
+    if (server === "jev")
+      expect(raw.structuredContent).toEqual(scenario.expected);
     expect(result.isError).not.toBe(true);
     const text = result.content[0];
     if (text.type !== "text") throw new Error("Expected text tool result");

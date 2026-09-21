@@ -9,6 +9,7 @@ then regenerate; this file and config/servers.json are inventories, not runtime 
 | [ClickUp](../servers/clickup/README.md)             | `@crsiebler/mcp-clickup-server`       |    29 | `CLICKUP_API_TOKEN`                   |
 | [Elasticsearch](../servers/elasticsearch/README.md) | `@crsiebler/mcp-elasticsearch-server` |    18 | None                                  |
 | [Flight (Duffel)](../servers/flight/README.md)      | `@crsiebler/mcp-flight-server`        |    13 | `DUFFEL_API_KEY`                      |
+| [Jev (Vercel AI Gateway)](../servers/jev/README.md) | `@crsiebler/mcp-jev-server`           |     1 | `AI_GATEWAY_API_KEY`                  |
 | [PostgreSQL](../servers/postgresql/README.md)       | `@crsiebler/mcp-postgresql-server`    |     2 | `POSTGRESQL_CONNECTION_STRING`        |
 | [Salesforce](../servers/salesforce/README.md)       | `@crsiebler/mcp-salesforce-server`    |     8 | None                                  |
 
@@ -300,6 +301,18 @@ Tools:
 - `duffel_quote_order_cancellation`
 - `duffel_search_flights`
 - `duffel_test_connection`
+
+## Jev (Vercel AI Gateway)
+
+Version: `0.1.0`. Repository entry: `servers/jev/dist/servers/jev/src/index.js`.
+
+Optional/conditional variables: `LOG_LEVEL`, `JEV_TIMEOUT_MS`.
+
+Evaluations send caller-supplied data to Gateway and may incur charges. Privacy routing filters do not disable Gateway logs. No live calls during discovery.
+
+Tools:
+
+- `jev_evaluate`
 
 ## PostgreSQL
 

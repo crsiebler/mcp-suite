@@ -1,377 +1,314 @@
-# Implementation plan: MCP Suite reliability and maintenance
+# Implementation plan: Jev evaluation MCP server
 
 ## Objective and context
 
-Make the six retained servers reproducibly buildable, testable, protocol-safe,
-and maintainable before adding a model-backed integration.
+Expose TypeSafe AI's Jev through a local MCP server in this repository, using
+Vercel AI Gateway. A client supplies state and typed questions; the server returns
+validated decisions and probabilities. It does not generate code or explanations.
 
-- Sources: user-approved recommendations and audits in this conversation;
-  AGENTS.md, docs/testing.md, docs/server-development.md, scripts/, config/,
-  shared/, remaining manifests and tool/service implementations.
-- Retained servers: canvas, clickup, elasticsearch, flight,
-  postgresql, salesforce.
-- Included in the clean-slate baseline: ten server removals; author metadata set to
-  Cory <cory.siebler@phitechsolutions.com>; AGENTS.md and repository map; Rovo guide.
-  Preserve these changes. Their presence is not a passing runtime baseline.
-- Scope amendment (2026-09-20): remove AI Job Search at the user’s request.
-  Preserve completed-story evidence for the former seven-server inventory; future
-  release and final verification scope is the six retained servers above.
-- Scope: local code, tests, npm workspace packaging, Changesets release
-  preparation, GitHub Actions workflow definitions, and accurate contributor/release docs.
-- Non-goals: restore removed servers, change global harness configuration, migrate
-  databases, perform live writes, publish packages, push tags, or deploy services.
-  The create-mcp-server skill is a separate dotfiles deliverable, not work here.
-- Working branch: `codex/clean-slate`. The user authorized consolidating the
-  current repository, cleanup, and plan into one root commit on this new branch.
-  Original history is retained on main at 2a2881a; nothing is pushed. Verify the
-  baseline commit and clean worktree before beginning implementation.
+- Sources: the user's Jev/Vercel MCP request and Fury/Mysterio use cases; current
+  AGENTS.md, package.json/lock, docs/server-development.md, docs/testing.md,
+  workspace/catalog scripts, and packaged SDK fixtures; official sources below.
+- Scope: one TypeScript stdio workspace, one evaluation tool, bounded Gateway
+  adapter, offline tests, examples/evaluation fixtures, package metadata and docs.
+- Non-goals: chat-provider configuration, direct TypeSafe fallback, hosted HTTP
+  transport, background agents, implicit repository/file/URL reads, code generation,
+  Git operations by tools, autonomous approval/merge, avengers-initiative edits,
+  dotfiles/global installation, credentials provisioning, publishing or deployment.
+- Working branch: existing `codex/clean-slate`, currently at `aaf157e`. Execution
+  must recheck this exact non-main branch and preserve unrelated work; no branch
+  creation/switching is part of this plan. Main now shares its baseline history.
 - Mode: standard. No implementation advisors recommended; executor owns changes.
-  Native staged reviewer: story-reviewer when required by the shared risk budget.
-- Authorization: the user approved execution of all 16 stories, required local
-  dependencies/configuration, planned removals, local CI definitions, and one
-  commit per verified story. Preserve the pre-existing package.json ordering
-  changes and include the revised plan with the first story. No publication,
-  pushes, live service changes, or global configuration are authorized.
-  Existing authentication/authorization edits remain prohibited by repository policy.
-- Delivery: one scoped, verified, reviewed, explicitly authorized commit per story.
-  Preserve the baseline and any subsequent unrelated changes; do not absorb
-  unrelated changes into story commits without authorization.
-- Current status: US-001 through US-016 and US-013A verified. Missing upstream notices remain a publication prerequisite.
-  Verification and execution evidence are recorded in docs/progress.md.
+  Native staged reviewer: `story-reviewer` for test-sensitive stories.
+- Authorization: user approved plan execution, scoped dependencies/configuration,
+  minimal outbound Gateway API-key wiring and passing-story commits. Preserve
+  existing authentication and host approval policies. No live calls or credentials
+  provisioning are authorized; the key is not established in the environment.
+- Delivery: one authorized commit per verified/reviewed story; no implicit push.
+- Existing work: author-name updates and completed-run archival were separately
+  authorized and committed before Jev execution; preserve the archive.
+- Current status: execution in progress; live model verification remains deferred.
 
-## Release workflow decision
+## Verified research and remaining decisions
 
-Use npm workspaces for the six server packages, Changesets for independent
-package versions and changelogs, and GitHub Actions for release PR preparation
-and separately gated publication. Keep the root package private. Reuse maintained
-tooling; do not implement a custom version calculator or release orchestrator.
-A small build wrapper is acceptable only for actual shared compilation ordering.
+Research date: 2026-09-20, using Exa official-page fetches and Context7.
 
-Contributor Changeset -> reviewed version/changelog PR -> verified package
-artifacts -> explicitly authorized npm publication -> package GitHub Releases.
-Package changelogs are the source for new release notes; the root changelog records
-suite-wide changes and links to package histories. Preserve historical releases
-without maintaining duplicate Markdown/JSON release payloads for future versions.
+- [Vercel evaluation documentation](https://vercel.com/docs/ai-gateway/modalities/evaluation)
+  confirms `typesafe-ai/jev` via `experimental_evaluate`, with boolean, choice and
+  score questions. This implementation uses the AI SDK evaluation API, not Chat Completions,
+  Anthropic Messages or Cohere endpoints. The separate TypeSafe-compatible API
+  is documented in docs/jev-design.md.
+- [Vercel launch note](https://vercel.com/changelog/typesafe-ai-jev-now-available-on-ai-gateway)
+  identifies AI SDK 7.0.105 as the first supported release. Pin a verified compatible
+  published version and Gateway provider during US-001/002, rather than `latest`.
+- [AI SDK reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/evaluate)
+  documents shared JSON state, named answers, optional usage/rounding/metadata,
+  cancellation and default two retries. Explicitly set retries to zero. Use an
+  explicit Gateway evaluation-model instance, avoiding ambient default-provider
+  resolution and differences between documentation examples.
+- [Gateway provider](https://ai-sdk.dev/providers/ai-sdk-providers/ai-gateway)
+  supports explicit API-key and fetch configuration. Use the published SDK to own
+  the endpoint/protocol; do not guess a REST evaluation route.
+- [Gateway authentication](https://vercel.com/docs/ai-gateway/authentication-and-byok/authentication)
+  supports team API keys in local processes. Require `AI_GATEWAY_API_KEY`; a Vercel
+  hosting account alone does not prove model access or available credits. No Vercel
+  CLI, Next.js application, hosting project, Docker, or separate TypeSafe key is
+  required by this local-server design. No OIDC/login/token-refresh implementation.
+- [Vercel Jev guide](https://vercel.com/kb/guide/typesafe-jev-and-ai-sdk)
+  distinguishes boolean probability from choice/score confidence. Score is the
+  probability-weighted zero-based rubric index, not an integer category. Questions
+  share one state; a JSON array is not a batch of unrelated requests.
+- [TypeSafe model documentation](https://docs.typesafe.ai/models) describes direct
+  model IDs and context/rate limits. Those direct-service IDs/quotas must not be
+  substituted for Gateway's model ID or account limits.
+- [Gateway model page](https://vercel.com/ai-gateway/models/jev) and guide currently
+  list $0.042 per million input tokens, but context fields differ between pages.
+  Do not hard-code pricing, promise free calls, or treat byte limits as token limits.
+  Recheck account price/access before any separately approved live evaluation.
+- Targeted official-source searches did not establish a vendor-maintained Jev MCP
+  implementation. This is a custom MCP adapter using official provider SDKs, not
+  a claim that none exists. Recheck this narrow question in US-001 before coding.
+- Verify exact SDK package exports, engines, Zod compatibility, retention options
+  and evaluation-model fixtures against pinned releases. Root MCP SDK is 0.5.0;
+  Flight already locks 1.30.0. Prefer that verified 1.x server line if suitable,
+  without upgrading the six existing servers or assuming current-main SDK APIs.
 
-Document the workflow as it is implemented, not only at final verification:
-AGENTS.md owns durable agent rules; docs/server-development.md owns contribution
-steps; new docs/releasing.md owns release preparation/publication/recovery;
-README.md and docs/architecture.md link to these and describe supported commands.
+## Proposed public contract
 
-Bootstrap uses the clean-slate root commit as a new history boundary. Existing npm
-versions remain authoritative: verify package ownership, published versions and
-existing tags before choosing first releases; do not reset versions or reconstruct
-old release notes from the squashed commit. The eventual remote release branch and
-per-package trusted-publisher setup remain activation prerequisites, not guessed
-from the local branch. Pin mutually compatible stable CLI/action versions during
-implementation; do not copy development-branch examples without checking support.
+Workspace: `servers/jev`; package: `@crsiebler/mcp-jev-server`; executable:
+`mcp-jev`; author: `Cory Siebler <cory.siebler@phitechsolutions.com>`.
+Follow the existing emitted layout: `dist/servers/jev/src/index.js`, package-local
+compiled shared modules, workspace prepack, root lock and `mcpSuite` metadata.
+Choose initial package version through the release workflow; do not publish it.
 
-Research sources: [npm lifecycle](https://docs.npmjs.com/cli/v11/using-npm/scripts/),
-[npm publication](https://docs.npmjs.com/cli/v11/commands/npm-publish/),
-[Changesets workflow](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md),
-[Changesets Action](https://github.com/changesets/action), and
-[npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
+| Tool           | Input                                                              | Output                                                                                                   | Effects                                                                     |
+| -------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `jev_evaluate` | `state` (string/JSON object/array), nonempty named `questions` map | Typed `answers`, requested/reported model IDs, optional usage, optional per-question confidence/rounding | Sends supplied data to Gateway; may incur charges; no local/domain mutation |
 
-## Verification and execution conventions
+Each question is a discriminated boolean/choice/score shape with instructions.
+Boolean criteria are optional true/false descriptions; choice criteria map option
+IDs to descriptions; score criteria are an ordered rubric. Preserve supplied text
+and IDs. Do not accept model overrides, destinations, arbitrary headers, file paths,
+URLs to fetch, credentials, or provider options in tool arguments.
 
-Existing commands: npm run type-check; npm run lint; npm run build:shared;
-npm run build -- --server=<name>; npm run build -- --server=all;
-npm test -- tests/unit/shared-utils.test.ts; git diff --check.
-Dependencies are currently absent, lint lacks a tracked configuration, and no
-formatter is configured. US-001 establishes the actual runnable check commands;
-do not silently download tools via npx or call unavailable checks passed.
+Return an SDK-valid `structuredContent` object plus matching JSON text for older
+clients where supported by the selected MCP version. Advertise a real output
+schema. Preserve question/option identities; reject missing/extra answers, wrong
+types, out-of-range/nonfinite probabilities or scores, and incompatible probability
+keys. Respect verified provider rounding when validating distributions; do not
+renormalize or invent probabilities/confidence/usage. Omit unavailable metadata.
+Do not forward raw provider response bodies, headers, warnings or private text.
 
-Every implementation story requires a meaningful failing regression before its
-behavior change, configured formatting/lint, npm run type-check (including test
-sources through the tooling established in US-001), and focused offline tests.
-Build/package stories also require the all-server build (currently npm run build
--- --server=all; US-002 establishes and documents its workspace replacement). Run the full
-suite only after US-001 separates live checks. No UI work is planned; if scope
-adds UI, use verify-interface. Documentation-only criteria use link/JSON checks
-and git diff --check; required pre-commit typecheck still applies.
+Proposed local limits (application policy, not advertised provider capacity):
 
-Apply this workflow to each story:
+- State: 64 KiB UTF-8 JSON representation, depth at most 16; reject non-JSON data.
+- Questions: 1–16; IDs 1–64 safe identifier characters; reject prototype-sensitive
+  keys. Instructions up to 4 KiB each, criterion descriptions up to 2 KiB each.
+- Choice: 2–32 options (deliberately narrower than provider support); score: 2–10
+  rubric levels. Combined serialized request at most 128 KiB.
+- Evaluation timeout: 30 seconds by default; `JEV_TIMEOUT_MS` integer 100–120000.
+  At most two in-flight requests; reject excess immediately, with no hidden queue.
+- Provider response body at most 1 MiB using a bounded SDK fetch boundary; public
+  result at most 128 KiB. Oversize results fail explicitly, never silently truncate
+  distributions. No automatic retries or fallback models/providers.
+- Fixed Gateway model `typesafe-ai/jev`; required nonblank `AI_GATEWAY_API_KEY` and
+  optional `LOG_LEVEL`. No `.env` loading or credential values in diagnostics.
+- Request supported ZDR/no-training controls using verified SDK options; fail rather
+  than silently relaxing required routing controls. Document Gateway observability
+  separately: routing flags do not prove private payloads are absent from team logs.
+- Tool annotations: read-only domain behavior, not destructive, open-world, not
+  guaranteed idempotent (probabilistic results and billed calls). They never grant
+  approval or replace client policy. No resources/prompts are needed initially.
 
-- [ ] Verify exact prepared branch, authorization, project policy, and existing work.
-- [ ] Reproduce the relevant defect or establish characterization coverage.
-- [ ] Implement the bounded story; run its focused and required shared checks.
-- [ ] Stage only its candidate and satisfy the shared mode-aware review gate.
-- [ ] Address findings, rerun affected checks, and use at most one targeted review.
-- [ ] Append execution evidence, update validated memory, and finalize the authorized commit.
+Fury examples select among caller-supplied next steps, including `ask_user` and
+`stop`. Mysterio examples score supplied review evidence/findings and choose among
+supplied merge candidates, including `manual_review`/`none`. Jev does not discover
+arbitrary textual findings or write a merge resolution. Thresholds are caller-owned,
+explicitly illustrative until calibrated; low/absent confidence routes to review.
+
+## Verification commands and shared story requirements
+
+Existing commands: `npm run format -- <changed-files>`, `npm run format:check --
+<changed-files>`, `npm run lint`, `npm run type-check`, `npm test -- <focused-files>`,
+`npm test`, `npm run build -- --server=all`, `npm run catalog:generate`,
+`npm run catalog:check`, `git diff --check`. Explicitly lint changed `.mjs` fixtures
+with the installed ESLint because the root lint command omits that extension.
+Catalog commands build all workspaces. Tests are offline by default.
+
+Every story requires configured formatting, lint, typecheck and applicable focused
+checks before review/commit. Behavior changes require meaningful failing tests;
+docs-only stories use source/link validation. Package/dependency changes require
+all-server build and frozen-install/minimum-engine checks. Final full offline suite
+must preserve the six existing servers. Do not use live calls as ordinary checks.
+No UI is planned; if UI is introduced, stop for scope revision and verify-interface.
 
 ## Ordered stories
 
-### US-001 - Establish deterministic local verification
+### US-001 - Verify and freeze the evaluation contract
 
 - [x] Story complete
 - Priority: 1
 - Depends on: none
-- User benefit: make failures observable before refactoring.
-- Relevant paths: package.json, lockfiles, tests/, ESLint/Vitest/TypeScript/formatter configuration.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Inventory root and per-server dependencies; after authorized dependency setup, record exact runtime/SDK versions and baseline errors. Avoid wholesale version upgrades.
-- [ ] Configure working formatting/lint, typechecking of source and tests, and an explicit offline default test suite; live Duffel tests are opt-in and report genuine skips.
-- [ ] Run the shared utility baseline and a fixture-only test; report any pre-existing failures with a bounded remediation owner. No credentials or live services are required.
+- User benefit: implementation uses the actual evaluation API and supported releases.
+- Relevant paths: proposed `docs/jev-design.md`; existing manifests/lock and official docs.
+- [x] Recheck vendor MCP availability against required Gateway evaluation operations;
+      document reuse comparison without replacing the explicitly requested custom scope.
+- [x] Verify published AI SDK/Gateway/MCP versions, exports/engine/peer compatibility,
+      boolean/choice/score schemas, confidence/rounding, warning handling and retention
+      settings; record exact sources and selected pins. Resolve unavailable evaluation
+      exports before coding; do not fall back to chat generation or an invented endpoint.
+- [x] Finalize the contract/limits above, safe error categories, usage fields and
+      cancellation semantics; document uncertain model/account/context/price limits.
+- [x] Resolve scoped outbound-key wiring authorization and pre-existing file overlap
+      before later implementation. No credential access or paid probe needed here.
+- [x] Run documentation validation, configured formatting and `npm run type-check`.
 
-### US-002 - Make build and package entry points consistent
+### US-002 - Deliver one packaged evaluation tool through Gateway
 
 - [x] Story complete
 - Priority: 2
 - Depends on: US-001
-- User benefit: run every retained server from its distributed files.
-- Relevant paths: root/server manifests and lockfiles, scripts/build.js, shared/tsconfig.json, server tsconfigs, packaging tests, README.md, docs/architecture.md, docs/server-development.md.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Configure npm workspaces for exactly seven server packages and mark the root private. Consolidate installation around the root lockfile; remove redundant server locks only within authorized scope. Verify a frozen install and package discovery without publishing.
-- [ ] Use workspace metadata for build/release package discovery; explicitly order shared compilation before server builds. Keep a wrapper only where needed, resolve paths independent of cwd, and reject unknown package arguments before building.
-- [ ] Invoke installed compilers with argument arrays and explicit cwd; no shell interpolation or npx download fallback. Build failures retain useful sanitized diagnostics and nonzero status.
-- [ ] Choose one documented shared-output/package strategy; emitted JS/declarations/maps stay in build directories and each package includes its shared runtime dependencies. Remove obsolete tracked outputs only within authorized scope.
-- [ ] All declared bin/main/start paths match actual output; fix Elasticsearch path/alias inconsistencies. Fixture-backed startup works from an unrelated cwd and package inventory is checked.
-- [ ] Define a consistent build/pack lifecycle: npm pack must include current built files, through a tested prepack hook or an explicit prerequisite. Avoid duplicate builds and rename the root publish orchestration command to avoid npm lifecycle collisions.
-- [ ] Update README.md, docs/architecture.md and docs/server-development.md with verified workspace install/build/pack commands and shared-output behavior. Inspect files allowlists and test the actual tarball; dry-run commands are not assumed free of lifecycle side effects.
+- User benefit: any local MCP client can evaluate supplied state with Jev.
+- Relevant paths: `servers/jev/{package.json,tsconfig.json,src/,README.md}`,
+  root lock, catalog output, shared packaging/discovery fixtures and Jev tests.
+- [x] Add the independently versioned workspace with pinned compatible dependencies,
+      declared engines, main/bin/prepack/files and metadata. Keep existing server SDKs
+      unchanged; use the root install/build system and literal environment readers.
+- [x] Implement focused config, schemas, provider adapter, handler and stdio entry
+      modules. Wire the official SDK evaluation model explicitly; implement all three
+      question types, mixed questions/shared state and validated result mapping.
+- [x] Enforce the proposed input/output limits and baseline timeout/concurrency/
+      retry policy immediately; discovery is offline and never sends an evaluation.
+- [x] Add red-to-green runtime-schema, real SDK mocked-provider and real packaged
+      initialize/list/success/error/close fixtures. Replace only provider I/O, never the
+      production handler, and include native structured output plus legacy text checks.
+- [x] Update six-package assertions to seven deliberately, extend success/error
+      provider fixtures and metadata checks; no skipping Jev or weakening existing tests.
+- [x] Verify isolated production install/ancestor dependency rejection, real prepack,
+      required-key failure, correct executable/shared output and unrelated cwd startup.
+- [x] Run focused Jev/packaging/discovery tests, formatter/lint/typecheck, all-server
+      build/catalog and frozen install on the declared minimum engine. If the selected
+      SDK needs a higher runtime, make that explicit before changing existing support.
 
-### US-003 - Make shared logging protocol-safe
+### US-003 - Prove failure, cancellation and privacy boundaries
 
 - [x] Story complete
 - Priority: 3
-- Depends on: US-001
-- User benefit: get diagnostics without corrupting MCP or exposing credentials.
-- Relevant paths: shared/utils/logger.ts, retained callers, logger/stdio regression tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Every log level writes exclusively to stderr. Startup, tool calls, and error paths produce no diagnostic stdout.
-- [ ] Redact known credential fields and connection/authorization data; avoid logging raw SQL, provider bodies, or full request/error objects. Bound message size and preserve useful context.
-- [ ] Circular objects, BigInt, Error instances, and serialization failures cannot throw from logging or mask the original operation. Verify redaction with synthetic secrets.
+- Depends on: US-002
+- User benefit: malformed data, unavailable providers or cancellation cannot produce
+  misleading decisions, leaked payloads or hanging processes.
+- Relevant paths: Jev adapter/handler/lifecycle and focused unit/SDK/packaging tests.
+- [x] Reproduce and cover 401/403, missing model, 429, 5xx, timeout, network failure,
+      malformed/oversize responses, missing/extra answers, bad distributions, fractional
+      score semantics, absent confidence/usage and documented rounding boundaries.
+- [x] Bound response streaming even without Content-Length; abort and clean up on
+      overflow. Bound total call time and ensure concurrency slots release on all paths.
+- [x] Propagate MCP cancellation, EOF and shutdown to in-flight provider requests;
+      prove child exit, cleared timers and no new work after shutdown with SDK fixtures.
+- [x] Set SDK retries to zero explicitly; no retry after timeout/disconnect and no
+      automatic provider/model fallback. Expose safe retry hints only when trustworthy.
+- [x] Capture stdout/stderr during success and failure; no keys, supplied state,
+      instructions, raw provider warnings/headers/bodies or private errors escape.
+      Input validation fails before I/O. Preserve SDK-supported credential handling and TLS.
+- [x] Run focused failure/lifecycle/privacy and packaged tests plus formatter,
+      lint, typecheck; do not contact a live provider.
 
-### US-004 - Tighten shared configuration and validation
+### US-004 - Add Fury and Mysterio decision examples and evaluation cases
 
 - [x] Story complete
 - Priority: 4
-- Depends on: US-001
-- User benefit: receive predictable configuration and input errors.
-- Relevant paths: shared/utils/config.ts, shared/utils/validation.ts, affected server constructors/tools, tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Required settings reject missing/empty values with field names only; typed booleans, integers, enums, and URLs use explicit bounds and defaults without trimming sensitive data indiscriminately.
-- [ ] Replace generic sanitization assumptions with operation-specific runtime validation; preserve exact text when required. Validate URL schemes/destinations and paths only where their contract requires it.
-- [ ] Cover malformed values and boundary cases before updating callers. Preserve documented environment names or explicitly document compatibility changes; do not change authentication logic.
+- Depends on: US-003
+- User benefit: adopt concrete decision workflows without mistaking scoring for
+  generated review findings or a permission to merge.
+- Relevant paths: Jev README, `docs/jev-workflows.md`, synthetic evaluation fixtures/tests.
+- [x] Provide valid mixed-question examples for Fury next-agent/continue/ask/stop,
+      Mysterio supplied-finding severity/evidence scoring, and ranking supplied merge
+      candidates with a manual-review option. No edits in avengers-initiative.
+- [x] Validate every example against the real public schema and show interpretation
+      of probabilities, fractional rubric scores, missing confidence and uncertain input.
+      Never label a model probability as a verified fact or approval.
+- [x] Create at least 12 labeled synthetic task cases spanning clear, ambiguous,
+      insufficient and conflicting evidence, including misleading instructions inside
+      state. Deterministic fixtures prove request/mapping/threshold behavior only.
+- [x] Define optional live evaluation measurements (agreement, false acceptance,
+      abstention, usage, latency) and a review rubric without fabricated accuracy claims.
+      Proposed thresholds require held-out calibration before downstream automation.
+- [x] Keep any live runner separate and explicitly opt-in with caller-supplied key,
+      bounded request count and accepted spend/data scope. Ordinary tests must neither
+      invoke it nor read local repositories/credential stores. Live execution is deferred.
+- [x] Run fixture/example validation, configured formatting/lint and typecheck.
 
-### US-005 - Simplify shared types and error contracts
+### US-005 - Complete seven-server release and client documentation
 
 - [x] Story complete
 - Priority: 5
-- Depends on: US-003, US-004
-- User benefit: get consistent typed failures without duplicated abstractions.
-- Relevant paths: shared/types/, shared/middleware/, retained response handlers, tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Use discriminated success/failure results and unknown at external boundaries; align MCP descriptions/results with types supported by the selected SDK, without an implicit major upgrade.
-- [ ] Normalize provider errors into actionable safe messages and stable categories; preserve relevant retry information without raw private payloads. Verify outputs against schemas.
-- [ ] Prove middleware consumers before removal. Remove unused generic error handling under scoped deletion authorization; keep unused auth middleware quarantined if policy forbids its removal until that boundary is resolved.
-- [ ] Migrate one shared contract consistently across its callers with error/success characterization tests; no broad server-framework abstraction.
+- Depends on: US-004
+- User benefit: install/build/connect the verified package and maintain it through
+  the existing workflow without manual release machinery.
+- Relevant paths: generated catalog, Jev package/README/changelog, `.changeset/`,
+  README, AGENTS, docs maps/setup/testing/releasing and release artifact fixtures.
+- [x] Reconcile seven-server inventory, commands, credentials, client examples and
+      compiled paths. Include schema-valid OpenCode/Codex stdio examples with placeholders;
+      no harness configuration edits or silent approval exceptions.
+- [x] Add an appropriate package Changeset/initial changelog per the installed CLI's
+      verified new-package behavior; root remains private. Preserve pending six-server
+      migration changeset and existing package versions. No preparation/publication run
+      in the real checkout merely to validate release behavior; use disposable fixtures.
+- [x] Verify existing release artifact mode includes Jev in a supplied subset without
+      rebuilding and runs a representative success/error call from its installed tarball.
+      Preserve hashes, approval gates, license/ownership prerequisites and no-push scope.
+- [x] Run full offline suite, all-server build/catalog, formatter/lint/typecheck and
+      package checks on the declared minimum runtime plus the normal development runtime.
+      Compare scoped manifests/lock changes and document exact versions/results/limits.
+- [x] Reconcile source, client and workflow docs; record actual live checks as unrun.
+      Deliver source/configuration instructions and optional live-evaluation procedure,
+      not an unverified claim of working account access or model review quality.
 
-### US-006 - Correct PostgreSQL connection and query safeguards
+## Execution checklist for each story
 
-- [x] Story complete
-- Priority: 6
-- Depends on: US-003, US-004
-- User benefit: query with verified transport security and bounded execution.
-- Relevant paths: servers/postgresql/src/, database service tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Remove unconditional disabled TLS verification; document explicit local/non-TLS versus verified TLS and trusted CA configuration. Test options without changing a live connection.
-- [ ] Add bounded query execution and predictable cancellation/cleanup. Test transaction rollback/release and read-only behavior with fake database clients; avoid claiming keyword filters are a security boundary.
-- [ ] Replace fragile automatic LIMIT rewriting with a documented, tested result/query policy that preserves supported SQL behavior. Document database-role permissions without altering roles or authorization logic.
-- [ ] Preserve the two public tool contracts unless a reviewed migration is necessary. No migrations, live writes, or production connection changes.
-
-### US-007 - Repair Duffel cancellation and uncertain outcomes
-
-- [x] Story complete
-- Priority: 7
-- Depends on: US-003, US-005
-- User benefit: review cancellation terms before a booking is cancelled.
-- Relevant paths: servers/flight/src/, offline Duffel fixtures/tests, Flight documentation.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Verify current official Duffel cancellation API and implement separate quote and confirm operations; document migration from the old cancel tool.
-- [ ] Return quote/refund details before confirmation and validate the chosen quote identity. Preserve host confirmation requirements; do not rely on annotations as authorization.
-- [ ] Mock non-cancellable orders, stale quotes, provider errors, uncertain timeout and successful confirmation. Never blindly retry a cancellation; no real booking/cancellation occurs in tests.
-
-### US-008 - Verify Salesforce bulk-delete reporting
-
-- [x] Story complete
-- Priority: 8
-- Depends on: US-005
-- User benefit: see partial failures and transaction semantics accurately.
-- Relevant paths: servers/salesforce/src/services/salesforce-service.ts, Salesforce tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Check the official Composite API response shape and reproduce current misclassification with a fixture before fixing it.
-- [ ] Preserve the 200-record limit and allOrNone semantics; report per-record outcomes and overall failure correctly for arrays, partial failure and malformed responses.
-- [ ] Use mocks only; no Salesforce deletion or authentication changes. Document schema/output changes if required.
-
-### US-009 - Verify Elasticsearch contracts
-
-- [x] Story complete
-- Priority: 9
-- Depends on: US-002, US-005
-- User benefit: use search and maintenance tools with predictable results.
-- Relevant paths: servers/elasticsearch/src/, server README, fixture tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Validate all 18 advertised names against dispatch and schemas; cover representative read, pagination/aggregation, document mutation, and index administration mappings.
-- [ ] Check provider errors, empty data and result bounds; accurately annotate mutations. Use fixture clients only, with no cluster creation/deletion.
-- [ ] Confirm public MCP error formatting and packaged startup with the selected SDK; keep provider-specific administration outside shared generic code.
-
-### US-010 - Validate Canvas tool inventory and focused exposure
-
-- [x] Story complete
-- Priority: 10
-- Depends on: US-002, US-005
-- User benefit: avoid loading unnecessary Canvas tools while retaining workflows.
-- Relevant paths: servers/canvas/src/tools/, category services, startup/config, tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Check all 185 advertised tools for unique names and reachable handlers; derive category inventories from actual registrations.
-- [ ] Add optional category selection with backward-compatible default exposure; reject unknown categories and test that omitted categories cannot dispatch hidden tools.
-- [ ] Test representative read/write contracts per category using fixtures, including pagination and provider errors; no real student, grading, login or SSO changes.
-
-### US-011 - Verify ClickUp contracts
-
-- [x] Story complete
-- Priority: 11
-- Depends on: US-002, US-005
-- User benefit: reliably use the retained operations that motivated keeping ClickUp.
-- Relevant paths: servers/clickup/src/index.ts, ClickUp tests/documentation.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Cover all 29 tool names and dispatch consistency; fixture-test tasks/comments, hierarchy operations, time entries and goals.
-- [ ] Validate pagination, required fields, provider errors and mutation annotations; extract provider mapping only where necessary for isolated tests.
-- [ ] Preserve existing tool names and behavior or document an explicit migration. No live task, time-entry, hierarchy or goal mutation.
-
-### US-012 - Verify the ASU job-search integration
-
-- [x] Story complete
-- Priority: 12
-- Depends on: US-002, US-005
-- User benefit: retain an explicit supported API contract rather than an assumed proof-of-concept endpoint.
-- Relevant paths: servers/aijobsearch/src/, README, fixtures/tests.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Identify authoritative endpoint/taxonomy documentation or record the missing provider contract as a blocker to live-readiness. Do not assume the current proof-of-concept default is supported.
-- [ ] Fixture-test skills extraction and both job-match input variants, malformed responses, timeout and size bounds; ensure error/log output cannot reveal tokens or submitted personal content.
-- [ ] Document endpoint configuration and actual validation limits; no resume or private data is sent to a provider.
-
-### US-013 - Reconcile metadata and inactive configuration
-
-- [x] Story complete
-- Priority: 13
-- Depends on: US-002, US-009, US-010, US-011, US-012
-- User benefit: find accurate server/setup information from one inventory.
-- Relevant paths: config/, workspace discovery, README.md, docs/overview.md, docs/architecture.md, docs/server-development.md, tests/fixtures/jira-responses.json.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Use npm workspace metadata as the authoritative package inventory shared by build/release discovery; derive or validate tool counts and required environment variables from explicit source metadata, without a second handwritten package list.
-- [ ] Remove unused development/production JSON and replace stale servers.json with generated or validated catalog data under scoped deletion authorization; do not introduce an unused configuration loader.
-- [ ] Remove the orphan Jira fixture after proving no consumers; active docs describe exactly seven retained servers with accurate executable paths and credentials.
-- [ ] Keep author metadata consistent. Resolve missing license documentation only from verified provenance/owner intent; do not invent or relicense historical material.
-
-### US-013A - Remove AI Job Search
-
-- [x] Story complete
-- Priority: 13
-- Depends on: US-013
-- User benefit: maintain only the six requested integrations.
-- Scope: user-requested removal of servers/aijobsearch, its dedicated tests and
-  workspace lock entries; retain shared helpers and coverage used by other servers.
-- Verification: formatting, lint, typecheck, frozen offline install, full offline
-  tests, six-package build/catalog validation and native staged review.
-- [ ] Remove the server and its exclusive tests/dependencies without changing the
-  other six servers' behavior; build/release discovery excludes the removed package.
-- [ ] Regenerate the six-server catalog and update active setup/maps and remaining
-  plan scope. Preserve historical completion and provenance records.
-
-### US-014 - Adopt Changesets and document contribution/release preparation
-
-- [x] Story complete
-- Priority: 14
-- Depends on: US-013A
-- User benefit: describe changes once and review accurate versions and release notes.
-- Relevant paths: package.json, root lockfile, new .changeset/ configuration, package CHANGELOG.md files, root CHANGELOG.md, releases/, scripts/deploy.js, scripts/publish.js, AGENTS.md, docs/server-development.md, new docs/releasing.md, README.md.
-- Verification: common formatting/lint/typecheck gates, offline Changesets fixture checks, documentation command/link checks.
-- [ ] Add a compatible stable Changesets CLI and configure independent public server packages, a private root, explicit base-branch selection and the tool's documented package tag convention. Record the selected convention; do not retain custom server-v tags merely to match obsolete scripts.
-- [ ] Provide preparation commands using the installed CLI; changeset version updates package manifests/changelogs and the documented lockfile synchronization step. Preparation cannot publish, commit, push or stage unrelated work. Retire the duplicated custom version/publish flows within authorized deletion scope; publication wiring follows in US-015.
-- [ ] Test fixtures for one package, several packages, combined bump levels, breaking changes, internal dependency effects and a no-release change. Account explicitly for shared code copied/bundled into packages: affected consumers need Changesets even if no declared workspace dependency lets the tool infer them. Check unchanged package versions and synchronized locks.
-- [ ] Use each package changelog as the new release-note source. Reconcile actual suite-wide Unreleased entries, retain historical release records and label their old-history context; stop generating duplicate new Markdown/JSON payloads. Do not invent historical release events or publish a baseline as a test.
-- [ ] Add contributor guidance and AGENTS.md rules covering when a Changeset is required, affected-package selection, patch/minor/major decisions, breaking-change migration notes, useful user-facing summaries, examples and justified no-release changes. Conventional Commit requirements remain in place but do not replace Changesets.
-- [ ] Create docs/releasing.md with version-PR preparation/review, changelog editing, lockfile checks, exact build/pack verification commands and the initial-release checklist: inspect published names/versions/ownership, choose supported versions and establish the new history boundary. Distinguish executable local preparation from publication configuration pending US-015; README links to both guides.
-
-### US-015 - Define gated CI publication and document recovery
-
-- [x] Story complete
-- Priority: 15
-- Depends on: US-014
-- User benefit: release verified packages through a documented and recoverable process.
-- Relevant paths: new .github/workflows/ release/verification definitions, package release commands, workflow fixtures, docs/releasing.md, docs/testing.md, AGENTS.md, README.md, docs/architecture.md.
-- Verification: common formatting/lint/typecheck gates, workflow schema/lint checks using authorized tooling, fixture-driven command/condition tests; no live workflow dispatch or external writes.
-- [ ] Use a compatible stable Changesets Action to prepare/update a version-and-changelog PR. CI verifies the release candidate before publication; document branch selection, permissions, concurrency and the approval boundary. Do not enable an unguarded publish-on-every-push path or infer that this local branch is the remote release branch.
-- [ ] Define a separate explicitly gated publication job using npm trusted publishing on supported hosted runners, with supported Node/npm versions and per-package OIDC configuration documented. Prefer maintained Changesets/npm commands, not a replacement custom release CLI. Registry setup and workflow activation are separate authorized operations; missing setup fails clearly without a silent token fallback.
-- [ ] Verify packaging and fixture MCP startup against the release candidate and ensure published contents match those verified; no version mutation or unchecked rebuild after verification. Publish only release-plan packages, exclude the root, and define stable/prerelease dist-tags. No npm/GitHub tokens or live services are required for local validation.
-- [ ] Generate package GitHub Releases from the corresponding changelog only after confirmed publication, using the selected tag convention and verified source commit. Distinguish prepared, published and announced states; document provenance separately from user-facing release notes.
-- [ ] Cover failed checks, denied/missing approval, registry rejection, one-package success followed by failure, and tag/GitHub Release failure after npm success with fakes. Document reconciliation/retry using actual published versions and source/artifact identity; do not republish an existing name/version, assume cross-service atomicity, or rewrite shared history.
-- [ ] Complete docs/releasing.md with trusted-publisher prerequisites, first-release activation, reviewer checklist, publication approval, prereleases and partial-failure recovery. Update AGENTS.md, README.md, docs/testing.md and docs/architecture.md with verified commands and ownership; remove active instructions to use retired scripts while preserving historical records.
-- [ ] Validate the documented contribution-to-release sequence with local fixtures and command/schema checks. Report CI syntax/fixture verification separately from unperformed hosted/OIDC integration; actual publishing, tagging, release PRs, GitHub Releases, pushes and registry changes are not performed to complete this story.
-
-### US-016 - Verify all retained server packages end to end offline
-
-- [x] Story complete
-- Priority: 16
-- Depends on: US-006, US-007, US-008, US-009, US-010, US-011, US-012, US-015
-- User benefit: have a trustworthy release-readiness baseline.
-- Relevant paths: tests/, package output, docs/testing.md, README.md, repository map.
-- Verification: common formatting/lint/typecheck gates plus the focused checks below.
-- [ ] Initialize, list tools, call representative success/error fixture operations, and close each of six actual built/package entry points using a real SDK client.
-- [ ] Check protocol-only stdout, required credential failures using fake values, output schemas, resource cleanup and startup outside the source cwd. Mark live validation separately.
-- [ ] Run the configured formatter, lint, typecheck, all offline tests and all-server build; document precise commands, supported versions and any unresolved provider limitations.
-- [ ] Verify README.md, AGENTS.md, contribution/release guides and the map consistently describe the implemented workspace/Changesets/CI workflow, including commands, package changelogs and release approval/recovery. Documentation must already ship with US-002/014/015; this is the final consistency check. No global install, live mutation, deployment, or unsolicited publication.
-
-## Gated follow-on: Jev integration
-
-Jev implementation is deferred until the baseline is verified and the exact model,
-provider/model ID, supported API, account access, costs, limits and data handling
-are confirmed from authoritative sources. No time-limited free promotion is assumed.
-Then prepare a bounded follow-on story using the installed create-mcp-server skill:
-supplied diff/context in, validated structured findings out; no implicit filesystem
-reads, code changes or merges. Include request/output limits, timeouts, mocked
-provider tests, a real MCP transport smoke test and review-quality rubric. Fury and
-Mysterio integration belongs to its own repository and authorization scope.
+- [x] Verify authorization, exact prepared branch and ownership of existing changes.
+- [x] Establish failing regressions or appropriate documentation evidence.
+- [x] Implement only the bounded story and run its required checks.
+- [x] Stage the intended candidate and complete the shared mode-aware review gate.
+- [x] Resolve findings and perform at most one targeted same-session review.
+- [x] Update validated memory, append evidence, finalize completion and authorized commit.
 
 ## Resume and delivery
 
-For authorized execution, load the installed prepare-implementation skill and
-read references/story-execution.md and references/story-review.md relative to
-that skill's reported base directory. Follow its CodexGoalMarkdown adapter.
-If discovery, a reference, or required story-reviewer invocation is unavailable,
-stop with the exact blocker; do not invent paths, substitute reviewers or skip gates.
+For authorized execution, load the installed prepare-implementation skill and read
+`references/story-execution.md` and `references/story-review.md` relative to its
+advertised base directory. Follow CodexGoalMarkdown. Missing references, native
+story-reviewer or required capabilities block delivery; never invent fallbacks.
+Use create-mcp-server's design, TypeScript, verification and task-evaluation guidance.
 
-Read this plan, relevant latest docs/progress.md entries, and memory.json if
-present, relative to the worktree root. Keep only scope/criteria/dependencies and
-completion state here. Append commands/results, actual changes, review history,
-permissions, blockers, commits and resumption checkpoints to docs/progress.md;
-never rewrite its history. Create it only during authorized execution after branch
-and unrelated-work guards pass. Missing memory is normal; use empty version-1
-memory in process and create/update it only after passing review, with at most
-20 patterns and 20 suppressions. Preserve invalid memory and stop.
+Read this plan and any existing worktree-root `docs/progress.md` and `memory.json`.
+Planning creates neither. On first authorized execution checkpoint create a new
+append-only journal; never restore or reuse the archived run's state. Missing
+memory means empty version-1 memory in process. Preserve invalid memory and stop;
+create/update valid memory only after passing review, bounded to 20 patterns and
+20 suppressions. Put commands/results, changed paths, review evidence/dispositions,
+approvals, actual advisors, commit status and checkpoints in the journal, not here.
 
-Use shared fast/standard/deep risk budgets, default standard; no advisors are
-requested and any permitted advisors remain read-only and within the shared cap
-of two. Select the lowest numeric priority eligible incomplete story. Recheck the
-exact prepared branch before writes, staging and commits. Do not create/switch
-branches, push, post externally or infer sensitive-operation grants.
+Recheck the exact branch before writes, staging and commits. Preserve unrelated
+work; no branch creation/switching, implicit pushes, external posts or sensitive
+actions. Standard mode uses shared risk budgets, at most two read-only advisors
+when justified and no further delegation. No advisors are required by this plan.
 
-Native review uses story-reviewer, the full shared protocol/JSON schema embedded
-in each invocation, and the execution contract's packet preflight. Start a separate
-reviewer session per story/attempt; record actual role and session ID. At most one
-initial and one targeted same-session review per attempt; self-review is allowed
-only by the mode/risk budget. Invalid or final blocked review stops delivery;
-continuation alone does not reset review budgets. Resume only after verifying a
-material resolution to the blocker and preserving the previous findings/history.
+Required native reviews use `story-reviewer`, `Review profile: expanded-initial`
+and explicit initial/targeted pass metadata. Embed the complete unabridged protocol
+and schema directly in every invocation; preflight against the loaded reference.
+Use a fresh actual reviewer session per story/attempt, record role/session identity,
+and use at most one initial plus one targeted pass in that same session. Keep the
+candidate immutable during review; targeted review covers only findings and
+remediation regressions. Follow persistent-blocker rules; continuation or a new
+reviewer never resets budgets. Self-review is allowed only by the mode/risk table.
 
-Stage provisional completion only after required checks/review pass. Delivery
-requires the explicitly authorized story commit. Restore only the provisional
-marker on failed finalization and preserve evidence/checkpoints. A passing syntax
-check or exhausted budget never completes a story.
+After required checks/review pass, provisionally mark only the selected story done;
+delivery requires its authorized commit to succeed. On failure restore only the
+provisional marker and preserve evidence. Report actual commits, verification,
+review outcomes and limitations. Never claim unexecuted or uncommitted work done.
 
-- [ ] Final report records actual commits, verification/review outcomes, delivered scope and gaps.
+- [x] Final report records actual commits, checks/review outcomes, delivered scope and gaps.
 
-After all stories are delivered, archival is a separate explicit approval under
-references/completed-run-archive.md from the installed skill. Planning and story
-commit authorization do not authorize resetting or archiving active state.
+Archive this run only with separate approval under the installed
+`references/completed-run-archive.md`; never replace/reset active state implicitly.

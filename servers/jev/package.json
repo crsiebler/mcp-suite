@@ -1,0 +1,62 @@
+{
+  "name": "@crsiebler/mcp-jev-server",
+  "version": "0.1.0",
+  "description": "Bounded Jev evaluations through Vercel AI Gateway",
+  "type": "module",
+  "main": "dist/servers/jev/src/index.js",
+  "bin": {
+    "mcp-jev": "dist/servers/jev/src/index.js"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build.js --server=jev",
+    "prepack": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "jev",
+    "evaluation",
+    "vercel"
+  ],
+  "author": "Cory Siebler <cory.siebler@phitechsolutions.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "ai": "7.0.105",
+    "@ai-sdk/gateway": "4.0.85",
+    "@ai-sdk/provider": "4.0.17",
+    "zod": "3.25.76",
+    "zod-to-json-schema": "3.25.1"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crsiebler/mcp-suite.git",
+    "directory": "servers/jev"
+  },
+  "bugs": {
+    "url": "https://github.com/crsiebler/mcp-suite/issues"
+  },
+  "homepage": "https://github.com/crsiebler/mcp-suite/tree/main/servers/jev",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "mcpSuite": {
+    "displayName": "Jev (Vercel AI Gateway)",
+    "toolInventory": {
+      "module": "dist/servers/jev/src/tools.js",
+      "export": "jevTools"
+    },
+    "environment": {
+      "required": [
+        "AI_GATEWAY_API_KEY"
+      ],
+      "optional": [
+        "LOG_LEVEL",
+        "JEV_TIMEOUT_MS"
+      ],
+      "notes": "Evaluations send caller-supplied data to Gateway and may incur charges. Privacy routing filters do not disable Gateway logs. No live calls during discovery."
+    }
+  }
+}
