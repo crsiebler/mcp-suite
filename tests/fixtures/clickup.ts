@@ -36,5 +36,7 @@ export async function call(
   const f = fixture(data, status);
   const result = await f.handler.callTool(name, args);
   CallToolResultSchema.parse(result);
-  return { ...f, result, value: JSON.parse(result.content[0].text as string) };
+  const content = result.content[0];
+  if (content.type !== "text") throw new Error("Expected text tool result");
+  return { ...f, result, value: JSON.parse(content.text) };
 }

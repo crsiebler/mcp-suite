@@ -67,6 +67,12 @@ disposable fixture. Publication/tagging commands are never verification commands
 
 ## Verified baseline
 
+The dependency security update uses MCP SDK 1.32.1, Axios 1.20.0, Vitest 4.1.12,
+Vite 6.4.4 and TypeScript ESLint 8.72.0. Vite's Rollup dependency is constrained to
+patched 4.59.0 to preserve the declared Node 22.14 minimum across platforms; newer
+Rollup releases pull in a Linux optional dependency requiring a newer Node patch.
+The earlier verification records below describe their historical dependency sets.
+
 US-001 uses Node v26.7.0, npm 11.19.0, TypeScript 5.9.3, Vitest 1.6.1,
 ESLint 8.57.1 and Prettier 3.9.8. The root SDK is 0.5.0; server manifests still
 request 0.5.x, 0.6.x and 1.x. This records the observed environment, not a claim
@@ -98,8 +104,8 @@ for the pinned SDK also captures raw stdout, validates all newline-delimited JSO
 frames (including trailing output), and waits for the child close event. They preserve the current
 Salesforce failure envelope pending response normalization. This proves those
 paths are protocol-safe, not every provider-backed operation; full tool coverage
-remains separate. The root SDK 0.5 transport accepts a file stream for stderr,
-not the newer SDK's `stderr` pipe accessor.
+remains separate. The SDK 1.32 transport accepts the file streams used for stderr.
+A test-only adapter observes raw stdout and child exit independently of SDK shutdown.
 
 Configuration regressions live in `tests/unit/config.test.ts`,
 `tests/unit/elasticsearch-config.test.ts`.

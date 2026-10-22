@@ -125,7 +125,7 @@ it.each([
 ])("rejects even an empty URL delimiter: %s", (value) => {
   setEnv(key, value);
   expect(() => config.getHttpUrlEnvVar(key)).toThrow(
-    new Error(`Invalid environment variable ${key}`)
+    new config.ConfigurationError(key)
   );
 });
 it.each([

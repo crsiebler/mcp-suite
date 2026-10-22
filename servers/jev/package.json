@@ -20,7 +20,7 @@
   "author": "Cory Siebler <cory.siebler@phitechsolutions.com>",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.30.0",
+    "@modelcontextprotocol/sdk": "1.32.1",
     "ai": "7.0.105",
     "@ai-sdk/gateway": "4.0.85",
     "@ai-sdk/provider": "4.0.17",

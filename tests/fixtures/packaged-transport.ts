@@ -2,8 +2,8 @@ import type { ChildProcess } from "node:child_process";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { expect } from "vitest";
 
-// SDK0.5 close() initiates termination but does not await the child close event.
-// Observe its pinned transport implementation in this test adapter only.
+// Observe the SDK child in this test adapter to check raw protocol frames and
+// verify process exit independently of the transport's close implementation.
 export class VerifiedStdioTransport extends StdioClientTransport {
   private exitEvent?: Promise<void>;
   private exited = false;
