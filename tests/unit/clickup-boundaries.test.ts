@@ -81,8 +81,10 @@ describe("ClickUp validation and provider failure contracts", () => {
     };
     const result = await f.handler.callTool("delete_task", { task_id: "abc" });
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain('"timeout"');
-    expect(result.content[0].text).not.toContain("PRIVATE");
+    const content = result.content[0];
+    if (content.type !== "text") throw new Error("Expected text tool result");
+    expect(content.text).toContain('"timeout"');
+    expect(content.text).not.toContain("PRIVATE");
     expect(count).toBe(1);
   });
   it("advertises accurate mutation hints", () => {
@@ -153,9 +155,9 @@ describe("ClickUp pagination and payload preservation", () => {
         include_closed: false,
       },
     });
-    const url = api.getUri(calls[0]);
-    expect(url).toContain(filter + "[]=22");
-    expect(url).toContain("statuses[]=in+progress");
+    const params = new URL(api.getUri(calls[0])).searchParams;
+    expect(params.getAll(filter + "[]")).toEqual(["22"]);
+    expect(params.getAll("statuses[]")).toEqual(["in progress"]);
   });
   it("keeps empty list pages and sends page zero / false flags", async () => {
     const { value, calls } = await call(
